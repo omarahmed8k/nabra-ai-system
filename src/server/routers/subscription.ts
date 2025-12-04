@@ -33,13 +33,33 @@ export const subscriptionRouter = router({
     };
   }),
 
+  // Get pending subscription awaiting payment verification
+  getPending: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const subscription = await ctx.db.clientSubscription.findFirst({
+      where: {
+        userId,
+        isActive: false,
+        cancelledAt: null,
+      },
+      include: {
+        package: true,
+        paymentProof: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return subscription;
+  }),
+
   // Get credit balance and stats
   getBalance: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
     return getCreditBalance(userId);
   }),
 
-  // Subscribe to a package
+  // Subscribe to a package (creates pending subscription awaiting payment)
   subscribe: clientProcedure
     .input(
       z.object({
@@ -65,6 +85,28 @@ export const subscriptionRouter = router({
         });
       }
 
+      // Check for pending payment subscription
+      const pendingSubscription = await ctx.db.clientSubscription.findFirst({
+        where: {
+          userId,
+          isActive: false,
+          cancelledAt: null,
+          paymentProof: {
+            status: "PENDING",
+          },
+        },
+        include: {
+          paymentProof: true,
+        },
+      });
+
+      if (pendingSubscription) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "You have a pending subscription awaiting payment verification. Please wait for it to be processed.",
+        });
+      }
+
       // Get the package
       const pkg = await ctx.db.package.findUnique({
         where: { id: input.packageId, isActive: true },
@@ -77,9 +119,7 @@ export const subscriptionRouter = router({
         });
       }
 
-      // In production, you would integrate with Stripe here
-      // For now, we'll create the subscription directly
-
+      // Create subscription as INACTIVE (pending payment verification)
       const now = new Date();
       const endDate = new Date(now.getTime() + pkg.durationDays * 24 * 60 * 60 * 1000);
 
@@ -90,27 +130,18 @@ export const subscriptionRouter = router({
           remainingCredits: pkg.credits,
           startDate: now,
           endDate,
-          isActive: true,
+          isActive: false, // Will be activated after payment verification
         },
         include: {
           package: true,
         },
       });
 
-      // Create notification
-      await ctx.db.notification.create({
-        data: {
-          userId,
-          title: "Subscription Activated",
-          message: `Your ${pkg.name} subscription is now active with ${pkg.credits} credits!`,
-          type: "subscription",
-        },
-      });
-
       return {
         success: true,
         subscription,
-        message: `Successfully subscribed to ${pkg.name}. You have ${pkg.credits} credits.`,
+        requiresPayment: true,
+        message: `Please complete the payment for ${pkg.name} to activate your subscription.`,
       };
     }),
 
@@ -128,7 +159,7 @@ export const subscriptionRouter = router({
         where: {
           id: input.subscriptionId,
           userId,
-          isActive: true,
+          cancelledAt: null, // Not already cancelled
         },
       });
 
@@ -152,7 +183,9 @@ export const subscriptionRouter = router({
         data: {
           userId,
           title: "Subscription Cancelled",
-          message: "Your subscription has been cancelled. You can still use remaining credits until the end date.",
+          message: subscription.isActive 
+            ? "Your subscription has been cancelled. You can still use remaining credits until the end date."
+            : "Your pending subscription has been cancelled.",
           type: "subscription",
         },
       });

@@ -538,11 +538,12 @@ async function main() {
   console.log("─".repeat(50));
 }
 
-try {
-  await main();
-  await prisma.$disconnect();
-} catch (e) {
-  console.error(e);
-  await prisma.$disconnect();
-  process.exit(1);
-}
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

@@ -33,6 +33,12 @@ enum CommentType {
   DELIVERABLE
 }
 
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ==================== USER & AUTH ====================
 
 model User {
@@ -47,16 +53,18 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  providerProfile    ProviderProfile?
+  providerProfile     ProviderProfile?
   clientSubscriptions ClientSubscription[]
-  clientRequests     Request[]            @relation("ClientRequests")
-  providerRequests   Request[]            @relation("ProviderRequests")
-  comments           RequestComment[]
-  ratings            Rating[]             @relation("ClientRatings")
-  receivedRatings    Rating[]             @relation("ProviderRatings")
-  notifications      Notification[]
-  accounts           Account[]
-  sessions           Session[]
+  clientRequests      Request[]            @relation("ClientRequests")
+  providerRequests    Request[]            @relation("ProviderRequests")
+  comments            RequestComment[]
+  ratings             Rating[]             @relation("ClientRatings")
+  receivedRatings     Rating[]             @relation("ProviderRatings")
+  notifications       Notification[]
+  accounts            Account[]
+  sessions            Session[]
+  paymentProofs       PaymentProof[]
+  reviewedPayments    PaymentProof[]       @relation("PaymentReviewer")
 }
 
 model Account {
@@ -140,10 +148,41 @@ model ClientSubscription {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package Package @relation(fields: [packageId], references: [id])
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package         Package           @relation(fields: [packageId], references: [id])
+  paymentProof    PaymentProof?
 
   @@index([userId, isActive])
+}
+
+// ==================== PAYMENT VERIFICATION ====================
+
+model PaymentProof {
+  id               String        @id @default(cuid())
+  subscriptionId   String        @unique
+  userId           String
+  transferImage    String        // URL to uploaded transfer receipt
+  senderName       String        // Name on the bank account
+  senderBank       String        // Bank name
+  senderCountry    String        // Country of transfer
+  amount           Float         // Amount transferred
+  currency         String        @default("USD")
+  transferDate     DateTime      // Date of transfer
+  referenceNumber  String?       // Bank reference/transaction number
+  notes            String?       @db.Text
+  status           PaymentStatus @default(PENDING)
+  reviewedBy       String?       // Admin who reviewed
+  reviewedAt       DateTime?
+  rejectionReason  String?       @db.Text
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  subscription ClientSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer     User?              @relation("PaymentReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([status])
+  @@index([userId])
 }
 
 // ==================== SERVICE TYPES ====================

@@ -15,6 +15,8 @@ import {
   LogOut,
   Menu,
   X,
+  Wallet,
+  CheckCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { getInitials } from "@/lib/utils";
@@ -23,6 +25,7 @@ const clientNavItems = [
   { href: "/client", label: "Dashboard", icon: LayoutDashboard },
   { href: "/client/requests", label: "Requests", icon: FileText },
   { href: "/client/subscription", label: "Subscription", icon: CreditCard },
+  { href: "/client/payment", label: "Payment", icon: Wallet },
   { href: "/client/notifications", label: "Notifications", icon: Bell },
 ];
 
@@ -37,6 +40,7 @@ const adminNavItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: FileText },
   { href: "/admin/requests", label: "All Requests", icon: FileText },
+  { href: "/admin/payments", label: "Payments", icon: CheckCircle },
   { href: "/admin/packages", label: "Packages", icon: CreditCard },
   { href: "/admin/services", label: "Services", icon: Settings },
 ];

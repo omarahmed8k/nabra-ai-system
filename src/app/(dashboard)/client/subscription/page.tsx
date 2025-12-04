@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +15,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { Check, CreditCard, AlertCircle } from "lucide-react";
+import { showError, showSuccess } from "@/lib/error-handler";
 
 export default function SubscriptionPage() {
+  const router = useRouter();
   const utils = trpc.useUtils();
 
   const { data: subscription, isLoading: subLoading } =
@@ -27,12 +30,23 @@ export default function SubscriptionPage() {
     onSuccess: () => {
       utils.subscription.getActive.invalidate();
       utils.subscription.getUsageStats.invalidate();
+      utils.subscription.getPending.invalidate();
+      showSuccess("Subscription created! Please complete the payment.");
+      router.push("/client/payment");
+    },
+    onError: (error) => {
+      showError(error);
     },
   });
 
   const cancelMutation = trpc.subscription.cancel.useMutation({
     onSuccess: () => {
       utils.subscription.getActive.invalidate();
+      utils.subscription.getPending.invalidate();
+      showSuccess("Subscription cancelled successfully.");
+    },
+    onError: (error) => {
+      showError(error);
     },
   });
 
