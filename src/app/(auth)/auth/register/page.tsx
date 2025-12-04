@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,10 +25,16 @@ export default function RegisterPage() {
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {
+      toast.success("Account created!", {
+        description: "You can now sign in with your credentials.",
+      });
       router.push("/auth/login?registered=true");
     },
     onError: (err) => {
       setError(err.message);
+      toast.error("Registration Failed", {
+        description: err.message,
+      });
     },
   });
 
@@ -41,6 +50,9 @@ export default function RegisterPage() {
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      toast.error("Validation Error", {
+        description: "Passwords do not match",
+      });
       return;
     }
 
@@ -48,16 +60,23 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">N</span>
-            </div>
-          </Link>
-        </div>
-        <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <Card>
+        <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-4">
+            <Link href="/" className="flex items-center space-x-2">
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <Image src="/images/favicon.svg" alt="Nabra" width={48} height={48} className="w-12 h-12" />
+              </motion.div>
+            </Link>
+          </div>
+        <CardTitle className="text-2xl text-center">
+          Create an account
+        </CardTitle>
         <CardDescription className="text-center">
           Enter your details to get started
         </CardDescription>
@@ -115,13 +134,17 @@ export default function RegisterPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={registerMutation.isPending}
-          >
-            {registerMutation.isPending ? "Creating account..." : "Create Account"}
-          </Button>
+          <motion.div className="w-full" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending
+                ? "Creating account..."
+                : "Create Account"}
+            </Button>
+          </motion.div>
           <p className="text-sm text-muted-foreground text-center">
             Already have an account?{" "}
             <Link href="/auth/login" className="text-primary hover:underline">
@@ -131,5 +154,6 @@ export default function RegisterPage() {
         </CardFooter>
       </form>
     </Card>
+    </motion.div>
   );
 }

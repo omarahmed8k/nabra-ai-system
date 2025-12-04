@@ -8,9 +8,14 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Nabra AI System - SaaS Project Management Platform",
+  title: "Nabra AI System - Service Marketplace",
   description:
     "Connect with service providers through a credit-based subscription model. Web development, design, video production, and more.",
+  icons: {
+    icon: "/images/favicon.svg",
+    shortcut: "/images/favicon.svg",
+    apple: "/images/favicon.svg",
+  },
 };
 
 export default function RootLayout({

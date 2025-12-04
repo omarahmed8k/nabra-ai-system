@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,10 +84,7 @@ export default function DashboardLayout({
           {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
         <Link href={basePath} className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-lg font-bold text-primary-foreground">N</span>
-          </div>
-          <span className="font-bold">Nabra</span>
+          <Image src="/images/logo.svg" alt="Nabra" width={32} height={32} className="w-auto h-8" />
         </Link>
       </div>
 
@@ -100,10 +98,7 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="flex h-16 items-center gap-2 border-b px-6">
             <Link href={basePath} className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-lg font-bold text-primary-foreground">N</span>
-              </div>
-              <span className="font-bold text-lg">Nabra</span>
+              <Image src="/images/logo.svg" alt="Nabra" width={32} height={32} className="w-auto h-8" />
             </Link>
           </div>
 

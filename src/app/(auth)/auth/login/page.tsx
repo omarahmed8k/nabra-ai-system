@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -81,10 +82,9 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
               <motion.div 
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center"
+                whileHover={{ scale: 1.1 }}
               >
-                <span className="text-xl font-bold text-primary-foreground">N</span>
+                <Image src="/images/favicon.svg" alt="Nabra" width={48} height={48} className="w-12 h-12" />
               </motion.div>
             </Link>
           </div>
