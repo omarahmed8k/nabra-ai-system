@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,6 @@ const priorityColors: Record<number, string> = {
 
 export default function AdminRequestDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const requestId = params.id as string;
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({ id: requestId });
@@ -151,7 +150,7 @@ export default function AdminRequestDetailPage() {
           {/* Comments/Activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Activity ({request._count?.comments || 0} comments)</CardTitle>
+              <CardTitle>Activity ({request.comments?.length || 0} comments)</CardTitle>
             </CardHeader>
             <CardContent>
               {request.comments && request.comments.length > 0 ? (
