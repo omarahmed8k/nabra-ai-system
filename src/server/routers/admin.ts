@@ -558,4 +558,140 @@ export const adminRouter = router({
         user,
       };
     }),
+
+  // Get all providers for assignment
+  getProviders: adminProcedure.query(async ({ ctx }) => {
+    const providers = await ctx.db.user.findMany({
+      where: { role: "PROVIDER" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        providerProfile: {
+          select: {
+            bio: true,
+            skillsTags: true,
+          },
+        },
+        _count: {
+          select: {
+            providerRequests: {
+              where: {
+                status: { in: ["PENDING", "IN_PROGRESS"] },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+
+    type ProviderWithProfile = typeof providers[number];
+
+    return providers.map((p: ProviderWithProfile) => ({
+      id: p.id,
+      name: p.name || p.email,
+      email: p.email,
+      bio: p.providerProfile?.bio || null,
+      skills: p.providerProfile?.skillsTags || [],
+      activeRequests: p._count.providerRequests,
+    }));
+  }),
+
+  // Assign request to provider
+  assignRequest: adminProcedure
+    .input(
+      z.object({
+        requestId: z.string(),
+        providerId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Verify the request exists
+      const request = await ctx.db.request.findUnique({
+        where: { id: input.requestId },
+        include: { provider: true },
+      });
+
+      if (!request) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Request not found",
+        });
+      }
+
+      // Verify the provider exists and is a provider
+      const provider = await ctx.db.user.findUnique({
+        where: { id: input.providerId },
+      });
+
+      if (provider?.role !== "PROVIDER") {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider not found",
+        });
+      }
+
+      // Update the request with the provider
+      const updatedRequest = await ctx.db.request.update({
+        where: { id: input.requestId },
+        data: {
+          providerId: input.providerId,
+          status: request.status === "PENDING" ? "IN_PROGRESS" : request.status,
+        },
+        include: {
+          client: { select: { id: true, name: true, email: true } },
+          provider: { select: { id: true, name: true, email: true } },
+          serviceType: true,
+        },
+      });
+
+      return {
+        success: true,
+        request: updatedRequest,
+        message: `Request assigned to ${provider.name || provider.email}`,
+      };
+    }),
+
+  // Unassign request from provider
+  unassignRequest: adminProcedure
+    .input(z.object({ requestId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const request = await ctx.db.request.findUnique({
+        where: { id: input.requestId },
+      });
+
+      if (!request) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Request not found",
+        });
+      }
+
+      if (!request.providerId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Request is not assigned to any provider",
+        });
+      }
+
+      const updatedRequest = await ctx.db.request.update({
+        where: { id: input.requestId },
+        data: {
+          providerId: null,
+          status: "PENDING",
+        },
+        include: {
+          client: { select: { id: true, name: true, email: true } },
+          provider: { select: { id: true, name: true, email: true } },
+          serviceType: true,
+        },
+      });
+
+      return {
+        success: true,
+        request: updatedRequest,
+        message: "Request unassigned successfully",
+      };
+    }),
 });

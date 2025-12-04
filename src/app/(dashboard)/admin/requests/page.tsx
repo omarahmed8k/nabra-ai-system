@@ -23,8 +23,10 @@ import {
   Loader2,
   PlayCircle,
   Package,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
+import { AssignProviderDialog } from "@/components/admin/assign-provider-dialog";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -60,8 +62,10 @@ type Request = {
 export default function AdminRequestsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
-  const { data, isLoading } = trpc.admin.getAllRequests.useQuery();
+  const { data, isLoading, refetch } = trpc.admin.getAllRequests.useQuery();
 
   const requests: Request[] = data?.requests || [];
 
@@ -81,6 +85,11 @@ export default function AdminRequestsPage() {
     pending: requests.filter((r: Request) => r.status === "PENDING").length,
     inProgress: requests.filter((r: Request) => r.status === "IN_PROGRESS").length,
     completed: requests.filter((r: Request) => r.status === "COMPLETED").length,
+  };
+
+  const handleAssignClick = (request: Request) => {
+    setSelectedRequest(request);
+    setAssignDialogOpen(true);
   };
 
   if (isLoading) {
@@ -209,6 +218,11 @@ export default function AdminRequestsPage() {
                         {statusIcons[request.status]}
                         {request.status.replace("_", " ")}
                       </Badge>
+                      {!request.provider && (
+                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                          Unassigned
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <span>
@@ -228,18 +242,38 @@ export default function AdminRequestsPage() {
                       </span>
                     </div>
                   </div>
-                  <Link href={`/admin/requests/${request.id}`}>
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAssignClick(request)}
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {request.provider ? "Reassign" : "Assign"}
                     </Button>
-                  </Link>
+                    <Link href={`/admin/requests/${request.id}`}>
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Assign Provider Dialog */}
+      {selectedRequest && (
+        <AssignProviderDialog
+          request={selectedRequest}
+          open={assignDialogOpen}
+          onOpenChange={setAssignDialogOpen}
+          onAssigned={() => refetch()}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,314 @@
+"use client";
+
+import { useState } from "react";
+import { UserPlus, Users, Briefcase, Loader2 } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Request {
+  id: string;
+  title: string;
+  status: string;
+  provider: {
+    id: string;
+    name: string | null;
+    email: string;
+  } | null;
+}
+
+interface Provider {
+  id: string;
+  name: string;
+  email: string;
+  bio: string | null;
+  skills: string[];
+  activeRequests: number;
+}
+
+interface AssignProviderDialogProps {
+  readonly request: Request;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly onAssigned: () => void;
+}
+
+// Helper component to render provider selector
+function ProviderSelector({
+  providers,
+  loadingProviders,
+  selectedProviderId,
+  onSelectProvider,
+  currentProviderId,
+}: {
+  readonly providers: Provider[] | undefined;
+  readonly loadingProviders: boolean;
+  readonly selectedProviderId: string;
+  readonly onSelectProvider: (id: string) => void;
+  readonly currentProviderId: string | undefined;
+}) {
+  if (loadingProviders) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!providers || providers.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p>No providers available</p>
+        <p className="text-xs">Add providers to assign requests</p>
+      </div>
+    );
+  }
+
+  return (
+    <Select value={selectedProviderId} onValueChange={onSelectProvider}>
+      <SelectTrigger>
+        <SelectValue placeholder="Choose a provider..." />
+      </SelectTrigger>
+      <SelectContent>
+        {providers.map((provider: Provider) => (
+          <SelectItem
+            key={provider.id}
+            value={provider.id}
+            disabled={provider.id === currentProviderId}
+          >
+            <div className="flex items-center gap-2">
+              <span>{provider.name}</span>
+              <Badge variant="outline" className="text-xs">
+                {provider.activeRequests} active
+              </Badge>
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+// Helper component to render selected provider info
+function SelectedProviderInfo({
+  providers,
+  selectedProviderId,
+}: {
+  readonly providers: Provider[] | undefined;
+  readonly selectedProviderId: string;
+}) {
+  const selected = providers?.find((p: Provider) => p.id === selectedProviderId);
+  if (!selected) return null;
+
+  return (
+    <div className="rounded-lg border p-4">
+      <p className="text-sm font-medium mb-2">Selected Provider:</p>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
+            <Users className="h-4 w-4 text-green-600" />
+          </div>
+          <div>
+            <p className="font-medium">{selected.name}</p>
+            <p className="text-xs text-muted-foreground">{selected.email}</p>
+          </div>
+        </div>
+        {selected.bio && (
+          <p className="text-sm text-muted-foreground">{selected.bio}</p>
+        )}
+        {selected.skills.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {selected.skills.slice(0, 5).map((skill: string) => (
+              <Badge key={skill} variant="secondary" className="text-xs">
+                {skill}
+              </Badge>
+            ))}
+            {selected.skills.length > 5 && (
+              <Badge variant="secondary" className="text-xs">
+                +{selected.skills.length - 5} more
+              </Badge>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function AssignProviderDialog({
+  request,
+  open,
+  onOpenChange,
+  onAssigned,
+}: AssignProviderDialogProps) {
+  const [selectedProviderId, setSelectedProviderId] = useState<string>(
+    request.provider?.id || ""
+  );
+
+  const { data: providers, isLoading: loadingProviders } =
+    trpc.admin.getProviders.useQuery(undefined, {
+      enabled: open,
+    });
+
+  const assignMutation = trpc.admin.assignRequest.useMutation({
+    onSuccess: (data: { message: string }) => {
+      toast.success(data.message);
+      onOpenChange(false);
+      onAssigned();
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || "Failed to assign request");
+    },
+  });
+
+  const unassignMutation = trpc.admin.unassignRequest.useMutation({
+    onSuccess: (data: { message: string }) => {
+      toast.success(data.message);
+      onOpenChange(false);
+      onAssigned();
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || "Failed to unassign request");
+    },
+  });
+
+  const handleAssign = () => {
+    if (!selectedProviderId) {
+      toast.error("Please select a provider");
+      return;
+    }
+
+    assignMutation.mutate({
+      requestId: request.id,
+      providerId: selectedProviderId,
+    });
+  };
+
+  const handleUnassign = () => {
+    unassignMutation.mutate({ requestId: request.id });
+  };
+
+  const isLoading = assignMutation.isPending || unassignMutation.isPending;
+  const currentProvider = (providers as Provider[] | undefined)?.find((p: Provider) => p.id === request.provider?.id);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5" />
+            Assign Provider
+          </DialogTitle>
+          <DialogDescription>
+            Assign a provider to handle the request: <strong>{request.title}</strong>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {/* Current Assignment */}
+          {request.provider && (
+            <div className="rounded-lg border p-4 bg-muted/50">
+              <p className="text-sm font-medium mb-2">Currently Assigned:</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {currentProvider?.name || request.provider.name || request.provider.email}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {currentProvider?.activeRequests ?? 0} active request(s)
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleUnassign}
+                  disabled={isLoading}
+                >
+                  {unassignMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Unassign"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Provider Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {request.provider ? "Reassign to:" : "Select Provider:"}
+            </label>
+            <ProviderSelector
+              providers={providers as Provider[] | undefined}
+              loadingProviders={loadingProviders}
+              selectedProviderId={selectedProviderId}
+              onSelectProvider={setSelectedProviderId}
+              currentProviderId={request.provider?.id}
+            />
+          </div>
+
+          {/* Selected Provider Info */}
+          {selectedProviderId && selectedProviderId !== request.provider?.id && (
+            <SelectedProviderInfo
+              providers={providers as Provider[] | undefined}
+              selectedProviderId={selectedProviderId}
+            />
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAssign}
+            disabled={
+              isLoading ||
+              !selectedProviderId ||
+              selectedProviderId === request.provider?.id
+            }
+          >
+            {assignMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Assigning...
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4 mr-2" />
+                {request.provider ? "Reassign" : "Assign"} Provider
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
