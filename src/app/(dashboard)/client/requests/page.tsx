@@ -65,7 +65,7 @@ export default function RequestsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {requestsData?.requests.map((request) => (
+              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; provider?: { name: string | null } | null; _count: { comments: number } }) => (
                 <Link
                   key={request.id}
                   href={`/client/requests/${request.id}`}

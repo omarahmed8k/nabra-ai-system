@@ -30,7 +30,7 @@ export default function NewRequestPage() {
   const router = useRouter();
   const [selectedServiceType, setSelectedServiceType] = useState("");
 
-  const { data: serviceTypes, isLoading: typesLoading } =
+  const { data: serviceTypes } =
     trpc.request.getServiceTypes.useQuery();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
 
@@ -52,7 +52,7 @@ export default function NewRequestPage() {
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const priority = parseInt(formData.get("priority") as string) || 2;
+    const priority = Number.parseInt(formData.get("priority") as string) || 2;
 
     if (!selectedServiceType) {
       toast.error("Validation Error", {
@@ -139,7 +139,7 @@ export default function NewRequestPage() {
                   <SelectValue placeholder="Select a service type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceTypes?.map((type) => (
+                  {serviceTypes?.map((type: { id: string; name: string; icon: string | null }) => (
                     <SelectItem key={type.id} value={type.id}>
                       {type.icon} {type.name}
                     </SelectItem>

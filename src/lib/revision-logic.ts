@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
 import { deductCredits } from "@/lib/credit-logic";
-import { RequestStatus } from "@prisma/client";
 
 export interface RevisionResult {
   allowed: boolean;
@@ -70,7 +69,7 @@ export async function handleRevisionRequest(
   }
 
   // Check request status - must be DELIVERED
-  if (request.status !== RequestStatus.DELIVERED) {
+  if (request.status !== "DELIVERED") {
     return {
       allowed: false,
       isFree: false,
@@ -114,7 +113,7 @@ export async function handleRevisionRequest(
       data: {
         currentRevisionCount: currentCount + 1,
         totalRevisions: request.totalRevisions + 1,
-        status: RequestStatus.REVISION_REQUESTED,
+        status: "REVISION_REQUESTED",
       },
     });
 
@@ -182,9 +181,9 @@ export async function handleRevisionRequest(
   const updatedRequest = await db.request.update({
     where: { id: requestId },
     data: {
-      currentRevisionCount: 0, // RESET!
-      totalRevisions: request.totalRevisions + 1,
-      status: RequestStatus.REVISION_REQUESTED,
+        currentRevisionCount: 0, // RESET!
+        totalRevisions: request.totalRevisions + 1,
+        status: "REVISION_REQUESTED",
     },
   });
 

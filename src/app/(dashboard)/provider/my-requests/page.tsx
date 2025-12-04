@@ -54,7 +54,7 @@ export default function MyRequestsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {requestsData?.requests.map((request) => (
+              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; client: { name: string | null }; _count: { comments: number } }) => (
                 <Link
                   key={request.id}
                   href={`/provider/requests/${request.id}`}

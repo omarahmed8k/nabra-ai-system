@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
-import { formatDate, formatCurrency, calculateDaysRemaining } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { Check, CreditCard, AlertCircle } from "lucide-react";
 
 export default function SubscriptionPage() {
@@ -140,7 +139,7 @@ export default function SubscriptionPage() {
         <div className="grid gap-6 md:grid-cols-3">
           {isLoading
             ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-96" />)
-            : packages?.map((pkg) => {
+            : packages?.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; features: string[] }) => {
                 const isCurrentPlan = subscription?.package.id === pkg.id;
                 return (
                   <Card
@@ -171,8 +170,8 @@ export default function SubscriptionPage() {
                           <Check className="h-4 w-4 text-green-500" />
                           <span>{pkg.maxFreeRevisions} free revisions/request</span>
                         </li>
-                        {pkg.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2">
+                        {pkg.features.map((feature: string, i: number) => (
+                          <li key={feature} className="flex items-center gap-2">
                             <Check className="h-4 w-4 text-green-500" />
                             <span className="text-sm">{feature}</span>
                           </li>

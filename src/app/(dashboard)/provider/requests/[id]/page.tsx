@@ -256,7 +256,7 @@ export default function ProviderRequestDetailPage() {
                 </p>
               ) : (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {request.comments.map((comment) => (
+                  {request.comments.map((comment: { id: string; content: string; type: string; createdAt: Date; user: { name: string | null; image: string | null } }) => (
                     <div
                       key={comment.id}
                       className={`flex gap-3 ${

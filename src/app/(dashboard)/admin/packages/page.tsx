@@ -158,7 +158,7 @@ export default function AdminPackagesPage() {
       <div className="grid gap-6 md:grid-cols-3">
         {isLoading
           ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)
-          : packages?.map((pkg) =>
+          : packages?.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; durationDays: number; features: string[] }) =>
               editingId === pkg.id ? (
                 <Card key={pkg.id}>
                   <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
@@ -238,8 +238,8 @@ export default function AdminPackagesPage() {
                       <li>{pkg.credits} credits</li>
                       <li>{pkg.maxFreeRevisions} free revisions/request</li>
                       <li>{pkg.durationDays} day duration</li>
-                      {pkg.features.map((feature, i) => (
-                        <li key={i} className="text-muted-foreground">
+                      {pkg.features.map((feature: string, i: number) => (
+                        <li key={feature} className="text-muted-foreground">
                           • {feature}
                         </li>
                       ))}

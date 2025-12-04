@@ -139,7 +139,7 @@ export default function AdminServicesPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {services?.map((service) =>
+              {services?.map((service: { id: string; name: string; description: string | null; icon: string | null }) =>
                 editingId === service.id ? (
                   <form
                     key={service.id}

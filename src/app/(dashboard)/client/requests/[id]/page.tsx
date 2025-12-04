@@ -141,7 +141,6 @@ export default function RequestDetailPage() {
   }
 
   const canApprove = request.status === "DELIVERED";
-  const canRequestRevision = request.status === "DELIVERED";
   const canRate = request.status === "COMPLETED" && !request.rating;
   const revisionInfo = request.revisionInfo;
 
@@ -309,7 +308,7 @@ export default function RequestDetailPage() {
                 </p>
               ) : (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {request.comments.map((comment) => (
+                  {request.comments.map((comment: { id: string; type: string; content: string; createdAt: Date; user: { name: string | null; image: string | null }; files: string[] }) => (
                     <div
                       key={comment.id}
                       className={`flex gap-3 ${
@@ -345,9 +344,9 @@ export default function RequestDetailPage() {
                         </p>
                         {comment.files.length > 0 && (
                           <div className="mt-2 space-y-1">
-                            {comment.files.map((file, i) => (
+                            {comment.files.map((file: string, i: number) => (
                               <a
-                                key={i}
+                                key={`${comment.id}-file-${i}`}
                                 href={file}
                                 target="_blank"
                                 rel="noopener noreferrer"

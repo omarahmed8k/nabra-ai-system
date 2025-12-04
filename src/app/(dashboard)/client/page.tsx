@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
-import { formatDate, getStatusColor, formatCurrency } from "@/lib/utils";
+import { formatDate, getStatusColor } from "@/lib/utils";
 import { Plus, CreditCard, FileText, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
@@ -180,7 +180,7 @@ export default function ClientDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {requestsData?.requests.map((request) => (
+              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                 <Link
                   key={request.id}
                   href={`/client/requests/${request.id}`}

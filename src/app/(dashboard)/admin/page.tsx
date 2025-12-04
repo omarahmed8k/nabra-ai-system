@@ -36,7 +36,6 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
-  Legend,
 } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
@@ -211,9 +210,9 @@ export default function AdminDashboard() {
                     dataKey="count"
                     nameKey="status"
                   >
-                    {(analytics?.requestsByStatus || []).map((entry, index) => (
+                    {(analytics?.requestsByStatus || []).map((entry: { status: string; count: number }, index: number) => (
                       <Cell 
-                        key={`cell-${index}`} 
+                        key={`cell-${entry.status}`} 
                         fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]} 
                       />
                     ))}
@@ -301,9 +300,9 @@ export default function AdminDashboard() {
               </div>
             ) : (analytics?.topProviders?.length || 0) > 0 ? (
               <div className="space-y-4">
-                {analytics?.topProviders?.map((provider, index) => (
+                {analytics?.topProviders?.map((provider: { name: string; completedRequests: number }, index: number) => (
                   <div
-                    key={index}
+                    key={provider.name || index}
                     className="flex items-center justify-between p-3 bg-muted rounded-lg"
                   >
                     <div className="flex items-center gap-3">
@@ -352,7 +351,7 @@ export default function AdminDashboard() {
               </div>
             ) : (subscriptionsData?.subscriptions?.length || 0) > 0 ? (
               <div className="space-y-4">
-                {subscriptionsData?.subscriptions?.map((sub) => (
+                {subscriptionsData?.subscriptions?.map((sub: { id: string; user: { name: string | null; email: string }; package: { name: string; price: number }; remainingCredits: number }) => (
                   <div
                     key={sub.id}
                     className="flex items-center justify-between p-3 bg-muted rounded-lg"

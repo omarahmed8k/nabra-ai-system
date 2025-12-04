@@ -1,4 +1,4 @@
-import { PrismaClient, Role, RequestStatus } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -262,7 +262,7 @@ async function main() {
       name: "Super Admin",
       email: "admin@nabra.com",
       password: hashedAdminPassword,
-      role: Role.SUPER_ADMIN,
+      role: "SUPER_ADMIN",
     },
   });
 
@@ -271,7 +271,7 @@ async function main() {
       name: "Alex Designer",
       email: "designer@nabra.com",
       password: hashedProviderPassword,
-      role: Role.PROVIDER,
+      role: "PROVIDER",
       providerProfile: {
         create: {
           bio: "Professional graphic designer with 8+ years of experience in branding, UI/UX, and illustration.",
@@ -287,7 +287,7 @@ async function main() {
       name: "Sam Developer",
       email: "developer@nabra.com",
       password: hashedProviderPassword,
-      role: Role.PROVIDER,
+      role: "PROVIDER",
       providerProfile: {
         create: {
           bio: "Full-stack developer specializing in React, Next.js, and Node.js. Building scalable web applications.",
@@ -303,7 +303,7 @@ async function main() {
       name: "Jordan Video",
       email: "video@nabra.com",
       password: hashedProviderPassword,
-      role: Role.PROVIDER,
+      role: "PROVIDER",
       providerProfile: {
         create: {
           bio: "Video editor and motion graphics artist. Creating stunning visuals for brands worldwide.",
@@ -319,7 +319,7 @@ async function main() {
       name: "Chris Client",
       email: "client@example.com",
       password: hashedClientPassword,
-      role: Role.CLIENT,
+      role: "CLIENT",
     },
   });
 
@@ -328,7 +328,7 @@ async function main() {
       name: "Taylor Business",
       email: "taylor@company.com",
       password: hashedClientPassword,
-      role: Role.CLIENT,
+      role: "CLIENT",
     },
   });
 
@@ -371,7 +371,7 @@ async function main() {
       clientId: client.id,
       providerId: developer.id,
       serviceTypeId: serviceTypes[0].id, // Web Development
-      status: RequestStatus.IN_PROGRESS,
+      status: "IN_PROGRESS",
       priority: 3,
       formData: JSON.stringify({
         projectType: "Web App",
@@ -392,7 +392,7 @@ async function main() {
       clientId: client.id,
       providerId: designer.id,
       serviceTypeId: serviceTypes[1].id, // Graphic Design
-      status: RequestStatus.DELIVERED,
+      status: "DELIVERED",
       priority: 2,
       formData: JSON.stringify({
         designType: "Logo",
@@ -412,7 +412,7 @@ async function main() {
         "We're launching a new SaaS product and need a 60-second promo video. Should be energetic, modern, and highlight key features.",
       clientId: client2.id,
       serviceTypeId: serviceTypes[2].id, // Video Production
-      status: RequestStatus.PENDING,
+      status: "PENDING",
       priority: 3,
       formData: JSON.stringify({
         videoType: "Promo Video",
@@ -430,7 +430,7 @@ async function main() {
       clientId: client2.id,
       providerId: developer.id, // Reusing for demo
       serviceTypeId: serviceTypes[3].id, // Content Writing
-      status: RequestStatus.COMPLETED,
+      status: "COMPLETED",
       priority: 1,
       formData: JSON.stringify({
         contentType: "Blog Post",

@@ -50,7 +50,7 @@ export default function AvailableJobsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {requestsData?.requests.map((request) => (
+              {requestsData?.requests.map((request: { id: string; title: string; description: string; priority: number; createdAt: Date; serviceType: { name: string; icon: string | null } }) => (
                 <div
                   key={request.id}
                   className="p-4 rounded-lg border hover:bg-muted/50 transition-colors"

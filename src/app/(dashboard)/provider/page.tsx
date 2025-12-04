@@ -149,7 +149,7 @@ export default function ProviderDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {myRequests?.requests.map((request) => (
+                {myRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                   <Link
                     key={request.id}
                     href={`/provider/requests/${request.id}`}
@@ -200,7 +200,7 @@ export default function ProviderDashboard() {
               </div>
             ) : (
               <div className="space-y-4">
-                {availableRequests?.requests.map((request) => (
+                {availableRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                   <Link
                     key={request.id}
                     href={`/provider/available/${request.id}`}

@@ -29,7 +29,6 @@ import {
   FileText,
   CreditCard,
   CheckCircle,
-  Clock,
   Star,
 } from "lucide-react";
 
@@ -67,9 +66,9 @@ export default function AdminUsersPage() {
   const allUsers = users?.users || [];
   const stats = {
     total: users?.total || 0,
-    clients: allUsers.filter((u) => u.role === "CLIENT").length,
-    providers: allUsers.filter((u) => u.role === "PROVIDER").length,
-    admins: allUsers.filter((u) => u.role === "SUPER_ADMIN").length,
+    clients: allUsers.filter((u: { role: string }) => u.role === "CLIENT").length,
+    providers: allUsers.filter((u: { role: string }) => u.role === "PROVIDER").length,
+    admins: allUsers.filter((u: { role: string }) => u.role === "SUPER_ADMIN").length,
   };
 
   return (
@@ -174,7 +173,7 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {users?.users.map((user) => (
+              {users?.users.map((user: { id: string; name: string | null; email: string; image: string | null; role: string; createdAt: Date; providerProfile?: { id: string } | null; _count: { clientRequests: number; providerRequests: number; clientSubscriptions: number } }) => (
                 <div
                   key={user.id}
                   className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors gap-4"

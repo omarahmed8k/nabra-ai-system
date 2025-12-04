@@ -3,7 +3,6 @@ import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { deductCredits, checkCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
-import { RequestStatus } from "@prisma/client";
 
 export const requestRouter = router({
   // Create a new request (client only)
@@ -78,7 +77,7 @@ export const requestRouter = router({
   getAll: protectedProcedure
     .input(
       z.object({
-        status: z.nativeEnum(RequestStatus).optional(),
+        status: z.enum(["PENDING", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED", "CANCELLED"]).optional(),
         limit: z.number().min(1).max(100).default(20),
         cursor: z.string().optional(),
       }).optional()
@@ -96,7 +95,6 @@ export const requestRouter = router({
         const profile = await ctx.db.providerProfile.findUnique({
           where: { userId },
         });
-        const skills = profile?.skillsTags || [];
 
         where = {
           OR: [

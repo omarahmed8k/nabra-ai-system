@@ -31,7 +31,7 @@ export default function NotificationsPage() {
     },
   });
 
-  const unreadCount = notifications?.notifications.filter((n) => !n.isRead).length || 0;
+  const unreadCount = notifications?.notifications.filter((n: { isRead: boolean }) => !n.isRead).length || 0;
 
   return (
     <div className="space-y-6">
@@ -78,7 +78,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {notifications?.notifications.map((notification) => (
+              {notifications?.notifications.map((notification: { id: string; title: string; message: string; isRead: boolean; createdAt: Date }) => (
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border transition-colors ${

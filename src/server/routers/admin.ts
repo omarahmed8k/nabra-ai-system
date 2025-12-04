@@ -36,7 +36,7 @@ export const adminRouter = router({
       }),
     ]);
 
-    const revenue = totalRevenue.reduce((sum, sub) => sum + sub.package.price, 0);
+    const revenue = totalRevenue.reduce((sum: number, sub: { package: { price: number } }) => sum + sub.package.price, 0);
 
     return {
       totalUsers,
@@ -67,7 +67,7 @@ export const adminRouter = router({
       include: { package: true },
     });
 
-    const packageCounts = subscriptionsByPackage.reduce((acc: Record<string, number>, sub) => {
+    const packageCounts = subscriptionsByPackage.reduce((acc: Record<string, number>, sub: { package: { name: string } }) => {
       const name = sub.package.name;
       acc[name] = (acc[name] || 0) + 1;
       return acc;
@@ -80,7 +80,7 @@ export const adminRouter = router({
     });
 
     const serviceTypes = await ctx.db.serviceType.findMany();
-    const serviceMap = serviceTypes.reduce((acc: Record<string, string>, s) => {
+    const serviceMap = serviceTypes.reduce((acc: Record<string, string>, s: { id: string; name: string }) => {
       acc[s.id] = s.name;
       return acc;
     }, {});
@@ -115,11 +115,11 @@ export const adminRouter = router({
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const monthName = months[date.getMonth()];
-      const monthSubs = subscriptions.filter(s => {
+      const monthSubs = subscriptions.filter((s: { createdAt: Date }) => {
         const subDate = new Date(s.createdAt);
         return subDate.getMonth() === date.getMonth() && subDate.getFullYear() === date.getFullYear();
       });
-      const revenue = monthSubs.reduce((sum, s) => sum + s.package.price, 0);
+      const revenue = monthSubs.reduce((sum: number, s: { package: { price: number } }) => sum + s.package.price, 0);
       monthlyRevenue.push({ month: monthName, revenue });
     }
 
@@ -135,14 +135,14 @@ export const adminRouter = router({
       take: 5,
     });
 
-    const providerIds = topProviders.map(p => p.providerId).filter(Boolean) as string[];
+    const providerIds = topProviders.map((p: { providerId: string | null }) => p.providerId).filter(Boolean) as string[];
     const providers = await ctx.db.user.findMany({
       where: { id: { in: providerIds } },
       select: { id: true, name: true, email: true },
     });
 
-    const topProvidersWithInfo = topProviders.map(p => {
-      const provider = providers.find(u => u.id === p.providerId);
+    const topProvidersWithInfo = topProviders.map((p: { providerId: string | null; _count: { id: number } }) => {
+      const provider = providers.find((u: { id: string }) => u.id === p.providerId);
       return {
         name: provider?.name || provider?.email || 'Unknown',
         completedRequests: p._count.id,
@@ -150,7 +150,7 @@ export const adminRouter = router({
     });
 
     return {
-      requestsByStatus: requestsByStatus.map(r => ({
+      requestsByStatus: requestsByStatus.map((r: { status: string; _count: { id: number } }) => ({
         status: r.status,
         count: r._count.id,
       })),
@@ -158,7 +158,7 @@ export const adminRouter = router({
         name,
         count,
       })),
-      requestsByService: requestsByService.map(r => ({
+      requestsByService: requestsByService.map((r: { serviceTypeId: string; _count: { id: number } }) => ({
         service: serviceMap[r.serviceTypeId] || 'Unknown',
         count: r._count.id,
       })),
@@ -238,7 +238,7 @@ export const adminRouter = router({
       }),
     ]);
 
-    const revenue = totalRevenue.reduce((sum, sub) => sum + sub.package.price, 0);
+    const revenue = totalRevenue.reduce((sum: number, sub: { package: { price: number } }) => sum + sub.package.price, 0);
 
     // Get recent requests
     const recentRequests = await ctx.db.request.findMany({
