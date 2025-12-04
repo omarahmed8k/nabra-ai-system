@@ -37,13 +37,14 @@ export default function MyRequestsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          ) : requestsData?.requests.length === 0 ? (
+          )}
+          {!isLoading && requestsData?.requests.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p className="text-lg font-medium">No requests yet</p>
@@ -52,7 +53,8 @@ export default function MyRequestsPage() {
                 <Button className="mt-4">Browse Available Jobs</Button>
               </Link>
             </div>
-          ) : (
+          )}
+          {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
               {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; client: { name: string | null }; _count: { comments: number } }) => (
                 <Link

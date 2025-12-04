@@ -44,7 +44,7 @@ export function CardLoader() {
   );
 }
 
-export function SpinnerLoader({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
+export function SpinnerLoader({ size = "md" }: Readonly<{ size?: "sm" | "md" | "lg" }>) {
   const sizeClasses = {
     sm: "w-4 h-4 border-2",
     md: "w-8 h-8 border-3",

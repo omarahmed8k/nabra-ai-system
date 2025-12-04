@@ -256,9 +256,9 @@ export default function LandingPage() {
             variants={staggerContainer}
             className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
           >
-            {features.map((feature, index) => (
+            {features.map((feature) => (
               <motion.div
-                key={index}
+                key={feature.title}
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
@@ -308,9 +308,9 @@ export default function LandingPage() {
             variants={staggerContainer}
             className="grid gap-8 md:grid-cols-3"
           >
-            {packages.map((pkg, index) => (
+            {packages.map((pkg) => (
               <motion.div
-                key={index}
+                key={pkg.name}
                 variants={scaleIn}
                 whileHover={{ 
                   y: -10, 
@@ -346,7 +346,7 @@ export default function LandingPage() {
                     <ul className="space-y-3">
                       {pkg.features.map((feature, featureIndex) => (
                         <motion.li 
-                          key={featureIndex} 
+                          key={feature} 
                           className="flex items-center gap-2"
                           initial={{ opacity: 0, x: -10 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -419,9 +419,9 @@ export default function LandingPage() {
                 title: "Get Results",
                 description: "Review deliverables, request revisions if needed, and approve when satisfied.",
               },
-            ].map((item, index) => (
+            ].map((item) => (
               <motion.div
-                key={index}
+                key={item.step}
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
                 className="text-center"

@@ -62,6 +62,7 @@ export default function LoginPage() {
       }
       router.refresh();
     } catch (err) {
+      console.error("Login error:", err);
       toast.error("Error", {
         description: "An error occurred. Please try again.",
       });

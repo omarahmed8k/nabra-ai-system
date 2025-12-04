@@ -7,13 +7,13 @@ import superjson from "superjson";
 import { trpc } from "@/lib/trpc/client";
 
 function getBaseUrl() {
-  if (typeof window !== "undefined") return "";
+  if (globalThis.window !== undefined) return "";
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 
 interface Props {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 export function TRPCProvider({ children }: Props) {

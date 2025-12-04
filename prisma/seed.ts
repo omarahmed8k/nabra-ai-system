@@ -298,7 +298,7 @@ async function main() {
     },
   });
 
-  const videoEditor = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: "Jordan Video",
       email: "video@nabra.com",
@@ -338,7 +338,7 @@ async function main() {
   const now = new Date();
   const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-  const subscription1 = await prisma.clientSubscription.create({
+  await prisma.clientSubscription.create({
     data: {
       userId: client.id,
       packageId: packages[1].id, // Professional
@@ -349,7 +349,7 @@ async function main() {
     },
   });
 
-  const subscription2 = await prisma.clientSubscription.create({
+  await prisma.clientSubscription.create({
     data: {
       userId: client2.id,
       packageId: packages[2].id, // Enterprise
@@ -405,7 +405,7 @@ async function main() {
     },
   });
 
-  const request3 = await prisma.request.create({
+  await prisma.request.create({
     data: {
       title: "Product Launch Video",
       description:
@@ -538,12 +538,11 @@ async function main() {
   console.log("─".repeat(50));
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+try {
+  await main();
+  await prisma.$disconnect();
+} catch (e) {
+  console.error(e);
+  await prisma.$disconnect();
+  process.exit(1);
+}

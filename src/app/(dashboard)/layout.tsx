@@ -43,23 +43,29 @@ const adminNavItems = [
 
 export default function DashboardLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const role = session?.user?.role;
-  const navItems =
-    role === "SUPER_ADMIN"
-      ? adminNavItems
-      : role === "PROVIDER"
-      ? providerNavItems
-      : clientNavItems;
-
-  const basePath =
-    role === "SUPER_ADMIN" ? "/admin" : role === "PROVIDER" ? "/provider" : "/client";
+  
+  const getNavItems = () => {
+    if (role === "SUPER_ADMIN") return adminNavItems;
+    if (role === "PROVIDER") return providerNavItems;
+    return clientNavItems;
+  };
+  
+  const getBasePath = () => {
+    if (role === "SUPER_ADMIN") return "/admin";
+    if (role === "PROVIDER") return "/provider";
+    return "/client";
+  };
+  
+  const navItems = getNavItems();
+  const basePath = getBasePath();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -154,8 +160,10 @@ export default function DashboardLayout({
 
       {/* Overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden cursor-default"
           onClick={() => setSidebarOpen(false)}
         />
       )}

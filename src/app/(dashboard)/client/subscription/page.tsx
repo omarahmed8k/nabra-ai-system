@@ -59,9 +59,8 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Current Subscription */}
-      {isLoading ? (
-        <Skeleton className="h-48 w-full" />
-      ) : subscription ? (
+      {isLoading && <Skeleton className="h-48 w-full" />}
+      {!isLoading && subscription && (
         <Card className="border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -120,7 +119,8 @@ export default function SubscriptionPage() {
             </Button>
           </CardFooter>
         </Card>
-      ) : (
+      )}
+      {!isLoading && !subscription && (
         <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
             <CardTitle className="text-orange-800">No Active Subscription</CardTitle>
@@ -188,13 +188,12 @@ export default function SubscriptionPage() {
                         }
                         onClick={() => handleSubscribe(pkg.id)}
                       >
-                        {subscribeMutation.isPending
-                          ? "Processing..."
-                          : isCurrentPlan
-                          ? "Current Plan"
-                          : subscription
-                          ? "Cancel first to switch"
-                          : "Subscribe"}
+                        {(() => {
+                          if (subscribeMutation.isPending) return "Processing...";
+                          if (isCurrentPlan) return "Current Plan";
+                          if (subscription) return "Cancel first to switch";
+                          return "Subscribe";
+                        })()}
                       </Button>
                     </CardFooter>
                   </Card>

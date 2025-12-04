@@ -105,7 +105,7 @@ export const providerRouter = router({
       const userId = ctx.session.user.id;
 
       // Get provider's skills
-      const profile = await ctx.db.providerProfile.findUnique({
+      await ctx.db.providerProfile.findUnique({
         where: { userId },
       });
 
@@ -131,7 +131,7 @@ export const providerRouter = router({
 
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests[requests.length - 1].id : null,
+        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
       };
     }),
 
@@ -172,7 +172,7 @@ export const providerRouter = router({
 
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests[requests.length - 1].id : null,
+        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
       };
     }),
 

@@ -161,17 +161,19 @@ export default function AdminUsersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          ) : users?.users.length === 0 ? (
+          )}
+          {!isLoading && users?.users.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               No users found
             </div>
-          ) : (
+          )}
+          {!isLoading && (users?.users.length ?? 0) > 0 && (
             <div className="space-y-4">
               {users?.users.map((user: { id: string; name: string | null; email: string; image: string | null; role: string; createdAt: Date; providerProfile?: { id: string } | null; _count: { clientRequests: number; providerRequests: number; clientSubscriptions: number } }) => (
                 <div

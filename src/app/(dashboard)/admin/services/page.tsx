@@ -127,17 +127,19 @@ export default function AdminServicesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
-          ) : services?.length === 0 ? (
+          )}
+          {!isLoading && services?.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               No service types yet
             </div>
-          ) : (
+          )}
+          {!isLoading && (services?.length ?? 0) > 0 && (
             <div className="space-y-4">
               {services?.map((service: { id: string; name: string; description: string | null; icon: string | null }) =>
                 editingId === service.id ? (

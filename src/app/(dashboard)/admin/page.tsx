@@ -54,7 +54,85 @@ export default function AdminDashboard() {
   const { data: analytics, isLoading: analyticsLoading } = trpc.admin.getAnalytics.useQuery();
   const { data: subscriptionsData, isLoading: subsLoading } = trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
 
-  const isLoading = statsLoading || analyticsLoading;
+  const renderTopProviders = () => {
+    if (analyticsLoading) {
+      return (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
+      );
+    }
+    if ((analytics?.topProviders?.length || 0) === 0) {
+      return (
+        <p className="text-center text-muted-foreground py-8">
+          No completed requests yet
+        </p>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        {analytics?.topProviders?.map((provider: { name: string; completedRequests: number }, index: number) => (
+          <div
+            key={provider.name || index}
+            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {index + 1}
+              </div>
+              <span className="font-medium">{provider.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="font-bold">{provider.completedRequests}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderRecentSubscriptions = () => {
+    if (subsLoading) {
+      return (
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
+      );
+    }
+    if ((subscriptionsData?.subscriptions?.length || 0) === 0) {
+      return (
+        <p className="text-center text-muted-foreground py-8">
+          No subscriptions yet
+        </p>
+      );
+    }
+    return (
+      <div className="space-y-4">
+        {subscriptionsData?.subscriptions?.map((sub: { id: string; user: { name: string | null; email: string }; package: { name: string; price: number }; remainingCredits: number }) => (
+          <div
+            key={sub.id}
+            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+          >
+            <div>
+              <p className="font-medium">{sub.user.name || sub.user.email}</p>
+              <p className="text-sm text-muted-foreground">{sub.package.name}</p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold">${sub.package.price}</p>
+              <p className="text-xs text-muted-foreground">
+                {sub.remainingCredits} credits left
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -292,37 +370,7 @@ export default function AdminDashboard() {
             <CardDescription>By completed requests</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : (analytics?.topProviders?.length || 0) > 0 ? (
-              <div className="space-y-4">
-                {analytics?.topProviders?.map((provider: { name: string; completedRequests: number }, index: number) => (
-                  <div
-                    key={provider.name || index}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {index + 1}
-                      </div>
-                      <span className="font-medium">{provider.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="font-bold">{provider.completedRequests}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">
-                No completed requests yet
-              </p>
-            )}
+            {renderTopProviders()}
           </CardContent>
         </Card>
 
@@ -343,37 +391,7 @@ export default function AdminDashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            {subsLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : (subscriptionsData?.subscriptions?.length || 0) > 0 ? (
-              <div className="space-y-4">
-                {subscriptionsData?.subscriptions?.map((sub: { id: string; user: { name: string | null; email: string }; package: { name: string; price: number }; remainingCredits: number }) => (
-                  <div
-                    key={sub.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium">{sub.user.name || sub.user.email}</p>
-                      <p className="text-sm text-muted-foreground">{sub.package.name}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">${sub.package.price}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {sub.remainingCredits} credits left
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">
-                No subscriptions yet
-              </p>
-            )}
+            {renderRecentSubscriptions()}
           </CardContent>
         </Card>
       </div>

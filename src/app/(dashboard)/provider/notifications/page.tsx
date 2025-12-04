@@ -58,17 +58,18 @@ export default function ProviderNotificationsPage() {
         <CardHeader>
           <CardTitle>All Notifications</CardTitle>
           <CardDescription>
-            {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
+            {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
-          ) : notifications?.notifications.length === 0 ? (
+          )}
+          {!isLoading && notifications?.notifications.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p className="text-lg font-medium">No notifications</p>
@@ -76,9 +77,10 @@ export default function ProviderNotificationsPage() {
                 You&apos;ll see updates about your jobs here
               </p>
             </div>
-          ) : (
+          )}
+          {!isLoading && (notifications?.notifications.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {notifications?.notifications.map((notification: { id: string; title: string; message: string; isRead: boolean; createdAt: Date }) => (
+              {notifications?.notifications.map((notification: { id: string; title: string; message: string; type: string; isRead: boolean; createdAt: Date; link: string | null }) => (
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border transition-colors ${

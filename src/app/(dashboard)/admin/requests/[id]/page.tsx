@@ -132,7 +132,7 @@ export default function AdminRequestDetailPage() {
                 <div className="space-y-2">
                   {request.attachments.map((url: string, index: number) => (
                     <a
-                      key={index}
+                      key={url}
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"

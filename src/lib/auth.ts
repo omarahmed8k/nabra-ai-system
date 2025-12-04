@@ -3,13 +3,15 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+type UserRole = "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
+
 declare module "next-auth" {
   interface Session {
     user: {
       id: string;
       email: string;
       name: string;
-      role: "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
+      role: UserRole;
       image?: string | null;
     };
   }
@@ -18,7 +20,7 @@ declare module "next-auth" {
     id: string;
     email: string;
     name: string;
-    role: "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
+    role: UserRole;
     image?: string | null;
   }
 }
@@ -26,7 +28,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
+    role: UserRole;
   }
 }
 
@@ -55,7 +57,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
-        if (!user || !user.password) {
+        if (!user?.password) {
           throw new Error("Invalid email or password");
         }
 

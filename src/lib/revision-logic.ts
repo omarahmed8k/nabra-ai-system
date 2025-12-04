@@ -236,7 +236,7 @@ export async function getRevisionInfo(
     where: { id: requestId },
   });
 
-  if (!request || request.clientId !== userId) {
+  if (request?.clientId !== userId) {
     return {
       currentCount: 0,
       maxFree: 0,

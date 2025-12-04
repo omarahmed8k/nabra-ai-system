@@ -32,7 +32,7 @@ export const publicProcedure = t.procedure;
 
 // Middleware to enforce authentication
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
@@ -46,7 +46,7 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 // Middleware to enforce admin role
 const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   if (ctx.session.user.role !== "SUPER_ADMIN") {
@@ -66,7 +66,7 @@ export const adminProcedure = t.procedure.use(enforceUserIsAdmin);
 
 // Middleware to enforce provider role
 const enforceUserIsProvider = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   if (ctx.session.user.role !== "PROVIDER" && ctx.session.user.role !== "SUPER_ADMIN") {
@@ -86,7 +86,7 @@ export const providerProcedure = t.procedure.use(enforceUserIsProvider);
 
 // Middleware to enforce client role
 const enforceUserIsClient = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   if (ctx.session.user.role !== "CLIENT" && ctx.session.user.role !== "SUPER_ADMIN") {

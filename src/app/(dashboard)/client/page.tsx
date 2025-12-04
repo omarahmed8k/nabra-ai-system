@@ -116,16 +116,16 @@ export default function ClientDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-20" />
-            ) : subscription ? (
+            {isLoading && <Skeleton className="h-8 w-20" />}
+            {!isLoading && subscription && (
               <>
                 <div className="text-2xl font-bold">
                   {subscription.daysRemaining}
                 </div>
                 <p className="text-xs text-muted-foreground">Days remaining</p>
               </>
-            ) : (
+            )}
+            {!isLoading && !subscription && (
               <>
                 <div className="text-2xl font-bold">-</div>
                 <p className="text-xs text-muted-foreground">No active plan</p>
@@ -166,19 +166,21 @@ export default function ClientDashboard() {
           </Link>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-16 w-full" />
               ))}
             </div>
-          ) : requestsData?.requests.length === 0 ? (
+          )}
+          {!isLoading && requestsData?.requests.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p>No requests yet</p>
               <p className="text-sm">Create your first request to get started</p>
             </div>
-          ) : (
+          )}
+          {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
               {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                 <Link

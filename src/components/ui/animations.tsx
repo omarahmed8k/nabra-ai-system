@@ -83,10 +83,10 @@ export const slideInFromBottom: Variants = {
 
 // Animated Components
 interface AnimatedDivProps extends HTMLMotionProps<"div"> {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
-export function FadeIn({ children, ...props }: AnimatedDivProps) {
+export function FadeIn({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial="hidden"
@@ -100,7 +100,7 @@ export function FadeIn({ children, ...props }: AnimatedDivProps) {
   );
 }
 
-export function FadeInUp({ children, ...props }: AnimatedDivProps) {
+export function FadeInUp({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial="hidden"
@@ -114,7 +114,7 @@ export function FadeInUp({ children, ...props }: AnimatedDivProps) {
   );
 }
 
-export function FadeInDown({ children, ...props }: AnimatedDivProps) {
+export function FadeInDown({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial="hidden"
@@ -128,7 +128,7 @@ export function FadeInDown({ children, ...props }: AnimatedDivProps) {
   );
 }
 
-export function ScaleIn({ children, ...props }: AnimatedDivProps) {
+export function ScaleIn({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial="hidden"
@@ -142,7 +142,7 @@ export function ScaleIn({ children, ...props }: AnimatedDivProps) {
   );
 }
 
-export function StaggerContainer({ children, ...props }: AnimatedDivProps) {
+export function StaggerContainer({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial="hidden"
@@ -156,7 +156,7 @@ export function StaggerContainer({ children, ...props }: AnimatedDivProps) {
   );
 }
 
-export function StaggerItem({ children, ...props }: AnimatedDivProps) {
+export function StaggerItem({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div variants={fadeInUp} {...props}>
       {children}
@@ -165,7 +165,7 @@ export function StaggerItem({ children, ...props }: AnimatedDivProps) {
 }
 
 // Page transition wrapper
-export function PageTransition({ children, ...props }: AnimatedDivProps) {
+export function PageTransition({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -193,10 +193,10 @@ export const hoverLift = {
 
 // Animated button
 interface AnimatedButtonProps extends HTMLMotionProps<"button"> {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
-export function AnimatedButton({ children, ...props }: AnimatedButtonProps) {
+export function AnimatedButton({ children, ...props }: Readonly<AnimatedButtonProps>) {
   return (
     <motion.button
       whileHover={{ scale: 1.02 }}
@@ -227,7 +227,7 @@ export function AnimatedCard({ children, className, ...props }: AnimatedDivProps
 }
 
 // Loading spinner animation
-export function LoadingSpinner({ size = 24 }: { size?: number }) {
+export function LoadingSpinner({ size = 24 }: Readonly<{ size?: number }>) {
   return (
     <motion.div
       className="border-2 border-primary border-t-transparent rounded-full"
@@ -243,7 +243,7 @@ export function LoadingSpinner({ size = 24 }: { size?: number }) {
 }
 
 // Pulse animation
-export function PulseAnimation({ children, ...props }: AnimatedDivProps) {
+export function PulseAnimation({ children, ...props }: Readonly<AnimatedDivProps>) {
   return (
     <motion.div
       animate={{

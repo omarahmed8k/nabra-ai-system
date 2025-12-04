@@ -31,7 +31,7 @@ export const notificationRouter = router({
         notifications,
         nextCursor:
           notifications.length === (input?.limit || 20)
-            ? notifications[notifications.length - 1].id
+            ? notifications.at(-1)?.id ?? null
             : null,
       };
     }),

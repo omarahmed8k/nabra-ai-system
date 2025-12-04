@@ -92,7 +92,7 @@ export const requestRouter = router({
         where.clientId = userId;
       } else if (role === "PROVIDER") {
         // Providers see their accepted requests + pending requests matching their skills
-        const profile = await ctx.db.providerProfile.findUnique({
+        await ctx.db.providerProfile.findUnique({
           where: { userId },
         });
 
@@ -136,7 +136,7 @@ export const requestRouter = router({
 
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests[requests.length - 1].id : null,
+        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
       };
     }),
 
@@ -254,11 +254,14 @@ export const requestRouter = router({
       });
 
       // Create system comment
+      const deliveryMessage = estimatedDelivery
+        ? `Estimated delivery: ${estimatedDelivery.toLocaleDateString()}`
+        : "";
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
-          content: `Request accepted. ${estimatedDelivery ? `Estimated delivery: ${estimatedDelivery.toLocaleDateString()}` : ""}`,
+          content: `Request accepted. ${deliveryMessage}`.trim(),
           type: "SYSTEM",
         },
       });

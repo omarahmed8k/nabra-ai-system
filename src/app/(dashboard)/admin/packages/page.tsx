@@ -229,7 +229,7 @@ export default function AdminPackagesPage() {
                     <CardDescription>
                       <span className="text-2xl font-bold text-foreground">
                         {formatCurrency(pkg.price)}
-                      </span>
+                      </span>{" "}
                       /month
                     </CardDescription>
                   </CardHeader>

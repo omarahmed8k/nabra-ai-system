@@ -136,18 +136,20 @@ export default function ProviderDashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoading && (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : myRequests?.requests.length === 0 ? (
+            )}
+            {!isLoading && myRequests?.requests.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No active jobs</p>
               </div>
-            ) : (
+            )}
+            {!isLoading && (myRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
                 {myRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                   <Link
@@ -187,18 +189,20 @@ export default function ProviderDashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoading && (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
                   <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
-            ) : availableRequests?.requests.length === 0 ? (
+            )}
+            {!isLoading && availableRequests?.requests.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No available jobs</p>
               </div>
-            ) : (
+            )}
+            {!isLoading && (availableRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
                 {availableRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
                   <Link
