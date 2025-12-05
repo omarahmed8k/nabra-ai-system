@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FileUpload, InlineFileUpload, type UploadedFile } from "@/components/ui/file-upload";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import {
@@ -39,7 +40,9 @@ export default function ProviderRequestDetailPage() {
   const params = useParams();
   const requestId = params.id as string;
   const [comment, setComment] = useState("");
+  const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
   const [deliverable, setDeliverable] = useState("");
+  const [deliverableFiles, setDeliverableFiles] = useState<UploadedFile[]>([]);
 
   const utils = trpc.useUtils();
 
@@ -86,8 +89,13 @@ export default function ProviderRequestDetailPage() {
   });
 
   const handleSendComment = () => {
-    if (!comment.trim()) return;
-    addComment.mutate({ requestId, content: comment });
+    if (!comment.trim() && commentFiles.length === 0) return;
+    addComment.mutate({ 
+      requestId, 
+      content: comment || "(Attachment)",
+      files: commentFiles.map((f) => f.url),
+    });
+    setCommentFiles([]);
   };
 
   const handleStartWork = () => {
@@ -96,7 +104,12 @@ export default function ProviderRequestDetailPage() {
 
   const handleDeliver = () => {
     if (!deliverable.trim()) return;
-    deliverWork.mutate({ requestId, deliverableMessage: deliverable });
+    deliverWork.mutate({ 
+      requestId, 
+      deliverableMessage: deliverable,
+      files: deliverableFiles.map((f) => f.url),
+    });
+    setDeliverableFiles([]);
   };
 
   if (isLoading) {
@@ -157,8 +170,47 @@ export default function ProviderRequestDetailPage() {
             <CardHeader>
               <CardTitle>Description</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <p className="whitespace-pre-wrap">{request.description}</p>
+              
+              {/* Request Attachments */}
+              {request.attachments && request.attachments.length > 0 && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm font-medium mb-2">Attachments ({request.attachments.length})</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {request.attachments.map((file: string, index: number) => {
+                      const fileName = file.split('/').pop() || `Attachment ${index + 1}`;
+                      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
+                      return (
+                        <a
+                          key={file}
+                          href={file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group block p-2 rounded-lg border bg-background hover:bg-muted/50 transition-colors"
+                        >
+                          {isImage ? (
+                            <div className="aspect-video rounded overflow-hidden bg-muted mb-2 flex items-center justify-center">
+                              <img
+                                src={file}
+                                alt={fileName}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="aspect-video rounded bg-muted mb-2 flex items-center justify-center text-2xl">
+                              📎
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground truncate group-hover:text-foreground">
+                            {fileName}
+                          </p>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -201,6 +253,16 @@ export default function ProviderRequestDetailPage() {
                       Please enter at least 5 characters ({5 - deliverable.length} more needed)
                     </p>
                   )}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-green-800">Attach Deliverable Files</p>
+                  <FileUpload
+                    onFilesChange={setDeliverableFiles}
+                    maxFiles={10}
+                    maxSizeMB={10}
+                    disabled={deliverWork.isPending}
+                    className="bg-white/50"
+                  />
                 </div>
                 <Button
                   onClick={handleDeliver}
@@ -256,7 +318,7 @@ export default function ProviderRequestDetailPage() {
                 </p>
               ) : (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {request.comments.map((comment: { id: string; content: string; type: string; createdAt: Date; user: { name: string | null; image: string | null } }) => (
+                  {request.comments.map((comment: { id: string; content: string; type: string; createdAt: Date; files?: string[]; user: { name: string | null; image: string | null } }) => (
                     <div
                       key={comment.id}
                       className={`flex gap-3 ${
@@ -290,6 +352,21 @@ export default function ProviderRequestDetailPage() {
                         <p className="text-sm mt-1 whitespace-pre-wrap">
                           {comment.content}
                         </p>
+                        {comment.files && comment.files.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {comment.files.map((file: string, i: number) => (
+                              <a
+                                key={`${comment.id}-file-${i}`}
+                                href={file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline block"
+                              >
+                                📎 Attachment {i + 1}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -298,20 +375,27 @@ export default function ProviderRequestDetailPage() {
 
               <Separator />
 
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Type your message..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  rows={2}
+              <div className="space-y-3">
+                <InlineFileUpload
+                  onFilesChange={setCommentFiles}
+                  maxFiles={3}
+                  disabled={addComment.isPending}
                 />
-                <Button
-                  size="icon"
-                  onClick={handleSendComment}
-                  disabled={!comment.trim() || addComment.isPending}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={2}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={handleSendComment}
+                    disabled={(!comment.trim() && commentFiles.length === 0) || addComment.isPending}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

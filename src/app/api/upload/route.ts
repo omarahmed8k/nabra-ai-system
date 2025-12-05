@@ -1,14 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-// This is a placeholder for file upload functionality.
-// In production, you would integrate with AWS S3, Cloudflare R2, or similar.
+const s3Client = new S3Client({
+  endpoint: `https://${process.env.B2_ENDPOINT}`,
+  region: process.env.B2_REGION || "us-east-005",
+  credentials: {
+    accessKeyId: process.env.B2_KEY_ID || "",
+    secretAccessKey: process.env.B2_APP_KEY || "",
+  },
+  forcePathStyle: true,
+});
+
+const BUCKET_NAME = process.env.B2_BUCKET_NAME || "Nabra-AI-System";
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "application/zip",
+  "application/x-zip-compressed",
+]);
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -20,54 +39,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "application/pdf",
-      "application/zip",
-      "application/x-zip-compressed",
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type" },
-        { status: 400 }
-      );
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: "File too large. Maximum size is 10MB" },
         { status: 400 }
       );
     }
 
-    // In production, upload to S3/R2:
-    // const buffer = Buffer.from(await file.arrayBuffer());
-    // const key = `uploads/${session.user.id}/${Date.now()}-${file.name}`;
-    // await s3.upload({ Bucket: ..., Key: key, Body: buffer, ContentType: file.type });
-    // const url = `https://cdn.example.com/${key}`;
+    const timestamp = Date.now();
+    const sanitizedFileName = file.name.replaceAll(/[^a-zA-Z0-9.-]/g, "_");
+    const key = `uploads/${session.user.id}/${timestamp}-${sanitizedFileName}`;
 
-    // For now, return a placeholder URL
-    const url = `/uploads/${Date.now()}-${file.name}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type,
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      url,
+      url: `/api/files/${key}`,
       filename: file.name,
       size: file.size,
       type: file.type,
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: "Upload failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

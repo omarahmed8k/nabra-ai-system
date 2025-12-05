@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FileUpload, type UploadedFile } from "@/components/ui/file-upload";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { ArrowLeft } from "lucide-react";
@@ -29,6 +30,7 @@ import { ArrowLeft } from "lucide-react";
 export default function NewRequestPage() {
   const router = useRouter();
   const [selectedServiceType, setSelectedServiceType] = useState("");
+  const [attachments, setAttachments] = useState<UploadedFile[]>([]);
 
   const { data: serviceTypes } =
     trpc.request.getServiceTypes.useQuery();
@@ -80,6 +82,7 @@ export default function NewRequestPage() {
       description,
       serviceTypeId: selectedServiceType,
       priority,
+      attachments: attachments.map((f) => f.url),
     });
   }
 
@@ -185,6 +188,16 @@ export default function NewRequestPage() {
                   <SelectItem value="3">High</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Attachments (Optional)</Label>
+              <FileUpload
+                onFilesChange={setAttachments}
+                maxFiles={5}
+                maxSizeMB={10}
+                disabled={!hasCredits || createRequest.isPending}
+              />
             </div>
 
             <div className="flex gap-4">
