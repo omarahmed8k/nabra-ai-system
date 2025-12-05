@@ -48,6 +48,179 @@ import {
 
 type UserRole = "CLIENT" | "PROVIDER" | "SUPER_ADMIN";
 
+type ServiceType = { id: string; name: string };
+
+type UserData = {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  role: string;
+  createdAt: Date;
+  providerProfile: {
+    id: string;
+    supportedServices: ServiceType[];
+  } | null;
+  _count: {
+    clientRequests: number;
+    providerRequests: number;
+    clientSubscriptions: number;
+  };
+};
+
+// Helper components to reduce nesting
+function ServiceCheckboxItem({
+  service,
+  checked,
+  onChange,
+  idPrefix,
+}: {
+  service: ServiceType;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  idPrefix: string;
+}) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox
+        id={`${idPrefix}-${service.id}`}
+        checked={checked}
+        onCheckedChange={(c) => onChange(c === true)}
+      />
+      <label
+        htmlFor={`${idPrefix}-${service.id}`}
+        className="text-sm cursor-pointer flex-1"
+      >
+        {service.name}
+      </label>
+    </div>
+  );
+}
+
+function ProviderServiceBadges({ services }: { services: ServiceType[] }) {
+  if (services.length === 0) {
+    return (
+      <span className="text-xs text-muted-foreground italic">
+        No services assigned
+      </span>
+    );
+  }
+  return (
+    <>
+      {services.map((service) => (
+        <Badge key={service.id} variant="outline" className="text-xs">
+          {service.name}
+        </Badge>
+      ))}
+    </>
+  );
+}
+
+function UserStatsClient({ count }: { count: UserData["_count"] }) {
+  return (
+    <>
+      <div className="flex items-center gap-2 text-sm">
+        <FileText className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="font-medium">{count.clientRequests}</p>
+          <p className="text-xs text-muted-foreground">Requests</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 text-sm">
+        <CreditCard className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="font-medium">{count.clientSubscriptions}</p>
+          <p className="text-xs text-muted-foreground">Subscriptions</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function UserStatsProvider({
+  count,
+  onEditServices,
+}: {
+  count: UserData["_count"];
+  onEditServices: () => void;
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-2 text-sm">
+        <FileText className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="font-medium">{count.providerRequests}</p>
+          <p className="text-xs text-muted-foreground">Jobs</p>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={onEditServices}>
+        <Settings className="h-4 w-4 mr-1" />
+        Services
+      </Button>
+    </>
+  );
+}
+
+function UserListItem({
+  user,
+  getRoleColor,
+  onRoleChange,
+  onEditServices,
+}: {
+  user: UserData;
+  getRoleColor: (role: string) => string;
+  onRoleChange: (role: UserRole) => void;
+  onEditServices: () => void;
+}) {
+  const providerServices = user.providerProfile?.supportedServices || [];
+
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors gap-4">
+      <div className="flex items-center gap-4">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={user.image || ""} />
+          <AvatarFallback className="text-lg">
+            {getInitials(user.name || user.email)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="font-medium text-lg">{user.name || "No name"}</p>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
+            <span className="text-xs text-muted-foreground">
+              Joined {formatDate(user.createdAt)}
+            </span>
+          </div>
+          {user.role === "PROVIDER" && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              <ProviderServiceBadges services={providerServices} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        {user.role === "CLIENT" && <UserStatsClient count={user._count} />}
+        {user.role === "PROVIDER" && (
+          <UserStatsProvider count={user._count} onEditServices={onEditServices} />
+        )}
+
+        <Select value={user.role} onValueChange={(value) => onRoleChange(value as UserRole)}>
+          <SelectTrigger className="w-[130px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="CLIENT">Client</SelectItem>
+            <SelectItem value="PROVIDER">Provider</SelectItem>
+            <SelectItem value="SUPER_ADMIN">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
@@ -128,6 +301,21 @@ export default function AdminUsersPage() {
     }));
   };
 
+  const handleEditServiceToggle = (serviceId: string, checked: boolean) => {
+    setSelectedProviderServices((prev) =>
+      checked ? [...prev, serviceId] : prev.filter((id) => id !== serviceId)
+    );
+  };
+
+  const handleSaveProviderServices = () => {
+    if (selectedUserId) {
+      updateProviderServices.mutate({
+        userId: selectedUserId,
+        serviceIds: selectedProviderServices,
+      });
+    }
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN":
@@ -142,12 +330,12 @@ export default function AdminUsersPage() {
   };
 
   // Calculate stats
-  const allUsers = users?.users || [];
+  const allUsers = (users?.users || []) as unknown as UserData[];
   const stats = {
     total: users?.total || 0,
-    clients: allUsers.filter((u: { role: string }) => u.role === "CLIENT").length,
-    providers: allUsers.filter((u: { role: string }) => u.role === "PROVIDER").length,
-    admins: allUsers.filter((u: { role: string }) => u.role === "SUPER_ADMIN").length,
+    clients: allUsers.filter((u) => u.role === "CLIENT").length,
+    providers: allUsers.filter((u) => u.role === "PROVIDER").length,
+    admins: allUsers.filter((u) => u.role === "SUPER_ADMIN").length,
   };
 
   return (
@@ -249,21 +437,13 @@ export default function AdminUsersPage() {
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
                     {serviceTypes.map((service) => (
-                      <div key={service.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`service-${service.id}`}
-                          checked={newUser.supportedServiceIds.includes(service.id)}
-                          onCheckedChange={(checked) =>
-                            handleServiceToggle(service.id, checked === true)
-                          }
-                        />
-                        <label
-                          htmlFor={`service-${service.id}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          {service.name}
-                        </label>
-                      </div>
+                      <ServiceCheckboxItem
+                        key={service.id}
+                        service={service}
+                        checked={newUser.supportedServiceIds.includes(service.id)}
+                        onChange={(checked) => handleServiceToggle(service.id, checked)}
+                        idPrefix="service"
+                      />
                     ))}
                     {serviceTypes.length === 0 && (
                       <p className="text-sm text-muted-foreground">No services available</p>
@@ -375,127 +555,19 @@ export default function AdminUsersPage() {
           )}
           {!isLoading && (users?.users.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {users?.users.map((user: { 
-                id: string; 
-                name: string | null; 
-                email: string; 
-                image: string | null; 
-                role: string; 
-                createdAt: Date; 
-                providerProfile?: { 
-                  id: string;
-                  supportedServices?: { id: string; name: string }[];
-                } | null; 
-                _count: { clientRequests: number; providerRequests: number; clientSubscriptions: number } 
-              }) => (
-                <div
+              {(users?.users as unknown as UserData[]).map((user) => (
+                <UserListItem
                   key={user.id}
-                  className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors gap-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={user.image || ""} />
-                      <AvatarFallback className="text-lg">
-                        {getInitials(user.name || user.email)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-lg">{user.name || "No name"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.email}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
-                        <span className="text-xs text-muted-foreground">
-                          Joined {formatDate(user.createdAt)}
-                        </span>
-                      </div>
-                      {/* Show provider services */}
-                      {user.role === "PROVIDER" && user.providerProfile?.supportedServices && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {user.providerProfile.supportedServices.length > 0 ? (
-                            user.providerProfile.supportedServices.map((service) => (
-                              <Badge key={service.id} variant="outline" className="text-xs">
-                                {service.name}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-xs text-muted-foreground italic">
-                              No services assigned
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* User Stats */}
-                  <div className="flex flex-wrap items-center gap-4">
-                    {user.role === "CLIENT" && (
-                      <>
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{user._count?.clientRequests || 0}</p>
-                            <p className="text-xs text-muted-foreground">Requests</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <CreditCard className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{user._count?.clientSubscriptions || 0}</p>
-                            <p className="text-xs text-muted-foreground">Subscriptions</p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {user.role === "PROVIDER" && (
-                      <>
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{user._count?.providerRequests || 0}</p>
-                            <p className="text-xs text-muted-foreground">Jobs</p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUserId(user.id);
-                            setSelectedProviderServices(
-                              user.providerProfile?.supportedServices?.map((s) => s.id) || []
-                            );
-                            setIsServicesOpen(true);
-                          }}
-                        >
-                          <Settings className="h-4 w-4 mr-1" />
-                          Services
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Role Selector */}
-                    <Select
-                      value={user.role}
-                      onValueChange={(value) =>
-                        updateRole.mutate({
-                          userId: user.id,
-                          role: value as UserRole,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="w-[130px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CLIENT">Client</SelectItem>
-                        <SelectItem value="PROVIDER">Provider</SelectItem>
-                        <SelectItem value="SUPER_ADMIN">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                  user={user}
+                  getRoleColor={getRoleColor}
+                  onRoleChange={(role) => updateRole.mutate({ userId: user.id, role })}
+                  onEditServices={() => {
+                    setSelectedUserId(user.id);
+                    const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
+                    setSelectedProviderServices(serviceIds);
+                    setIsServicesOpen(true);
+                  }}
+                />
               ))}
             </div>
           )}
@@ -514,25 +586,13 @@ export default function AdminUsersPage() {
           <div className="py-4">
             <div className="max-h-64 overflow-y-auto space-y-2 border rounded-md p-3">
               {serviceTypes?.map((service) => (
-                <div key={service.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`edit-service-${service.id}`}
-                    checked={selectedProviderServices.includes(service.id)}
-                    onCheckedChange={(checked) => {
-                      setSelectedProviderServices((prev) =>
-                        checked
-                          ? [...prev, service.id]
-                          : prev.filter((id) => id !== service.id)
-                      );
-                    }}
-                  />
-                  <label
-                    htmlFor={`edit-service-${service.id}`}
-                    className="text-sm cursor-pointer flex-1"
-                  >
-                    {service.name}
-                  </label>
-                </div>
+                <ServiceCheckboxItem
+                  key={service.id}
+                  service={service}
+                  checked={selectedProviderServices.includes(service.id)}
+                  onChange={(checked) => handleEditServiceToggle(service.id, checked)}
+                  idPrefix="edit-service"
+                />
               ))}
               {(!serviceTypes || serviceTypes.length === 0) && (
                 <p className="text-sm text-muted-foreground">No services available</p>
@@ -548,14 +608,7 @@ export default function AdminUsersPage() {
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => {
-                  if (selectedUserId) {
-                    updateProviderServices.mutate({
-                      userId: selectedUserId,
-                      serviceIds: selectedProviderServices,
-                    });
-                  }
-                }}
+                onClick={handleSaveProviderServices}
                 disabled={updateProviderServices.isPending}
               >
                 {updateProviderServices.isPending ? "Saving..." : "Save Changes"}

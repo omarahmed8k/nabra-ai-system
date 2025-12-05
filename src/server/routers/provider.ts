@@ -93,7 +93,7 @@ export const providerRouter = router({
     };
   }),
 
-  // Get available requests (pending, matching skills)
+  // Get available requests (pending, matching provider's supported services)
   getAvailableRequests: providerProcedure
     .input(
       z.object({
@@ -104,16 +104,36 @@ export const providerRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Get provider's skills
-      await ctx.db.providerProfile.findUnique({
+      // Get provider's supported services
+      const providerProfile = await ctx.db.providerProfile.findUnique({
         where: { userId },
+        include: {
+          supportedServices: {
+            select: { id: true },
+          },
+        },
       });
 
+      // Get the service IDs this provider supports
+      const supportedServiceIds = providerProfile?.supportedServices.map((s: { id: string }) => s.id) || [];
+
+      // If no supported services configured, return empty (provider must have services assigned)
+      if (supportedServiceIds.length === 0) {
+        return {
+          requests: [],
+          nextCursor: null,
+        };
+      }
+
+      // Build the where clause - only show requests matching provider's services
+      const whereClause = {
+        status: "PENDING" as const,
+        providerId: null,
+        serviceTypeId: { in: supportedServiceIds },
+      };
+
       const requests = await ctx.db.request.findMany({
-        where: {
-          status: "PENDING",
-          providerId: null,
-        },
+        where: whereClause,
         include: {
           client: {
             select: { id: true, name: true, image: true },

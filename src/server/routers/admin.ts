@@ -292,9 +292,16 @@ export const adminRouter = router({
       const [users, total] = await Promise.all([
         ctx.db.user.findMany({
           where,
-          include: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            role: true,
+            createdAt: true,
             providerProfile: {
-              include: {
+              select: {
+                id: true,
                 supportedServices: {
                   select: { id: true, name: true },
                 },
