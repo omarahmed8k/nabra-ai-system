@@ -1,167 +1,122 @@
 "use client";
 
 import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface DialogProps {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly children: React.ReactNode;
-}
+const Dialog = DialogPrimitive.Root;
 
-interface DialogContentProps {
-  readonly children: React.ReactNode;
-  readonly className?: string;
-}
+const DialogTrigger = DialogPrimitive.Trigger;
 
-interface DialogHeaderProps {
-  readonly children: React.ReactNode;
-  readonly className?: string;
-}
+const DialogPortal = DialogPrimitive.Portal;
 
-interface DialogTitleProps {
-  readonly children: React.ReactNode;
-  readonly className?: string;
-}
+const DialogClose = DialogPrimitive.Close;
 
-interface DialogDescriptionProps {
-  readonly children: React.ReactNode;
-  readonly className?: string;
-}
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-interface DialogFooterProps {
-  readonly children: React.ReactNode;
-  readonly className?: string;
-}
-
-const DialogContext = React.createContext<{
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}>({
-  open: false,
-  onOpenChange: () => {},
-});
-
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  const value = React.useMemo(() => ({ open, onOpenChange }), [open, onOpenChange]);
-  
-  return (
-    <DialogContext.Provider value={value}>
-      {children}
-    </DialogContext.Provider>
-  );
-}
-
-export function DialogTrigger({
-  children,
-  asChild,
-}: {
-  readonly children: React.ReactNode;
-  readonly asChild?: boolean;
-}) {
-  const { onOpenChange } = React.useContext(DialogContext);
-
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
-      onClick: () => onOpenChange(true),
-    });
-  }
-
-  return (
-    <button type="button" onClick={() => onOpenChange(true)}>
-      {children}
-    </button>
-  );
-}
-
-export function DialogContent({ children, className }: DialogContentProps) {
-  const { open, onOpenChange } = React.useContext(DialogContext);
-  const dialogRef = React.useRef<HTMLDialogElement>(null);
-
-  React.useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (open) {
-      dialog.showModal();
-    } else {
-      dialog.close();
-    }
-  }, [open]);
-
-  React.useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const handleClose = () => onOpenChange(false);
-    dialog.addEventListener("close", handleClose);
-    
-    return () => dialog.removeEventListener("close", handleClose);
-  }, [onOpenChange]);
-
-  return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
-    <dialog
-      ref={dialogRef}
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
       className={cn(
-        "fixed z-50 w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg backdrop:bg-black/50",
-        "open:animate-in open:fade-in-0 open:zoom-in-95",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-background p-6 text-foreground shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+        "max-h-[90vh] overflow-y-auto",
         className
       )}
-      onClick={(e) => {
-        // Close when clicking the backdrop (native dialog behavior)
-        if (e.target === dialogRef.current) {
-          onOpenChange(false);
-        }
-      }}
+      {...props}
     >
-      <button
-        type="button"
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        onClick={() => onOpenChange(false)}
-      >
+      {children}
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
-      </button>
-      {children}
-    </dialog>
-  );
-}
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+DialogContent.displayName = DialogPrimitive.Content.displayName;
 
-export function DialogHeader({ children, className }: DialogHeaderProps) {
-  return (
-    <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}>
-      {children}
-    </div>
-  );
-}
+const DialogHeader = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      className
+    )}
+    {...props}
+  />
+);
+DialogHeader.displayName = "DialogHeader";
 
-export function DialogTitle({ children, className }: DialogTitleProps) {
-  return (
-    <h2 className={cn("text-lg font-semibold leading-none tracking-tight", className)}>
-      {children}
-    </h2>
-  );
-}
+const DialogFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      className
+    )}
+    {...props}
+  />
+);
+DialogFooter.displayName = "DialogFooter";
 
-export function DialogDescription({ children, className }: DialogDescriptionProps) {
-  return (
-    <p className={cn("text-sm text-muted-foreground", className)}>
-      {children}
-    </p>
-  );
-}
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
 
-export function DialogFooter({ children, className }: DialogFooterProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+};

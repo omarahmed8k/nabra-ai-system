@@ -26,6 +26,10 @@ interface Request {
   id: string;
   title: string;
   status: string;
+  serviceType: {
+    id: string;
+    name: string;
+  };
   provider: {
     id: string;
     name: string | null;
@@ -39,6 +43,7 @@ interface Provider {
   email: string;
   bio: string | null;
   skills: string[];
+  supportedServices: { id: string; name: string }[];
   activeRequests: number;
 }
 
@@ -56,12 +61,16 @@ function ProviderSelector({
   selectedProviderId,
   onSelectProvider,
   currentProviderId,
+  serviceName,
+  allProvidersCount,
 }: {
   readonly providers: Provider[] | undefined;
   readonly loadingProviders: boolean;
   readonly selectedProviderId: string;
   readonly onSelectProvider: (id: string) => void;
   readonly currentProviderId: string | undefined;
+  readonly serviceName?: string;
+  readonly allProvidersCount?: number;
 }) {
   if (loadingProviders) {
     return (
@@ -73,36 +82,52 @@ function ProviderSelector({
 
   if (!providers || providers.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-muted-foreground border rounded-lg">
         <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p>No providers available</p>
-        <p className="text-xs">Add providers to assign requests</p>
+        <p className="font-medium">No matching providers</p>
+        {serviceName && (
+          <p className="text-xs mt-1">
+            No providers support &quot;{serviceName}&quot; service
+          </p>
+        )}
+        {allProvidersCount !== undefined && allProvidersCount > 0 && (
+          <p className="text-xs mt-1">
+            ({allProvidersCount} total providers exist, but none support this service)
+          </p>
+        )}
       </div>
     );
   }
 
   return (
-    <Select value={selectedProviderId} onValueChange={onSelectProvider}>
-      <SelectTrigger>
-        <SelectValue placeholder="Choose a provider..." />
-      </SelectTrigger>
-      <SelectContent>
-        {providers.map((provider: Provider) => (
-          <SelectItem
-            key={provider.id}
-            value={provider.id}
-            disabled={provider.id === currentProviderId}
-          >
-            <div className="flex items-center gap-2">
-              <span>{provider.name}</span>
-              <Badge variant="outline" className="text-xs">
-                {provider.activeRequests} active
-              </Badge>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="space-y-2">
+      {serviceName && (
+        <p className="text-xs text-muted-foreground">
+          Showing providers that support &quot;{serviceName}&quot;
+        </p>
+      )}
+      <Select value={selectedProviderId} onValueChange={onSelectProvider}>
+        <SelectTrigger>
+          <SelectValue placeholder="Choose a provider..." />
+        </SelectTrigger>
+        <SelectContent>
+          {providers.map((provider: Provider) => (
+            <SelectItem
+              key={provider.id}
+              value={provider.id}
+              disabled={provider.id === currentProviderId}
+            >
+              <div className="flex items-center gap-2">
+                <span>{provider.name}</span>
+                <Badge variant="outline" className="text-xs">
+                  {provider.activeRequests} active
+                </Badge>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -162,10 +187,17 @@ export function AssignProviderDialog({
     request.provider?.id || ""
   );
 
+  // Fetch providers filtered by the request's service type
   const { data: providers, isLoading: loadingProviders } =
-    trpc.admin.getProviders.useQuery(undefined, {
-      enabled: open,
-    });
+    trpc.admin.getProviders.useQuery(
+      { serviceTypeId: request.serviceType.id },
+      { enabled: open }
+    );
+
+  // Also get all providers to show a message if no matching ones
+  const { data: allProviders } = trpc.admin.getProviders.useQuery(undefined, {
+    enabled: open && (!providers || providers.length === 0),
+  });
 
   const assignMutation = trpc.admin.assignRequest.useMutation({
     onSuccess: (data: { message: string }) => {
@@ -267,6 +299,8 @@ export function AssignProviderDialog({
               selectedProviderId={selectedProviderId}
               onSelectProvider={setSelectedProviderId}
               currentProviderId={request.provider?.id}
+              serviceName={request.serviceType.name}
+              allProvidersCount={allProviders?.length}
             />
           </div>
 

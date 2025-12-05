@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import bcrypt from "bcryptjs";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -292,7 +293,13 @@ export const adminRouter = router({
         ctx.db.user.findMany({
           where,
           include: {
-            providerProfile: true,
+            providerProfile: {
+              include: {
+                supportedServices: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
             _count: {
               select: {
                 clientRequests: true,
@@ -560,43 +567,65 @@ export const adminRouter = router({
     }),
 
   // Get all providers for assignment
-  getProviders: adminProcedure.query(async ({ ctx }) => {
-    const providers = await ctx.db.user.findMany({
-      where: { role: "PROVIDER" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        providerProfile: {
-          select: {
-            bio: true,
-            skillsTags: true,
-          },
+  getProviders: adminProcedure
+    .input(
+      z.object({
+        serviceTypeId: z.string().optional(), // Filter providers by supported service
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const providers = await ctx.db.user.findMany({
+        where: { 
+          role: "PROVIDER",
+          ...(input?.serviceTypeId && {
+            providerProfile: {
+              supportedServices: {
+                some: { id: input.serviceTypeId },
+              },
+            },
+          }),
         },
-        _count: {
-          select: {
-            providerRequests: {
-              where: {
-                status: { in: ["PENDING", "IN_PROGRESS"] },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          providerProfile: {
+            select: {
+              bio: true,
+              skillsTags: true,
+              supportedServices: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              providerRequests: {
+                where: {
+                  status: { in: ["PENDING", "IN_PROGRESS"] },
+                },
               },
             },
           },
         },
-      },
-      orderBy: { name: "asc" },
-    });
+        orderBy: { name: "asc" },
+      });
 
-    type ProviderWithProfile = typeof providers[number];
+      type ProviderWithProfile = typeof providers[number];
 
-    return providers.map((p: ProviderWithProfile) => ({
-      id: p.id,
-      name: p.name || p.email,
-      email: p.email,
-      bio: p.providerProfile?.bio || null,
-      skills: p.providerProfile?.skillsTags || [],
-      activeRequests: p._count.providerRequests,
-    }));
-  }),
+      return providers.map((p: ProviderWithProfile) => ({
+        id: p.id,
+        name: p.name || p.email,
+        email: p.email,
+        bio: p.providerProfile?.bio || null,
+        skills: p.providerProfile?.skillsTags || [],
+        supportedServices: p.providerProfile?.supportedServices || [],
+        activeRequests: p._count.providerRequests,
+      }));
+    }),
 
   // Assign request to provider
   assignRequest: adminProcedure
@@ -692,6 +721,133 @@ export const adminRouter = router({
         success: true,
         request: updatedRequest,
         message: "Request unassigned successfully",
+      };
+    }),
+
+  // Create new user
+  createUser: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(2),
+        email: z.string().email(),
+        password: z.string().min(6),
+        role: z.enum(["CLIENT", "PROVIDER", "SUPER_ADMIN"]),
+        supportedServiceIds: z.array(z.string()).optional(), // For providers only
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user already exists
+      const existingUser = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
+
+      if (existingUser) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A user with this email already exists",
+        });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(input.password, 10);
+
+      // Create user
+      const user = await ctx.db.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          password: hashedPassword,
+          role: input.role,
+        },
+      });
+
+      // Create provider profile if role is PROVIDER
+      if (input.role === "PROVIDER") {
+        await ctx.db.providerProfile.create({
+          data: {
+            userId: user.id,
+            skillsTags: [],
+            supportedServices: input.supportedServiceIds?.length
+              ? { connect: input.supportedServiceIds.map((id) => ({ id })) }
+              : undefined,
+          },
+        });
+      }
+
+      return {
+        success: true,
+        user,
+      };
+    }),
+
+  // Update provider supported services
+  updateProviderServices: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        serviceIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+        include: { providerProfile: true },
+      });
+
+      if (!user || user.role !== "PROVIDER") {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider not found",
+        });
+      }
+
+      // Upsert provider profile with new services
+      await ctx.db.providerProfile.upsert({
+        where: { userId: user.id },
+        create: {
+          userId: user.id,
+          skillsTags: [],
+          supportedServices: {
+            connect: input.serviceIds.map((id) => ({ id })),
+          },
+        },
+        update: {
+          supportedServices: {
+            set: input.serviceIds.map((id) => ({ id })),
+          },
+        },
+      });
+
+      return { success: true };
+    }),
+
+  // Get provider with their supported services
+  getProviderDetails: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+        include: {
+          providerProfile: {
+            include: {
+              supportedServices: true,
+            },
+          },
+        },
+      });
+
+      if (user?.role !== "PROVIDER") {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider not found",
+        });
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        supportedServices: user.providerProfile?.supportedServices || [],
       };
     }),
 });
