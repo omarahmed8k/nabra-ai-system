@@ -24,6 +24,7 @@ import {
   PlayCircle,
   Package,
   UserPlus,
+  Trash,
 } from "lucide-react";
 import Link from "next/link";
 import { AssignProviderDialog } from "@/components/admin/assign-provider-dialog";
@@ -66,6 +67,11 @@ export default function AdminRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
   const { data, isLoading, refetch } = trpc.admin.getAllRequests.useQuery();
+  const deleteRequest = trpc.admin.deleteRequest.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const requests: Request[] = data?.requests || [];
 
@@ -257,6 +263,19 @@ export default function AdminRequestsPage() {
                         View
                       </Button>
                     </Link>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm(`Delete request "${request.title}"? This action cannot be undone.`)) {
+                          deleteRequest.mutate({ requestId: request.id });
+                        }
+                      }}
+                      disabled={deleteRequest.isPending}
+                    >
+                      <Trash className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}

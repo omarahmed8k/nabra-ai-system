@@ -69,6 +69,26 @@ export const subscriptionRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
+      // Get the package
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.packageId, isActive: true },
+      });
+
+      if (!pkg) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Package not found or inactive",
+        });
+      }
+
+      // If it's the free package, prevent resubscription
+      if (pkg.isFreePackage) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The free package is only available during registration. It cannot be resubscribed.",
+        });
+      }
+
       // Check for existing active subscription
       const existingSubscription = await ctx.db.clientSubscription.findFirst({
         where: {
@@ -104,18 +124,6 @@ export const subscriptionRouter = router({
         throw new TRPCError({
           code: "CONFLICT",
           message: "You have a pending subscription awaiting payment verification. Please wait for it to be processed.",
-        });
-      }
-
-      // Get the package
-      const pkg = await ctx.db.package.findUnique({
-        where: { id: input.packageId, isActive: true },
-      });
-
-      if (!pkg) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Package not found or inactive",
         });
       }
 
@@ -160,6 +168,9 @@ export const subscriptionRouter = router({
           id: input.subscriptionId,
           userId,
           cancelledAt: null, // Not already cancelled
+        },
+        include: {
+          package: true,
         },
       });
 

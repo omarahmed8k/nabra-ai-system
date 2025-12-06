@@ -89,7 +89,7 @@ export default function ProviderDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {stats?.averageRating?.toFixed(1) || "N/A"}
+                  {(stats?.averageRating ?? 0).toFixed(1)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {stats?.totalRatings || 0} reviews

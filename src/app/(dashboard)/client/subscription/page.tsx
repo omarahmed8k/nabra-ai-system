@@ -151,9 +151,15 @@ export default function SubscriptionPage() {
           {subscription ? "Upgrade Your Plan" : "Choose a Plan"}
         </h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {isLoading
-            ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-96" />)
-            : packages?.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; features: string[] }) => {
+          {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-96" />)}
+          {!isLoading && (!packages || packages.length === 0) && (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No plans available</p>
+              <p className="text-sm">Please check back soon or contact support</p>
+            </div>
+          )}
+          {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; features: string[] }) => {
                 const isCurrentPlan = subscription?.package.id === pkg.id;
                 return (
                   <Card

@@ -217,10 +217,10 @@ export default function AdminDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {stats?.averageRating ? stats.averageRating.toFixed(1) : "N/A"}
+                  {(stats?.averageRating ?? 0).toFixed(1)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {stats?.serviceTypes} active service types
+                  {stats?.serviceTypes ?? 0} active service types
                 </p>
               </>
             )}
@@ -272,9 +272,16 @@ export default function AdminDashboard() {
             <CardDescription>Distribution of request statuses</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : (
+            {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
+            {!analyticsLoading && (!analytics?.requestsByStatus || analytics.requestsByStatus.length === 0) && (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-sm">No data available yet</p>
+                  <p className="text-xs text-muted-foreground/70">Requests will appear here once created</p>
+                </div>
+              </div>
+            )}
+            {!analyticsLoading && analytics?.requestsByStatus && analytics.requestsByStatus.length > 0 && (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
@@ -315,9 +322,16 @@ export default function AdminDashboard() {
             <CardDescription>Active subscriptions distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : (
+            {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
+            {!analyticsLoading && (!analytics?.subscriptionsByPackage || analytics.subscriptionsByPackage.length === 0) && (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-sm">No subscriptions yet</p>
+                  <p className="text-xs text-muted-foreground/70">Subscription data will appear once clients subscribe</p>
+                </div>
+              </div>
+            )}
+            {!analyticsLoading && analytics?.subscriptionsByPackage && analytics.subscriptionsByPackage.length > 0 && (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={analytics?.subscriptionsByPackage || []}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -341,9 +355,16 @@ export default function AdminDashboard() {
             <CardDescription>Service type popularity</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : (
+            {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
+            {!analyticsLoading && (!analytics?.requestsByService || analytics.requestsByService.length === 0) && (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-sm">No service data available yet</p>
+                  <p className="text-xs text-muted-foreground/70">Service requests will appear here once created</p>
+                </div>
+              </div>
+            )}
+            {!analyticsLoading && analytics?.requestsByService && analytics.requestsByService.length > 0 && (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={analytics?.requestsByService || []} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" />

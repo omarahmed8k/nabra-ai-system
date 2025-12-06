@@ -36,6 +36,31 @@ export const authRouter = router({
         },
       });
 
+      // Automatically subscribe user to free package
+      const freePackage = await ctx.db.package.findFirst({
+        where: {
+          isFreePackage: true,
+          isActive: true,
+        },
+      });
+
+      if (freePackage) {
+        const now = new Date();
+        const endDate = new Date(now.getTime() + freePackage.durationDays * 24 * 60 * 60 * 1000);
+
+        await ctx.db.clientSubscription.create({
+          data: {
+            userId: user.id,
+            packageId: freePackage.id,
+            remainingCredits: freePackage.credits,
+            startDate: now,
+            endDate,
+            isActive: true, // Free package is immediately active
+            isFreeTrialUsed: true, // Mark as free trial used so can't resubscribe
+          },
+        });
+      }
+
       return {
         success: true,
         message: "Account created successfully",

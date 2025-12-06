@@ -156,7 +156,7 @@ export default function AdminPaymentsPage() {
       <TableRow key={payment.id}>
         <TableCell>
           <div>
-            <p className="font-medium">{payment.user.name || "N/A"}</p>
+            <p className="font-medium">{payment.user.name ?? "Pending name"}</p>
             <p className="text-sm text-muted-foreground">{payment.user.email}</p>
           </div>
         </TableCell>
@@ -398,7 +398,7 @@ export default function AdminPaymentsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Client</Label>
-                  <p className="font-medium">{selectedPayment.user.name || "N/A"}</p>
+                  <p className="font-medium">{selectedPayment.user.name ?? "Pending name"}</p>
                   <p className="text-sm text-muted-foreground">{selectedPayment.user.email}</p>
                 </div>
                 <div className="space-y-1">
@@ -432,7 +432,9 @@ export default function AdminPaymentsPage() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">Reference Number</Label>
-                  <p className="font-medium">{selectedPayment.referenceNumber || "N/A"}</p>
+                  <p className="font-medium">
+                    {selectedPayment.referenceNumber || "Awaiting reference number"}
+                  </p>
                 </div>
               </div>
 

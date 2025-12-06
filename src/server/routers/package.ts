@@ -3,10 +3,13 @@ import { router, publicProcedure, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const packageRouter = router({
-  // Get all active packages (public)
+  // Get all active packages (public) - excludes free package
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.package.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        isFreePackage: false, // Only show admin-created packages
+      },
       orderBy: { sortOrder: "asc" },
     });
   }),
@@ -97,6 +100,18 @@ export const packageRouter = router({
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      // Prevent deletion of free package
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.id },
+      });
+
+      if (pkg?.isFreePackage) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete the free package. It is required for all new user registrations.",
+        });
+      }
+
       // Check if there are active subscriptions using this package
       const activeSubscriptions = await ctx.db.clientSubscription.count({
         where: {
@@ -113,14 +128,14 @@ export const packageRouter = router({
         });
       }
 
-      const pkg = await ctx.db.package.update({
+      const updated = await ctx.db.package.update({
         where: { id: input.id },
         data: { isActive: false },
       });
 
       return {
         success: true,
-        package: pkg,
+        package: updated,
       };
     }),
 });

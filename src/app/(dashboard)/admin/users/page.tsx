@@ -30,6 +30,12 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc/client";
 import { formatDate, getInitials } from "@/lib/utils";
 import { toast } from "sonner";
@@ -44,6 +50,7 @@ import {
   Settings,
   Eye,
   EyeOff,
+  Trash,
 } from "lucide-react";
 
 type UserRole = "CLIENT" | "PROVIDER" | "SUPER_ADMIN";
@@ -79,7 +86,7 @@ function ServiceCheckboxItem({
   checked: boolean;
   onChange: (checked: boolean) => void;
   idPrefix: string;
-}) {
+}): JSX.Element {
   return (
     <div className="flex items-center space-x-2">
       <Checkbox
@@ -97,7 +104,7 @@ function ServiceCheckboxItem({
   );
 }
 
-function ProviderServiceBadges({ services }: { services: ServiceType[] }) {
+function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.Element {
   if (services.length === 0) {
     return (
       <span className="text-xs text-muted-foreground italic">
@@ -116,7 +123,7 @@ function ProviderServiceBadges({ services }: { services: ServiceType[] }) {
   );
 }
 
-function UserStatsClient({ count }: { count: UserData["_count"] }) {
+function UserStatsClient({ count }: { count: UserData["_count"] }): JSX.Element {
   return (
     <>
       <div className="flex items-center gap-2 text-sm">
@@ -143,7 +150,7 @@ function UserStatsProvider({
 }: {
   count: UserData["_count"];
   onEditServices: () => void;
-}) {
+}): JSX.Element {
   return (
     <>
       <div className="flex items-center gap-2 text-sm">
@@ -164,14 +171,18 @@ function UserStatsProvider({
 function UserListItem({
   user,
   getRoleColor,
-  onRoleChange,
   onEditServices,
+  onDelete,
+  onRestore,
+  isDeleted,
 }: {
   user: UserData;
   getRoleColor: (role: string) => string;
-  onRoleChange: (role: UserRole) => void;
   onEditServices: () => void;
-}) {
+  onDelete: (userId: string) => void;
+  onRestore?: (userId: string) => void;
+  isDeleted?: boolean;
+}): JSX.Element {
   const providerServices = user.providerProfile?.supportedServices || [];
 
   return (
@@ -205,17 +216,37 @@ function UserListItem({
         {user.role === "PROVIDER" && (
           <UserStatsProvider count={user._count} onEditServices={onEditServices} />
         )}
-
-        <Select value={user.role} onValueChange={(value) => onRoleChange(value as UserRole)}>
-          <SelectTrigger className="w-[130px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CLIENT">Client</SelectItem>
-            <SelectItem value="PROVIDER">Provider</SelectItem>
-            <SelectItem value="SUPER_ADMIN">Admin</SelectItem>
-          </SelectContent>
-        </Select>
+        {isDeleted ? (
+          user.role !== "SUPER_ADMIN" && onRestore && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (confirm(`Restore user ${user.email}?`)) {
+                  onRestore(user.id);
+                }
+              }}
+            >
+              <CheckCircle className="mr-1 h-4 w-4" />
+              Restore
+            </Button>
+          )
+        ) : (
+          user.role !== "SUPER_ADMIN" && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (confirm(`Delete user ${user.email}? This action cannot be undone.`)) {
+                  onDelete(user.id);
+                }
+              }}
+            >
+              <Trash className="mr-1 h-4 w-4" />
+              Delete
+            </Button>
+          )
+        )}
       </div>
     </div>
   );
@@ -224,6 +255,7 @@ function UserListItem({
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -242,17 +274,12 @@ export default function AdminUsersPage() {
   const { data: users, isLoading } = trpc.admin.getUsers.useQuery({
     search: search || undefined,
     role: roleFilter === "all" ? undefined : (roleFilter as UserRole),
+    showDeleted: activeTab === "deleted",
   });
 
   const { data: serviceTypes } = trpc.admin.getServiceTypes.useQuery();
 
   const utils = trpc.useUtils();
-
-  const updateRole = trpc.admin.updateUserRole.useMutation({
-    onSuccess: () => {
-      utils.admin.getUsers.invalidate();
-    },
-  });
 
   const createUser = trpc.admin.createUser.useMutation({
     onSuccess: () => {
@@ -278,6 +305,26 @@ export default function AdminUsersPage() {
       setIsServicesOpen(false);
       setSelectedUserId(null);
       toast.success("Provider services updated");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const deleteUser = trpc.admin.deleteUser.useMutation({
+    onSuccess: (data) => {
+      utils.admin.getUsers.invalidate();
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const restoreUser = trpc.admin.restoreUser.useMutation({
+    onSuccess: (data) => {
+      utils.admin.getUsers.invalidate();
+      toast.success(data.message);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -436,7 +483,7 @@ export default function AdminUsersPage() {
                     Select the services this provider can handle
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
-                    {serviceTypes.map((service) => (
+                    {serviceTypes.map((service: ServiceType) => (
                       <ServiceCheckboxItem
                         key={service.id}
                         service={service}
@@ -535,42 +582,93 @@ export default function AdminUsersPage() {
       {/* Users List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>Manage Users</CardTitle>
           <CardDescription>
             {users?.total || 0} users found
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading && (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-20 w-full" />
-              ))}
-            </div>
-          )}
-          {!isLoading && users?.users.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No users found
-            </div>
-          )}
-          {!isLoading && (users?.users.length ?? 0) > 0 && (
-            <div className="space-y-4">
-              {(users?.users as unknown as UserData[]).map((user) => (
-                <UserListItem
-                  key={user.id}
-                  user={user}
-                  getRoleColor={getRoleColor}
-                  onRoleChange={(role) => updateRole.mutate({ userId: user.id, role })}
-                  onEditServices={() => {
-                    setSelectedUserId(user.id);
-                    const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
-                    setSelectedProviderServices(serviceIds);
-                    setIsServicesOpen(true);
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "deleted")}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="active">Active Users</TabsTrigger>
+              <TabsTrigger value="deleted">Deleted Users</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active" className="space-y-4">
+              {isLoading && (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              )}
+              {!isLoading && users?.users.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No active users found
+                </div>
+              )}
+              {!isLoading && (users?.users.length ?? 0) > 0 && (
+                <div className="space-y-4">
+                  {(users?.users as unknown as UserData[]).map((user) => (
+                    <UserListItem
+                      key={user.id}
+                      user={user}
+                      getRoleColor={getRoleColor}
+                      onEditServices={() => {
+                        setSelectedUserId(user.id);
+                        const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
+                        setSelectedProviderServices(serviceIds);
+                        setIsServicesOpen(true);
+                      }}
+                      onDelete={(userId) => {
+                        deleteUser.mutate({ userId });
+                      }}
+                      isDeleted={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="deleted" className="space-y-4">
+              {isLoading && (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              )}
+              {!isLoading && users?.users.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No deleted users found
+                </div>
+              )}
+              {!isLoading && (users?.users.length ?? 0) > 0 && (
+                <div className="space-y-4">
+                  {(users?.users as unknown as UserData[]).map((user) => (
+                    <UserListItem
+                      key={user.id}
+                      user={user}
+                      getRoleColor={getRoleColor}
+                      onEditServices={() => {
+                        setSelectedUserId(user.id);
+                        const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
+                        setSelectedProviderServices(serviceIds);
+                        setIsServicesOpen(true);
+                      }}
+                      onDelete={(userId) => {
+                        deleteUser.mutate({ userId });
+                      }}
+                      onRestore={(userId) => {
+                        restoreUser.mutate({ userId });
+                      }}
+                      isDeleted={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -585,7 +683,7 @@ export default function AdminUsersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="max-h-64 overflow-y-auto space-y-2 border rounded-md p-3">
-              {serviceTypes?.map((service) => (
+              {serviceTypes?.map((service: ServiceType) => (
                 <ServiceCheckboxItem
                   key={service.id}
                   service={service}

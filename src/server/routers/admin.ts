@@ -273,6 +273,7 @@ export const adminRouter = router({
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().default(0),
         search: z.string().optional(),
+        showDeleted: z.boolean().optional(),
       }).optional()
     )
     .query(async ({ ctx, input }) => {
@@ -287,6 +288,13 @@ export const adminRouter = router({
           { name: { contains: input.search, mode: "insensitive" } },
           { email: { contains: input.search, mode: "insensitive" } },
         ];
+      }
+
+      // Filter by deletion status
+      if (input?.showDeleted) {
+        where.deletedAt = { not: null };
+      } else {
+        where.deletedAt = null;
       }
 
       const [users, total] = await Promise.all([
@@ -433,27 +441,57 @@ export const adminRouter = router({
       };
     }),
 
-  // Delete service type
+  // Delete service type (soft delete)
   deleteServiceType: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if service type has requests
-      const requestCount = await ctx.db.request.count({
-        where: { serviceTypeId: input.id },
-      });
-
-      if (requestCount > 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Cannot delete service type with ${requestCount} existing requests. Deactivate it instead.`,
-        });
-      }
-
-      await ctx.db.serviceType.delete({
+      const serviceType = await ctx.db.serviceType.findUnique({
         where: { id: input.id },
       });
 
-      return { success: true };
+      if (!serviceType) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Service type not found",
+        });
+      }
+
+      // Soft delete the service type
+      await ctx.db.serviceType.update({
+        where: { id: input.id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+        },
+      });
+
+      return { success: true, message: `Service type "${serviceType.name}" has been deleted` };
+    }),
+
+  // Restore service type
+  restoreServiceType: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const serviceType = await ctx.db.serviceType.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!serviceType) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Service type not found",
+        });
+      }
+
+      await ctx.db.serviceType.update({
+        where: { id: input.id },
+        data: {
+          deletedAt: null,
+          isActive: true,
+        },
+      });
+
+      return { success: true, message: `Service type "${serviceType.name}" has been restored` };
     }),
 
   // Create package
@@ -500,27 +538,65 @@ export const adminRouter = router({
       return { success: true, package: pkg };
     }),
 
-  // Delete package
+  // Delete package (soft delete)
   deletePackage: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Check if package has active subscriptions
-      const subCount = await ctx.db.clientSubscription.count({
-        where: { packageId: input.id, isActive: true },
-      });
-
-      if (subCount > 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Cannot delete package with ${subCount} active subscriptions. Deactivate it instead.`,
-        });
-      }
-
-      await ctx.db.package.delete({
+      const pkg = await ctx.db.package.findUnique({
         where: { id: input.id },
       });
 
-      return { success: true };
+      if (!pkg) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Package not found",
+        });
+      }
+
+      // Prevent deletion of free package
+      if (pkg.isFreePackage) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete the free package",
+        });
+      }
+
+      // Soft delete the package
+      await ctx.db.package.update({
+        where: { id: input.id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+        },
+      });
+
+      return { success: true, message: `Package "${pkg.name}" has been deleted` };
+    }),
+
+  // Restore package
+  restorePackage: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!pkg) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Package not found",
+        });
+      }
+
+      await ctx.db.package.update({
+        where: { id: input.id },
+        data: {
+          deletedAt: null,
+          isActive: true,
+        },
+      });
+
+      return { success: true, message: `Package "${pkg.name}" has been restored` };
     }),
 
   // Get all service types (including inactive)
@@ -855,6 +931,129 @@ export const adminRouter = router({
         name: user.name,
         email: user.email,
         supportedServices: user.providerProfile?.supportedServices || [],
+      };
+    }),
+
+  // Delete user (soft delete)
+  deleteUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // Prevent deletion of super admin
+      if (user.role === "SUPER_ADMIN") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete a super admin user",
+        });
+      }
+
+      // Soft delete the user
+      const deletedUser = await ctx.db.user.update({
+        where: { id: input.userId },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      return {
+        success: true,
+        message: `User ${user.email} has been deleted`,
+        user: deletedUser,
+      };
+    }),
+
+  // Restore user
+  restoreUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: input.userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const restoredUser = await ctx.db.user.update({
+        where: { id: input.userId },
+        data: {
+          deletedAt: null,
+        },
+      });
+
+      return {
+        success: true,
+        message: `User ${user.email} has been restored`,
+        user: restoredUser,
+      };
+    }),
+
+  // Delete request (soft delete)
+  deleteRequest: adminProcedure
+    .input(z.object({ requestId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const request = await ctx.db.request.findUnique({
+        where: { id: input.requestId },
+      });
+
+      if (!request) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Request not found",
+        });
+      }
+
+      await ctx.db.request.update({
+        where: { id: input.requestId },
+        data: {
+          deletedAt: new Date(),
+        },
+      });
+
+      return {
+        success: true,
+        message: `Request "${request.title}" has been deleted`,
+      };
+    }),
+
+  // Restore request
+  restoreRequest: adminProcedure
+    .input(z.object({ requestId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const request = await ctx.db.request.findUnique({
+        where: { id: input.requestId },
+      });
+
+      if (!request) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Request not found",
+        });
+      }
+
+      await ctx.db.request.update({
+        where: { id: input.requestId },
+        data: {
+          deletedAt: null,
+        },
+      });
+
+      return {
+        success: true,
+        message: `Request "${request.title}" has been restored`,
       };
     }),
 });

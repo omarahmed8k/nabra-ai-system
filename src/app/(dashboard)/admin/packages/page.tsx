@@ -156,9 +156,15 @@ export default function AdminPackagesPage() {
 
       {/* Packages List */}
       <div className="grid gap-6 md:grid-cols-3">
-        {isLoading
-          ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)
-          : packages?.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; durationDays: number; features: string[] }) =>
+        {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)}
+        {!isLoading && (!packages || packages.length === 0) && (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium">No packages yet</p>
+            <p className="text-sm">Create your first package to get started</p>
+          </div>
+        )}
+        {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; durationDays: number; features: string[] }) =>
               editingId === pkg.id ? (
                 <Card key={pkg.id}>
                   <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
