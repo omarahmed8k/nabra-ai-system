@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ChunkReloadOnError } from "@/components/system/chunk-reloader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <TRPCProvider>
+            <ChunkReloadOnError />
             {children}
             <Toaster position="top-right" richColors closeButton />
           </TRPCProvider>
