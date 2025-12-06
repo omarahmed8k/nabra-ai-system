@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileUpload } from "@/components/ui/file-upload";
 import { trpc } from "@/lib/trpc/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { showError, showSuccess } from "@/lib/error-handler";
@@ -70,12 +71,10 @@ interface FormData {
   senderName: string;
   senderBank: string;
   senderCountry: string;
-  amount: string;
-  currency: string;
   transferDate: string;
   referenceNumber: string;
   notes: string;
-  transferImage: string;
+  transferImageUrl: string;
 }
 
 function getStatusBadgeVariant(status: string) {
@@ -305,22 +304,21 @@ function BankDetailsCard({
 // Component for payment proof form
 function PaymentProofForm({
   subscriptionId,
+  packagePrice,
   onSuccess,
 }: {
   subscriptionId: string;
+  packagePrice: number;
   onSuccess: () => void;
 }) {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     senderName: "",
     senderBank: "",
     senderCountry: "",
-    amount: "",
-    currency: "USD",
     transferDate: "",
     referenceNumber: "",
     notes: "",
-    transferImage: "",
+    transferImageUrl: "",
   });
 
   const submitProofMutation = trpc.payment.submitProof.useMutation({
@@ -333,35 +331,35 @@ function PaymentProofForm({
     },
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setImagePreview(result);
-      setFormData((prev) => ({ ...prev, transferImage: result }));
-    };
-    reader.readAsDataURL(file);
+  const handleFilesChange = (files: any[]) => {
+    if (files.length > 0) {
+      setFormData((prev) => ({ ...prev, transferImageUrl: files[0].url }));
+    } else {
+      setFormData((prev) => ({ ...prev, transferImageUrl: "" }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.transferImage) {
+    if (!formData.transferImageUrl) {
       showError("Please upload the transfer receipt image");
+      return;
+    }
+
+    if (!formData.transferDate) {
+      showError("Please select the transfer date");
       return;
     }
 
     submitProofMutation.mutate({
       subscriptionId,
-      transferImage: formData.transferImage,
+      transferImage: formData.transferImageUrl,
       senderName: formData.senderName,
       senderBank: formData.senderBank,
       senderCountry: formData.senderCountry,
-      amount: Number.parseFloat(formData.amount),
-      currency: formData.currency,
+      amount: packagePrice,
+      currency: "USD",
       transferDate: new Date(formData.transferDate),
       referenceNumber: formData.referenceNumber || undefined,
       notes: formData.notes || undefined,
@@ -387,49 +385,13 @@ function PaymentProofForm({
         <CardContent className="space-y-4">
           {/* Image Upload */}
           <div className="space-y-2">
-            <Label htmlFor="transferImage">Transfer Receipt *</Label>
-            <div className="border-2 border-dashed rounded-lg p-4 text-center">
-              {imagePreview ? (
-                <div className="space-y-2">
-                  <img
-                    src={imagePreview}
-                    alt="Transfer receipt"
-                    className="max-h-48 mx-auto rounded"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setImagePreview(null);
-                      updateField("transferImage", "");
-                    }}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <Label
-                    htmlFor="imageUpload"
-                    className="cursor-pointer text-primary hover:underline"
-                  >
-                    Click to upload
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG up to 5MB
-                  </p>
-                  <Input
-                    id="imageUpload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageUpload}
-                  />
-                </div>
-              )}
-            </div>
+            <Label>Transfer Receipt *</Label>
+            <FileUpload
+              onFilesChange={handleFilesChange}
+              maxFiles={1}
+              maxSizeMB={10}
+              accept="image/*"
+            />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -468,38 +430,30 @@ function PaymentProofForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="transferDate">Transfer Date *</Label>
-              <Input
-                id="transferDate"
-                type="date"
-                required
-                value={formData.transferDate}
-                onChange={(e) => updateField("transferDate", e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="transferDate"
+                  type="date"
+                  required
+                  value={formData.transferDate}
+                  onChange={(e) => updateField("transferDate", e.target.value)}
+                  className="pr-10"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-sm">
+                  📅
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount *</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                required
-                value={formData.amount}
-                onChange={(e) => updateField("amount", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="referenceNumber">Reference Number</Label>
-              <Input
-                id="referenceNumber"
-                placeholder="Bank reference (optional)"
-                value={formData.referenceNumber}
-                onChange={(e) => updateField("referenceNumber", e.target.value)}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="referenceNumber">Reference Number (Optional)</Label>
+            <Input
+              id="referenceNumber"
+              placeholder="Bank reference or transaction ID"
+              value={formData.referenceNumber}
+              onChange={(e) => updateField("referenceNumber", e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -628,6 +582,7 @@ export default function PaymentPage() {
         )}
         <PaymentProofForm
           subscriptionId={pendingSubscription.id}
+          packagePrice={pendingSubscription.package.price}
           onSuccess={() => utils.subscription.getPending.invalidate()}
         />
       </div>
