@@ -19,6 +19,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
+import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -145,6 +146,11 @@ export default function AdminRequestDetailPage() {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Service-Specific Q&A Responses */}
+          {request.attributeResponses && Array.isArray(request.attributeResponses) && request.attributeResponses.length > 0 && (
+            <AttributeResponsesDisplay responses={request.attributeResponses as any} />
           )}
 
           {/* Comments/Activity */}

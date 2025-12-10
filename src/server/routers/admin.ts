@@ -383,6 +383,8 @@ export const adminRouter = router({
         description: z.string().optional(),
         icon: z.string().optional(),
         formFields: z.any().optional(),
+        attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
+        creditCost: z.number().min(1).default(1), // Number of credits required for this service
         sortOrder: z.number().default(0),
       })
     )
@@ -404,6 +406,8 @@ export const adminRouter = router({
           description: input.description,
           icon: input.icon,
           formFields: input.formFields,
+          attributes: input.attributes,
+          creditCost: input.creditCost,
           sortOrder: input.sortOrder,
         },
       });
@@ -423,6 +427,8 @@ export const adminRouter = router({
         description: z.string().optional(),
         icon: z.string().optional(),
         formFields: z.any().optional(),
+        attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
+        creditCost: z.number().min(1).optional(), // Number of credits required for this service
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
       })

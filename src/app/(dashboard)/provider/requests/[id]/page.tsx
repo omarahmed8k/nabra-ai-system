@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileUpload, InlineFileUpload, type UploadedFile } from "@/components/ui/file-upload";
+import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import {
@@ -213,6 +214,11 @@ export default function ProviderRequestDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Service-Specific Q&A Responses */}
+          {request.attributeResponses && Array.isArray(request.attributeResponses) && request.attributeResponses.length > 0 && (
+            <AttributeResponsesDisplay responses={request.attributeResponses as any} />
+          )}
 
           {/* Action Card */}
           {canStart && (

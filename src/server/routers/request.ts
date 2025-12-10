@@ -3,6 +3,8 @@ import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { deductCredits, checkCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
+import { validateAttributeResponses } from "@/lib/attribute-validation";
+import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 export const requestRouter = router({
   // Create a new request (client only)
@@ -14,14 +16,50 @@ export const requestRouter = router({
         serviceTypeId: z.string(),
         priority: z.number().min(1).max(3).default(2),
         formData: z.record(z.any()).optional(),
+        attributeResponses: z.any().optional(), // Client's answers to service Q&A: [{question: string, answer: string}]
         attachments: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
+      // Get service type to validate attributes and credit cost
+      const serviceType = await ctx.db.serviceType.findUnique({
+        where: { id: input.serviceTypeId },
+      }) as any; // Cast to any to avoid type issues with Json fields
+
+      if (!serviceType) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Service type not found",
+        });
+      }
+
+      // Validate attribute responses if service has required attributes
+      if (serviceType.attributes && input.attributeResponses) {
+        const validation = validateAttributeResponses(
+          serviceType.attributes as ServiceAttribute[],
+          input.attributeResponses as AttributeResponse[]
+        );
+        
+        if (!validation.valid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Invalid attribute responses: ${validation.errors.join(", ")}`,
+          });
+        }
+      }
+
+      // Get credit cost from service type (default to 1 if not set)
+      const baseCreditCost = serviceType.creditCost || 1;
+      
+      // Apply priority multiplier: Low=1x, Medium=1.5x, High=2x
+      const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
+      const priorityMultiplier = priorityMultipliers[input.priority] || 1.5;
+      const totalCreditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+
       // Check credits before creating
-      const creditCheck = await checkCredits(userId, 1);
+      const creditCheck = await checkCredits(userId, totalCreditCost);
       if (!creditCheck.allowed) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
@@ -29,8 +67,8 @@ export const requestRouter = router({
         });
       }
 
-      // Deduct credit
-      const deductResult = await deductCredits(userId, 1, `New request: ${input.title}`);
+      // Deduct credits based on service type and priority
+      const deductResult = await deductCredits(userId, totalCreditCost, `New request: ${input.title} (Priority ${input.priority})`);
       if (!deductResult.success) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
@@ -47,9 +85,10 @@ export const requestRouter = router({
           serviceTypeId: input.serviceTypeId,
           priority: input.priority,
           formData: input.formData || {},
+          attributeResponses: input.attributeResponses || null,
           attachments: input.attachments || [],
           status: "PENDING",
-        },
+        } as any,
         include: {
           serviceType: true,
         },

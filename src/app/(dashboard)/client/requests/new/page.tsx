@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -23,18 +23,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileUpload, type UploadedFile } from "@/components/ui/file-upload";
+import { ServiceAttributesForm } from "@/components/client/service-attributes-form";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { ArrowLeft } from "lucide-react";
+import type { AttributeResponse } from "@/types/service-attributes";
 
 export default function NewRequestPage() {
   const router = useRouter();
   const [selectedServiceType, setSelectedServiceType] = useState("");
+  const [priority, setPriority] = useState("2");
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
+  const [attributeResponses, setAttributeResponses] = useState<AttributeResponse[]>([]);
 
   const { data: serviceTypes } =
     trpc.request.getServiceTypes.useQuery();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
+
+  const selectedService = useMemo(
+    () => serviceTypes?.find((s: { id: string }) => s.id === selectedServiceType),
+    [serviceTypes, selectedServiceType]
+  );
+
+  // Reset attribute responses when service type changes
+  useEffect(() => {
+    setAttributeResponses([]);
+  }, [selectedServiceType]);
 
   const createRequest = trpc.request.create.useMutation({
     onSuccess: (data) => {
@@ -48,13 +62,33 @@ export default function NewRequestPage() {
     },
   });
 
+  const hasCredits = subscription && subscription.remainingCredits > 0;
+  const baseCreditCost = (selectedService as { creditCost?: number })?.creditCost || 1;
+  
+  // Priority multiplier: Low=1x, Medium=1.5x, High=2x
+  const priorityMultipliers: Record<string, number> = { "1": 1, "2": 1.5, "3": 2 };
+  const priorityMultiplier = priorityMultipliers[priority] || 1.5;
+  const totalCreditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+  
+  const canAffordService = subscription && subscription.remainingCredits >= totalCreditCost;
+  
+  const priorityLabels: Record<string, string> = { "1": "1x", "2": "1.5x", "3": "2x" };
+  const priorityLabel = priorityLabels[priority] || "1.5x";
+  
+  let buttonText = "Create Request (1 Credit)";
+  if (createRequest.isPending) {
+    buttonText = "Creating...";
+  } else if (totalCreditCost !== 1) {
+    buttonText = `Create Request (${totalCreditCost} Credits)`;
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const priority = Number.parseInt(formData.get("priority") as string) || 2;
+    const formPriority = Number.parseInt(formData.get("priority") as string) || 2;
 
     if (!selectedServiceType) {
       toast.error("Validation Error", {
@@ -81,12 +115,11 @@ export default function NewRequestPage() {
       title,
       description,
       serviceTypeId: selectedServiceType,
-      priority,
+      priority: formPriority,
       attachments: attachments.map((f) => f.url),
+      attributeResponses: attributeResponses.length > 0 ? attributeResponses : undefined,
     });
   }
-
-  const hasCredits = subscription && subscription.remainingCredits > 0;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -104,12 +137,12 @@ export default function NewRequestPage() {
         </div>
       </div>
 
-      {!hasCredits && (
+      {selectedServiceType && !canAffordService && (
         <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
             <CardTitle className="text-orange-800">Insufficient Credits</CardTitle>
             <CardDescription className="text-orange-700">
-              You need at least 1 credit to create a request. Please subscribe to a plan
+              This request requires {totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'} ({baseCreditCost} base × {priorityLabel} priority) but you only have {subscription?.remainingCredits || 0}. Please subscribe to a plan
               or purchase more credits.
             </CardDescription>
           </CardHeader>
@@ -125,8 +158,13 @@ export default function NewRequestPage() {
         <CardHeader>
           <CardTitle>Request Details</CardTitle>
           <CardDescription>
-            Creating a request will cost 1 credit. You have{" "}
-            {subscription?.remainingCredits || 0} credits available.
+            {selectedServiceType ? (
+              <>Base cost: <strong>{baseCreditCost} credit{baseCreditCost === 1 ? '' : 's'}</strong> × Priority multiplier ({priorityLabel}) = <strong>{totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'}</strong>. You have{" "}
+              <strong>{subscription?.remainingCredits || 0} credits</strong> available.</>
+            ) : (
+              <>Select a service to see the credit cost. You have{" "}
+              {subscription?.remainingCredits || 0} credits available.</>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -178,16 +216,19 @@ export default function NewRequestPage() {
 
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select name="priority" defaultValue="2" disabled={!hasCredits}>
+              <Select name="priority" value={priority} onValueChange={setPriority} disabled={!hasCredits}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Low</SelectItem>
-                  <SelectItem value="2">Medium</SelectItem>
-                  <SelectItem value="3">High</SelectItem>
+                  <SelectItem value="1">Low (1x cost)</SelectItem>
+                  <SelectItem value="2">Medium (1.5x cost)</SelectItem>
+                  <SelectItem value="3">High (2x cost)</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Priority affects credit cost: Low=1×, Medium=1.5×, High=2× base cost
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -200,6 +241,16 @@ export default function NewRequestPage() {
               />
             </div>
 
+            {/* Dynamic Q&A based on selected service */}
+            {selectedService && (selectedService as any).attributes && (
+              <ServiceAttributesForm
+                attributes={(selectedService as any).attributes}
+                responses={attributeResponses}
+                onChange={setAttributeResponses}
+                disabled={!hasCredits || createRequest.isPending}
+              />
+            )}
+
             <div className="flex gap-4">
               <Link href="/client/requests">
                 <Button type="button" variant="outline">
@@ -208,9 +259,9 @@ export default function NewRequestPage() {
               </Link>
               <Button
                 type="submit"
-                disabled={!hasCredits || createRequest.isPending}
+                disabled={!canAffordService || createRequest.isPending}
               >
-                {createRequest.isPending ? "Creating..." : "Create Request (1 Credit)"}
+                {buttonText}
               </Button>
             </div>
           </form>

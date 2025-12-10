@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
 import { Plus, Edit, Trash } from "lucide-react";
+import { AttributesManager } from "@/components/admin/attributes-manager";
+import type { ServiceAttribute } from "@/types/service-attributes";
 
 const EMOJI_LIST = [
   "🎨", "🔧", "💻", "📸", "✍️", "🎬", "🎵", "🎯", "🎓",
@@ -28,6 +30,8 @@ export default function AdminServicesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedIconField, setSelectedIconField] = useState<"create" | "edit" | null>(null);
+  const [createAttributes, setCreateAttributes] = useState<ServiceAttribute[]>([]);
+  const [editAttributes, setEditAttributes] = useState<ServiceAttribute[]>([]);
 
   const { data: services, isLoading } = trpc.request.getServiceTypes.useQuery();
   const utils = trpc.useUtils();
@@ -37,6 +41,7 @@ export default function AdminServicesPage() {
       utils.request.getServiceTypes.invalidate();
       setShowCreate(false);
       setSelectedIconField(null);
+      setCreateAttributes([]);
     },
   });
 
@@ -45,6 +50,7 @@ export default function AdminServicesPage() {
       utils.request.getServiceTypes.invalidate();
       setEditingId(null);
       setSelectedIconField(null);
+      setEditAttributes([]);
     },
   });
 
@@ -58,10 +64,13 @@ export default function AdminServicesPage() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const iconValue = formData.get("icon") as string;
+    const creditCostValue = formData.get("creditCost") as string;
     createService.mutate({
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       icon: iconValue || undefined,
+      creditCost: creditCostValue ? Number.parseInt(creditCostValue, 10) : 1,
+      attributes: createAttributes.length > 0 ? createAttributes : undefined,
     });
   };
 
@@ -69,11 +78,14 @@ export default function AdminServicesPage() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const iconValue = formData.get("icon") as string;
+    const creditCostValue = formData.get("creditCost") as string;
     updateService.mutate({
       id,
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       icon: iconValue || undefined,
+      creditCost: creditCostValue ? Number.parseInt(creditCostValue, 10) : undefined,
+      attributes: editAttributes.length > 0 ? editAttributes : undefined,
     });
   };
 
@@ -156,6 +168,24 @@ export default function AdminServicesPage() {
                   <Input id="description" name="description" required />
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="creditCost">Credit Cost</Label>
+                <Input 
+                  id="creditCost" 
+                  name="creditCost" 
+                  type="number" 
+                  min="1" 
+                  defaultValue="1" 
+                  required 
+                />
+                <p className="text-xs text-muted-foreground">Number of credits required to create a request for this service</p>
+              </div>
+
+              {/* Attributes Manager */}
+              <AttributesManager
+                attributes={createAttributes}
+                onChange={setCreateAttributes}
+              />
             </CardContent>
             <CardFooter className="gap-2">
               <Button
@@ -164,6 +194,7 @@ export default function AdminServicesPage() {
                 onClick={() => {
                   setShowCreate(false);
                   setSelectedIconField(null);
+                  setCreateAttributes([]);
                 }}
               >
                 Cancel
@@ -199,7 +230,7 @@ export default function AdminServicesPage() {
           )}
           {!isLoading && (services?.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {services?.map((service: { id: string; name: string; description: string | null; icon: string | null }) =>
+              {services?.map((service: any) =>
                 editingId === service.id ? (
                   <form
                     key={service.id}
@@ -255,6 +286,24 @@ export default function AdminServicesPage() {
                         />
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <Label>Credit Cost</Label>
+                      <Input
+                        name="creditCost"
+                        type="number"
+                        min="1"
+                        defaultValue={service.creditCost || 1}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">Number of credits required to create a request for this service</p>
+                    </div>
+
+                    {/* Attributes Manager for Edit */}
+                    <AttributesManager
+                      attributes={editAttributes}
+                      onChange={setEditAttributes}
+                    />
+
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -263,6 +312,7 @@ export default function AdminServicesPage() {
                         onClick={() => {
                           setEditingId(null);
                           setSelectedIconField(null);
+                          setEditAttributes([]);
                         }}
                       >
                         Cancel
@@ -288,13 +338,26 @@ export default function AdminServicesPage() {
                         <p className="text-sm text-muted-foreground">
                           {service.description}
                         </p>
+                        <div className="flex gap-3 mt-1">
+                          {service.attributes && service.attributes.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              📋 {service.attributes.length} question{service.attributes.length === 1 ? '' : 's'}
+                            </p>
+                          )}
+                          <p className="text-xs font-medium text-primary">
+                            💳 {service.creditCost || 1} credit{(service.creditCost || 1) === 1 ? '' : 's'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingId(service.id)}
+                        onClick={() => {
+                          setEditingId(service.id);
+                          setEditAttributes(service.attributes || []);
+                        }}
                       >
                         <Edit className="mr-1 h-3 w-3" />
                         Edit

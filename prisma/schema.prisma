@@ -88,6 +88,8 @@ model ServiceType {
   description String?
   icon        String?
   formFields  Json?
+  attributes  Json?             // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
+  creditCost  Int               @default(1) // Number of credits required to create a request for this service
   isActive    Boolean           @default(true)
   sortOrder   Int               @default(0)
   createdAt   DateTime          @default(now())
@@ -177,6 +179,7 @@ model Request {
   status               RequestStatus    @default(PENDING)
   priority             Int              @default(1)
   formData             Json?
+  attributeResponses   Json?            // Client's answers to service-specific Q&A: [{question: string, answer: string}]
   attachments          String[]         @default([])
   estimatedDelivery    DateTime?
   currentRevisionCount Int              @default(0)
