@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,18 +16,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
 import { formatCurrency } from "@/lib/utils";
 import { Plus, Edit, Trash, Package } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { showError } from "@/lib/error-handler";
 
 export default function AdminPackagesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
 
   const { data: packages, isLoading } = trpc.package.getAll.useQuery();
+  const { data: allServices } = trpc.admin.getServiceTypes.useQuery();
   const utils = trpc.useUtils();
 
   const createPackage = trpc.admin.createPackage.useMutation({
     onSuccess: () => {
       utils.package.getAll.invalidate();
       setShowCreate(false);
+      setSelectedServiceIds([]);
+      toast.success("Package created successfully");
+    },
+    onError: (error) => {
+      showError(error, "Failed to create package");
     },
   });
 
@@ -35,6 +46,11 @@ export default function AdminPackagesPage() {
     onSuccess: () => {
       utils.package.getAll.invalidate();
       setEditingId(null);
+      setSelectedServiceIds([]);
+      toast.success("Package updated successfully");
+    },
+    onError: (error) => {
+      showError(error, "Failed to update package");
     },
   });
 
@@ -54,6 +70,7 @@ export default function AdminPackagesPage() {
       maxFreeRevisions: Number.parseInt(formData.get("maxFreeRevisions") as string),
       durationDays: Number.parseInt(formData.get("durationDays") as string),
       features: (formData.get("features") as string).split("\n").filter(Boolean),
+      serviceIds: selectedServiceIds,
     });
   };
 
@@ -67,8 +84,32 @@ export default function AdminPackagesPage() {
       credits: Number.parseInt(formData.get("credits") as string),
       maxFreeRevisions: Number.parseInt(formData.get("maxFreeRevisions") as string),
       features: (formData.get("features") as string).split("\n").filter(Boolean),
+      serviceIds: selectedServiceIds,
     });
   };
+
+  const toggleService = useCallback((serviceId: string) => {
+    setSelectedServiceIds((prev) => 
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  }, []);
+
+  const handleCancelCreate = useCallback(() => {
+    setShowCreate(false);
+    setSelectedServiceIds([]);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setSelectedServiceIds([]);
+  }, []);
+
+  const handleEditPackage = useCallback((pkg: any) => {
+    setEditingId(pkg.id);
+    setSelectedServiceIds(pkg.services?.map((s: any) => s.serviceType.id) || []);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -141,9 +182,27 @@ export default function AdminPackagesPage() {
                   />
                 </div>
               </div>
+              
+              <div className="space-y-2">
+                <Label>Included Services</Label>
+                <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
+                  {allServices?.map((service: { id: string; name: string; icon: string | null }) => (
+                    <div key={service.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`service-${service.id}`}
+                        checked={selectedServiceIds.includes(service.id)}
+                        onCheckedChange={() => toggleService(service.id)}
+                      />
+                      <Label htmlFor={`service-${service.id}`} className="cursor-pointer font-normal">
+                        {service.icon} {service.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
             <CardFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+              <Button type="button" variant="outline" onClick={handleCancelCreate}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createPackage.isPending}>
@@ -164,7 +223,16 @@ export default function AdminPackagesPage() {
             <p className="text-sm">Create your first package to get started</p>
           </div>
         )}
-        {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; durationDays: number; features: string[] }) =>
+        {!isLoading && packages && packages.length > 0 && packages.map((pkg: { 
+          id: string; 
+          name: string; 
+          price: number; 
+          credits: number; 
+          maxFreeRevisions: number; 
+          durationDays: number; 
+          features: string[];
+          services?: Array<{ serviceType: { id: string; name: string; icon: string | null } }>;
+        }) =>
               editingId === pkg.id ? (
                 <Card key={pkg.id}>
                   <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
@@ -205,13 +273,31 @@ export default function AdminPackagesPage() {
                           defaultValue={pkg.features.join("\n")}
                         />
                       </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Included Services</Label>
+                        <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
+                          {allServices?.map((service: { id: string; name: string; icon: string | null }) => (
+                            <div key={service.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`edit-service-${service.id}`}
+                                checked={selectedServiceIds.includes(service.id)}
+                                onCheckedChange={() => toggleService(service.id)}
+                              />
+                              <Label htmlFor={`edit-service-${service.id}`} className="cursor-pointer font-normal">
+                                {service.icon} {service.name}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </CardContent>
                     <CardFooter className="gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingId(null)}
+                        onClick={handleCancelEdit}
                       >
                         Cancel
                       </Button>
@@ -250,12 +336,31 @@ export default function AdminPackagesPage() {
                         </li>
                       ))}
                     </ul>
+                    
+                    {pkg.services && pkg.services.length > 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <p className="text-sm font-medium mb-2">Included Services:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {pkg.services.map((ps) => (
+                            <Badge key={ps.serviceType.id} variant="secondary" className="text-xs">
+                              {ps.serviceType.icon} {ps.serviceType.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {(!pkg.services || pkg.services.length === 0) && (
+                      <div className="mt-4 pt-4 border-t">
+                        <p className="text-sm text-muted-foreground italic">No services configured</p>
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setEditingId(pkg.id)}
+                      onClick={() => handleEditPackage(pkg)}
                     >
                       <Edit className="mr-1 h-3 w-3" />
                       Edit

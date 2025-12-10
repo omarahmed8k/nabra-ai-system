@@ -22,29 +22,8 @@ async function main() {
 
   console.log("🧹 Cleaned existing data");
 
-  // Create single free package
-  const freePackage = await prisma.package.create({
-    data: {
-      name: "Free",
-      description: "Starter access with limited credits",
-      credits: 1,
-      price: 0,
-      durationDays: 30,
-      maxFreeRevisions: 1,
-      isFreePackage: true,
-      features: [
-        "Free access",
-        "Limited request credits",
-        "Basic support",
-      ],
-      sortOrder: 1,
-    },
-  });
-
-  console.log("📦 Created package:", freePackage.name);
-
-  // Create service types with custom Q&A attributes
-  await prisma.serviceType.create({
+  // Create service types first
+  const graphicDesignService = await prisma.serviceType.create({
     data: {
       name: "Graphic Design",
       description: "Professional graphic design services",
@@ -78,7 +57,7 @@ async function main() {
     },
   });
 
-  await prisma.serviceType.create({
+  const videoEditingService = await prisma.serviceType.create({
     data: {
       name: "Video Editing",
       description: "Professional video editing and post-production",
@@ -87,35 +66,36 @@ async function main() {
       sortOrder: 2,
       attributes: [
         {
-          question: "What is the video duration?",
+          question: "Video duration (in minutes)?",
           required: true,
           type: "text",
         },
         {
-          question: "Do you need background music?",
+          question: "What style of editing do you prefer?",
+          required: true,
+          type: "select",
+          options: ["Corporate", "Creative", "Documentary", "Social Media", "Cinematic"],
+        },
+        {
+          question: "Do you need color grading?",
           required: true,
           type: "select",
           options: ["Yes", "No"],
         },
         {
-          question: "What is the video purpose?",
+          question: "What output format do you need?",
           required: true,
-          type: "select",
-          options: ["Social Media", "Website", "Advertisement", "Other"],
-        },
-        {
-          question: "Any specific effects or transitions?",
-          required: false,
-          type: "text",
+          type: "multiselect",
+          options: ["MP4", "MOV", "AVI", "WebM"],
         },
       ],
     },
   });
 
-  await prisma.serviceType.create({
+  const contentWritingService = await prisma.serviceType.create({
     data: {
       name: "Content Writing",
-      description: "Professional content writing services",
+      description: "High-quality content writing services",
       icon: "✍️",
       creditCost: 5,
       sortOrder: 3,
@@ -124,26 +104,107 @@ async function main() {
           question: "What type of content do you need?",
           required: true,
           type: "select",
-          options: ["Blog Post", "Article", "Social Media", "Website Copy", "Other"],
+          options: ["Blog Post", "Article", "Product Description", "Social Media", "Website Copy"],
         },
         {
-          question: "How many words approximately?",
+          question: "Approximate word count?",
           required: true,
           type: "text",
         },
         {
-          question: "Do you have any specific keywords to include?",
+          question: "Target audience?",
+          required: true,
+          type: "text",
+        },
+        {
+          question: "SEO keywords to include?",
           required: false,
-          type: "text",
-        },
-        {
-          question: "What is the target audience?",
-          required: true,
           type: "text",
         },
       ],
     },
   });
+
+  console.log("🎨 Created service types");
+
+  // Create packages with their allowed services
+  const freePackage = await prisma.package.create({
+    data: {
+      name: "Free",
+      description: "Starter access with limited credits and basic services",
+      credits: 1,
+      price: 0,
+      durationDays: 30,
+      maxFreeRevisions: 1,
+      isFreePackage: true,
+      features: [
+        "1 request credit",
+        "Graphic Design services only",
+        "Basic support",
+        "1 free revision",
+      ],
+      sortOrder: 1,
+      services: {
+        create: [
+          { serviceId: graphicDesignService.id },
+        ],
+      },
+    },
+  });
+
+  const proPackage = await prisma.package.create({
+    data: {
+      name: "Pro",
+      description: "Professional package with more services and credits",
+      credits: 10,
+      price: 29.99,
+      durationDays: 30,
+      maxFreeRevisions: 3,
+      isFreePackage: false,
+      features: [
+        "10 request credits",
+        "Graphic Design & Video Editing",
+        "Priority support",
+        "3 free revisions per request",
+      ],
+      sortOrder: 2,
+      services: {
+        create: [
+          { serviceId: graphicDesignService.id },
+          { serviceId: videoEditingService.id },
+        ],
+      },
+    },
+  });
+
+  const premiumPackage = await prisma.package.create({
+    data: {
+      name: "Premium",
+      description: "Full access to all services with maximum credits",
+      credits: 25,
+      price: 79.99,
+      durationDays: 30,
+      maxFreeRevisions: 5,
+      isFreePackage: false,
+      features: [
+        "25 request credits",
+        "All services available",
+        "Premium support",
+        "5 free revisions per request",
+        "Priority processing",
+      ],
+      sortOrder: 3,
+      services: {
+        create: [
+          { serviceId: graphicDesignService.id },
+          { serviceId: videoEditingService.id },
+          { serviceId: contentWritingService.id },
+        ],
+      },
+    },
+  });
+
+  console.log("📦 Created packages:", freePackage.name, proPackage.name, premiumPackage.name);
 
   console.log("🛠️ Created service types with Q&A attributes");
 

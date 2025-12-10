@@ -35,6 +35,44 @@ export const requestRouter = router({
         });
       }
 
+      // Check if user's subscription package allows access to this service
+      const activeSubscription = await ctx.db.clientSubscription.findFirst({
+        where: {
+          userId: userId,
+          isActive: true,
+          endDate: { gte: new Date() },
+        },
+        select: {
+          package: {
+            select: {
+              name: true,
+              services: {
+                select: {
+                  serviceId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!activeSubscription) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "No active subscription found. Please subscribe to a package to create requests.",
+        });
+      }
+
+      // Check if the selected service is allowed by the user's package
+      const allowedServiceIds = activeSubscription.package.services.map((s) => s.serviceId);
+      if (!allowedServiceIds.includes(input.serviceTypeId)) {
+        const serviceName = serviceType.name;
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Your ${activeSubscription.package.name} package does not include ${serviceName} service. Please upgrade your subscription to access this service.`,
+        });
+      }
+
       // Validate attribute responses if service has required attributes
       if (serviceType.attributes && input.attributeResponses) {
         const validation = validateAttributeResponses(
@@ -659,9 +697,50 @@ export const requestRouter = router({
 
   // Get service types
   getServiceTypes: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.serviceType.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
+    const userId = ctx.session.user.id;
+
+    // Get user's active subscription with package services
+    const activeSubscription = await ctx.db.clientSubscription.findFirst({
+      where: {
+        userId: userId,
+        isActive: true,
+        endDate: { gte: new Date() },
+      },
+      select: {
+        package: {
+          select: {
+            services: {
+              select: {
+                serviceType: {
+                  select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    icon: true,
+                    attributes: true,
+                    creditCost: true,
+                    isActive: true,
+                    sortOrder: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+
+    // If no active subscription, return empty array
+    if (!activeSubscription) {
+      return [];
+    }
+
+    // Get only the service types allowed by the user's package
+    const allowedServices = activeSubscription.package.services
+      .map((ps) => ps.serviceType)
+      .filter((st) => st.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+
+    return allowedServices;
   }),
 });

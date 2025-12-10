@@ -154,6 +154,38 @@ export default function NewRequestPage() {
         </Card>
       )}
 
+      {!subscription && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-yellow-800">No Active Subscription</CardTitle>
+            <CardDescription className="text-yellow-700">
+              You need an active subscription to create requests. Please subscribe to a package to get started.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/client/subscription">
+              <Button>View Packages</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {subscription && serviceTypes?.length === 0 && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-blue-800">No Services Available</CardTitle>
+            <CardDescription className="text-blue-700">
+              Your current package ({subscription.package?.name}) does not include any services. Please upgrade to access services.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/client/subscription">
+              <Button>Upgrade Package</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Request Details</CardTitle>

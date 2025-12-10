@@ -33,12 +33,12 @@ export default function AdminServicesPage() {
   const [createAttributes, setCreateAttributes] = useState<ServiceAttribute[]>([]);
   const [editAttributes, setEditAttributes] = useState<ServiceAttribute[]>([]);
 
-  const { data: services, isLoading } = trpc.request.getServiceTypes.useQuery();
+  const { data: services, isLoading } = trpc.admin.getServiceTypes.useQuery();
   const utils = trpc.useUtils();
 
   const createService = trpc.admin.createServiceType.useMutation({
     onSuccess: () => {
-      utils.request.getServiceTypes.invalidate();
+      utils.admin.getServiceTypes.invalidate();
       setShowCreate(false);
       setSelectedIconField(null);
       setCreateAttributes([]);
@@ -47,7 +47,7 @@ export default function AdminServicesPage() {
 
   const updateService = trpc.admin.updateServiceType.useMutation({
     onSuccess: () => {
-      utils.request.getServiceTypes.invalidate();
+      utils.admin.getServiceTypes.invalidate();
       setEditingId(null);
       setSelectedIconField(null);
       setEditAttributes([]);
@@ -56,7 +56,7 @@ export default function AdminServicesPage() {
 
   const deleteService = trpc.admin.deleteServiceType.useMutation({
     onSuccess: () => {
-      utils.request.getServiceTypes.invalidate();
+      utils.admin.getServiceTypes.invalidate();
     },
   });
 

@@ -97,6 +97,7 @@ model ServiceType {
   deletedAt   DateTime?
   requests    Request[]
   providers   ProviderProfile[] @relation("ProviderServices")
+  packages    PackageService[]
 
   @@index([deletedAt])
 }
@@ -118,8 +119,22 @@ model Package {
   updatedAt        DateTime             @updatedAt
   deletedAt        DateTime?
   subscriptions    ClientSubscription[]
+  services         PackageService[]
 
   @@index([deletedAt])
+}
+
+model PackageService {
+  id          String      @id @default(cuid())
+  packageId   String
+  serviceId   String
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  serviceType ServiceType @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+
+  @@unique([packageId, serviceId])
+  @@index([packageId])
+  @@index([serviceId])
 }
 
 model ClientSubscription {

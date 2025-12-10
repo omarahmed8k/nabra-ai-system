@@ -10,6 +10,28 @@ export const packageRouter = router({
         isActive: true,
         isFreePackage: false, // Only show admin-created packages
       },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        credits: true,
+        maxFreeRevisions: true,
+        durationDays: true,
+        features: true,
+        sortOrder: true,
+        services: {
+          select: {
+            serviceType: {
+              select: {
+                id: true,
+                name: true,
+                icon: true,
+              },
+            },
+          },
+        },
+      },
       orderBy: { sortOrder: "asc" },
     });
   }),

@@ -510,11 +510,43 @@ export const adminRouter = router({
         maxFreeRevisions: z.number().min(0),
         durationDays: z.number().min(1).default(30),
         features: z.array(z.string()).default([]),
+        serviceIds: z.array(z.string()).default([]),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const { serviceIds, ...packageData } = input;
+      
+      // Validate service IDs exist if provided
+      if (serviceIds.length > 0) {
+        const validServices = await ctx.db.serviceType.findMany({
+          where: { id: { in: serviceIds } },
+          select: { id: true },
+        });
+        
+        if (validServices.length !== serviceIds.length) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "One or more service IDs are invalid",
+          });
+        }
+      }
+      
       const pkg = await ctx.db.package.create({
-        data: input,
+        data: {
+          ...packageData,
+          services: {
+            create: serviceIds.map((serviceId) => ({
+              serviceId,
+            })),
+          },
+        },
+        include: {
+          services: {
+            include: {
+              serviceType: true,
+            },
+          },
+        },
       });
 
       return { success: true, package: pkg };
@@ -531,14 +563,48 @@ export const adminRouter = router({
         maxFreeRevisions: z.number().min(0).optional(),
         features: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
+        serviceIds: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { id, serviceIds, ...data } = input;
 
+      // Validate service IDs exist if provided
+      if (serviceIds !== undefined && serviceIds.length > 0) {
+        const validServices = await ctx.db.serviceType.findMany({
+          where: { id: { in: serviceIds } },
+          select: { id: true },
+        });
+        
+        if (validServices.length !== serviceIds.length) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "One or more service IDs are invalid",
+          });
+        }
+      }
+
+      // Update package and handle services if provided
       const pkg = await ctx.db.package.update({
         where: { id },
-        data,
+        data: {
+          ...data,
+          ...(serviceIds !== undefined && {
+            services: {
+              deleteMany: {},
+              create: serviceIds.map((serviceId) => ({
+                serviceId,
+              })),
+            },
+          }),
+        },
+        include: {
+          services: {
+            include: {
+              serviceType: true,
+            },
+          },
+        },
       });
 
       return { success: true, package: pkg };
