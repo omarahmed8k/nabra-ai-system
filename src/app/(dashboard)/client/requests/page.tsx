@@ -67,7 +67,7 @@ export default function RequestsPage() {
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; provider?: { name: string | null } | null; _count: { comments: number } }) => (
+              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; provider?: { name: string | null } | null; _count: { comments: number }; creditCost: number }) => (
                 <Link
                   key={request.id}
                   href={`/client/requests/${request.id}`}
@@ -80,6 +80,8 @@ export default function RequestsPage() {
                         <span>{request.serviceType.name}</span>
                         <span>•</span>
                         <span>{formatDate(request.createdAt)}</span>
+                        <span>•</span>
+                        <span className="font-medium">💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}</span>
                         {request.provider && (
                           <>
                             <span>•</span>

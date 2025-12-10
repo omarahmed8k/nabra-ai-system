@@ -173,8 +173,17 @@ export const requestRouter = router({
         skip: input?.cursor ? 1 : 0,
       });
 
+      // Calculate credit cost for each request
+      const requestsWithCredits = requests.map((req: any) => {
+        const baseCreditCost = req.serviceType.creditCost || 1;
+        const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
+        const priorityMultiplier = priorityMultipliers[req.priority] || 1.5;
+        const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+        return { ...req, creditCost };
+      });
+
       return {
-        requests,
+        requests: requestsWithCredits,
         nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
       };
     }),
@@ -236,9 +245,16 @@ export const requestRouter = router({
         revisionInfo = await getRevisionInfo(input.id, request.clientId);
       }
 
+      // Calculate credit cost based on service type and priority
+      const baseCreditCost = (request.serviceType as any).creditCost || 1;
+      const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
+      const priorityMultiplier = priorityMultipliers[request.priority] || 1.5;
+      const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+
       return {
         ...request,
         revisionInfo,
+        creditCost,
       };
     }),
 

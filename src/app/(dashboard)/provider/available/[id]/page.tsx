@@ -159,6 +159,12 @@ export default function AvailableJobDetailPage() {
                   {getPriorityLabel(request.priority)}
                 </Badge>
               </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Credit Value</p>
+                <p className="font-medium">
+                  💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>

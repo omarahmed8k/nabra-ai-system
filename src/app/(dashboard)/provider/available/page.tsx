@@ -52,7 +52,7 @@ export default function AvailableJobsPage() {
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map((request: { id: string; title: string; description: string; priority: number; createdAt: Date; serviceType: { name: string; icon: string | null } }) => (
+              {requestsData?.requests.map((request: any) => (
                 <div
                   key={request.id}
                   className="p-4 rounded-lg border hover:bg-muted/50 transition-colors"
@@ -63,6 +63,9 @@ export default function AvailableJobsPage() {
                         <h3 className="font-medium">{request.title}</h3>
                         <Badge className={getPriorityColor(request.priority)}>
                           {getPriorityLabel(request.priority)}
+                        </Badge>
+                        <Badge variant="outline" className="font-semibold">
+                          💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">

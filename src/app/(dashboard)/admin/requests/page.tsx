@@ -58,6 +58,7 @@ type Request = {
   client: { id: string; name: string | null; email: string };
   provider: { id: string; name: string | null; email: string } | null;
   serviceType: { id: string; name: string };
+  creditCost: number;
 };
 
 export default function AdminRequestsPage() {
@@ -73,9 +74,9 @@ export default function AdminRequestsPage() {
     },
   });
 
-  const requests: Request[] = data?.requests || [];
+  const requests: any[] = data?.requests || [];
 
-  const filteredRequests = requests.filter((request: Request) => {
+  const filteredRequests = requests.filter((request: any) => {
     const matchesStatus =
       statusFilter === "all" || request.status === statusFilter;
     const matchesSearch =
@@ -88,12 +89,12 @@ export default function AdminRequestsPage() {
 
   const stats = {
     total: requests.length,
-    pending: requests.filter((r: Request) => r.status === "PENDING").length,
-    inProgress: requests.filter((r: Request) => r.status === "IN_PROGRESS").length,
-    completed: requests.filter((r: Request) => r.status === "COMPLETED").length,
+    pending: requests.filter((r: any) => r.status === "PENDING").length,
+    inProgress: requests.filter((r: any) => r.status === "IN_PROGRESS").length,
+    completed: requests.filter((r: any) => r.status === "COMPLETED").length,
   };
 
-  const handleAssignClick = (request: Request) => {
+  const handleAssignClick = (request: any) => {
     setSelectedRequest(request);
     setAssignDialogOpen(true);
   };
@@ -210,7 +211,7 @@ export default function AdminRequestsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredRequests.map((request: Request) => (
+              {filteredRequests.map((request: any) => (
                 <div
                   key={request.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -236,6 +237,9 @@ export default function AdminRequestsPage() {
                       </span>
                       <span>
                         <strong>Service:</strong> {request.serviceType.name}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}
                       </span>
                       {request.provider && (
                         <span>

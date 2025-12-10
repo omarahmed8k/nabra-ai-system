@@ -170,6 +170,9 @@ export default function RequestDetailPage() {
             <Badge className={getPriorityColor(request.priority)}>
               {getPriorityLabel(request.priority)} Priority
             </Badge>
+            <Badge variant="outline" className="font-semibold">
+              💳 {(request as any).creditCost} {(request as any).creditCost === 1 ? 'credit' : 'credits'}
+            </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
             {request.serviceType.name} • Created {formatDate(request.createdAt)}
@@ -230,8 +233,8 @@ export default function RequestDetailPage() {
           </Card>
 
           {/* Service-Specific Q&A Responses */}
-          {request.attributeResponses && Array.isArray(request.attributeResponses) && request.attributeResponses.length > 0 && (
-            <AttributeResponsesDisplay responses={request.attributeResponses as any} />
+          {(request as any).attributeResponses && Array.isArray((request as any).attributeResponses) && (request as any).attributeResponses.length > 0 && (
+            <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
           )}
 
           {/* Actions for DELIVERED status */}

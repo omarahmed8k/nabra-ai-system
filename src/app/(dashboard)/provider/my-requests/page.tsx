@@ -56,7 +56,7 @@ export default function MyRequestsPage() {
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; client: { name: string | null }; _count: { comments: number } }) => (
+              {requestsData?.requests.map((request: any) => (
                 <Link
                   key={request.id}
                   href={`/provider/requests/${request.id}`}
@@ -69,6 +69,8 @@ export default function MyRequestsPage() {
                         <span>{request.serviceType.name}</span>
                         <span>•</span>
                         <span>{formatDate(request.createdAt)}</span>
+                        <span>•</span>
+                        <span className="font-medium">💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}</span>
                         <span>•</span>
                         <span>Client: {request.client.name}</span>
                       </div>
