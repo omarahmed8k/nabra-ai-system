@@ -38,13 +38,37 @@ async function main() {
 
   console.log("👤 Created admin:", admin.email);
 
+  // Create Free Package (required for new client registrations)
+  const freePackage = await prisma.package.create({
+    data: {
+      name: "Free Plan",
+      description: "Basic free plan for all new users with 10 credits valid for 30 days",
+      price: 0,
+      credits: 1,
+      durationDays: 30,
+      maxFreeRevisions: 1,
+      isActive: true,
+      isFreePackage: true,
+      sortOrder: 0,
+    },
+  });
+
+  console.log("📦 Created free package:", freePackage.name);
+
   console.log("\n✅ Seed completed successfully!");
   console.log("\n📋 Admin Account:");
   console.log("─".repeat(50));
   console.log("Super Admin:  admin@nabra.com      / Nabra@2020#Alaa");
   console.log("─".repeat(50));
-  console.log("\n💡 All tables are empty except the admin user.");
-  console.log("💡 You can now create packages, services, and users through the admin panel.");
+  console.log("\n📦 Free Package Created:");
+  console.log("─".repeat(50));
+  console.log("Name:         Free Plan");
+  console.log("Credits:      10");
+  console.log("Duration:     30 days");
+  console.log("Price:        $0");
+  console.log("─".repeat(50));
+  console.log("\n💡 New clients will automatically receive the free plan upon registration.");
+  console.log("💡 You can create additional packages and services through the admin panel.");
 }
 
 main()
