@@ -55,11 +55,12 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
   };
 
   const updateOptions = (index: number, optionsText: string) => {
+    // Store the raw input text in a special field to preserve user's typing including commas
     const options = optionsText
       .split(",")
       .map((opt) => opt.trim())
       .filter((opt) => opt.length > 0);
-    updateAttribute(index, { options });
+    updateAttribute(index, { options, _optionsRaw: optionsText } as any);
   };
 
   const moveAttribute = (fromIndex: number, toIndex: number) => {
@@ -214,7 +215,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                           <Input
                             id={`options-${index}`}
                             placeholder="e.g., Yes, No, Maybe"
-                            value={attr.options?.join(", ") || ""}
+                            value={(attr as any)._optionsRaw ?? attr.options?.join(", ") ?? ""}
                             onChange={(e) => updateOptions(index, e.target.value)}
                             required
                           />
