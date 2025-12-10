@@ -671,15 +671,43 @@ export const adminRouter = router({
       return { success: true, message: `Package "${pkg.name}" has been restored` };
     }),
 
-  // Get all service types (including inactive)
-  getServiceTypes: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.serviceType.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: {
-        _count: { select: { requests: true } },
-      },
-    });
-  }),
+  // Get all service types
+  getServiceTypes: adminProcedure
+    .input(z.object({ showDeleted: z.boolean().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const showDeleted = input?.showDeleted ?? false;
+      return ctx.db.serviceType.findMany({
+        where: showDeleted ? undefined : { deletedAt: null },
+        orderBy: { sortOrder: "asc" },
+        include: {
+          _count: { select: { requests: true } },
+        },
+      });
+    }),
+
+  // Get all packages (admin only, includes deleted)
+  getPackages: adminProcedure
+    .input(z.object({ showDeleted: z.boolean().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const showDeleted = input?.showDeleted ?? false;
+      return ctx.db.package.findMany({
+        where: showDeleted ? undefined : { deletedAt: null },
+        orderBy: { sortOrder: "asc" },
+        include: {
+          services: {
+            include: {
+              serviceType: {
+                select: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }),
 
   // Update user role
   updateUserRole: adminProcedure

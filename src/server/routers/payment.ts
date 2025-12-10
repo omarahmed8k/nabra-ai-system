@@ -27,7 +27,7 @@ export const paymentRouter = router({
     .input(
       z.object({
         subscriptionId: z.string(),
-        transferImage: z.string().url(),
+        transferImage: z.string().min(1, "Transfer image is required"),
         senderName: z.string().min(2),
         senderBank: z.string().min(2),
         senderCountry: z.string().min(2),

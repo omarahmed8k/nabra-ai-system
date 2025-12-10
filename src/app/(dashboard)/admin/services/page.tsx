@@ -13,10 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc/client";
-import { Plus, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash, RotateCcw } from "lucide-react";
 import { AttributesManager } from "@/components/admin/attributes-manager";
 import type { ServiceAttribute } from "@/types/service-attributes";
+import { toast } from "sonner";
 
 const EMOJI_LIST = [
   "🎨", "🔧", "💻", "📸", "✍️", "🎬", "🎵", "🎯", "🎓",
@@ -32,8 +34,11 @@ export default function AdminServicesPage() {
   const [selectedIconField, setSelectedIconField] = useState<"create" | "edit" | null>(null);
   const [createAttributes, setCreateAttributes] = useState<ServiceAttribute[]>([]);
   const [editAttributes, setEditAttributes] = useState<ServiceAttribute[]>([]);
+  const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
-  const { data: services, isLoading } = trpc.admin.getServiceTypes.useQuery();
+  const { data: services, isLoading } = trpc.admin.getServiceTypes.useQuery({
+    showDeleted: activeTab === "deleted",
+  });
   const utils = trpc.useUtils();
 
   const createService = trpc.admin.createServiceType.useMutation({
@@ -57,6 +62,20 @@ export default function AdminServicesPage() {
   const deleteService = trpc.admin.deleteServiceType.useMutation({
     onSuccess: () => {
       utils.admin.getServiceTypes.invalidate();
+      toast.success("Service deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete service");
+    },
+  });
+
+  const restoreService = trpc.admin.restoreServiceType.useMutation({
+    onSuccess: () => {
+      utils.admin.getServiceTypes.invalidate();
+      toast.success("Service restored successfully");
+    },
+    onError: () => {
+      toast.error("Failed to restore service");
     },
   });
 
@@ -212,10 +231,16 @@ export default function AdminServicesPage() {
         <CardHeader>
           <CardTitle>All Service Types</CardTitle>
           <CardDescription>
-            {services?.length || 0} service types available
+            {services?.length || 0} service types
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "deleted")} className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="active">Active Services</TabsTrigger>
+              <TabsTrigger value="deleted">Deleted Services</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab}>
           {isLoading && (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
@@ -351,35 +376,54 @@ export default function AdminServicesPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditingId(service.id);
-                          setEditAttributes(service.attributes || []);
-                        }}
-                      >
-                        <Edit className="mr-1 h-3 w-3" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Delete this service type?")) {
-                            deleteService.mutate({ id: service.id });
-                          }
-                        }}
-                      >
-                        <Trash className="mr-1 h-3 w-3" />
-                        Delete
-                      </Button>
+                      {activeTab === "active" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(service.id);
+                            setEditAttributes(service.attributes || []);
+                          }}
+                        >
+                          <Edit className="mr-1 h-3 w-3" />
+                          Edit
+                        </Button>
+                      )}
+                      {activeTab === "active" ? (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Delete this service type?")) {
+                              deleteService.mutate({ id: service.id });
+                            }
+                          }}
+                        >
+                          <Trash className="mr-1 h-3 w-3" />
+                          Delete
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("Restore this service type?")) {
+                              restoreService.mutate({ id: service.id });
+                            }
+                          }}
+                        >
+                          <RotateCcw className="mr-1 h-3 w-3" />
+                          Restore
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )
               )}
             </div>
           )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

@@ -13,9 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc/client";
 import { formatCurrency } from "@/lib/utils";
-import { Plus, Edit, Trash, Package } from "lucide-react";
+import { Plus, Edit, Trash, Package, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -25,14 +26,17 @@ export default function AdminPackagesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
-  const { data: packages, isLoading } = trpc.package.getAll.useQuery();
+  const { data: packages, isLoading } = trpc.admin.getPackages.useQuery({
+    showDeleted: activeTab === "deleted",
+  });
   const { data: allServices } = trpc.admin.getServiceTypes.useQuery();
   const utils = trpc.useUtils();
 
   const createPackage = trpc.admin.createPackage.useMutation({
     onSuccess: () => {
-      utils.package.getAll.invalidate();
+      utils.admin.getPackages.invalidate();
       setShowCreate(false);
       setSelectedServiceIds([]);
       toast.success("Package created successfully");
@@ -44,7 +48,7 @@ export default function AdminPackagesPage() {
 
   const updatePackage = trpc.admin.updatePackage.useMutation({
     onSuccess: () => {
-      utils.package.getAll.invalidate();
+      utils.admin.getPackages.invalidate();
       setEditingId(null);
       setSelectedServiceIds([]);
       toast.success("Package updated successfully");
@@ -56,7 +60,21 @@ export default function AdminPackagesPage() {
 
   const deletePackage = trpc.admin.deletePackage.useMutation({
     onSuccess: () => {
-      utils.package.getAll.invalidate();
+      utils.admin.getPackages.invalidate();
+      toast.success("Package deleted successfully");
+    },
+    onError: (error) => {
+      showError(error, "Failed to delete package");
+    },
+  });
+
+  const restorePackage = trpc.admin.restorePackage.useMutation({
+    onSuccess: () => {
+      utils.admin.getPackages.invalidate();
+      toast.success("Package restored successfully");
+    },
+    onError: (error) => {
+      showError(error, "Failed to restore package");
     },
   });
 
@@ -214,16 +232,36 @@ export default function AdminPackagesPage() {
       )}
 
       {/* Packages List */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)}
-        {!isLoading && (!packages || packages.length === 0) && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium">No packages yet</p>
-            <p className="text-sm">Create your first package to get started</p>
-          </div>
-        )}
-        {!isLoading && packages && packages.length > 0 && packages.map((pkg: { 
+      <Card>
+        <CardHeader>
+          <CardTitle>All Packages</CardTitle>
+          <CardDescription>
+            {packages?.length || 0} packages
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "deleted")} className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="active">Active Packages</TabsTrigger>
+              <TabsTrigger value="deleted">Deleted Packages</TabsTrigger>
+            </TabsList>
+            <TabsContent value={activeTab}>
+              <div className="grid gap-6 md:grid-cols-3">
+                {isLoading && [1, 2, 3].map((i) => <Skeleton key={i} className="h-64" />)}
+                {!isLoading && (!packages || packages.length === 0) && (
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">
+                      {activeTab === "active" ? "No packages yet" : "No deleted packages"}
+                    </p>
+                    <p className="text-sm">
+                      {activeTab === "active" 
+                        ? "Create your first package to get started" 
+                        : "Deleted packages will appear here"}
+                    </p>
+                  </div>
+                )}
+                {!isLoading && packages && packages.length > 0 && packages.map((pkg: { 
           id: string; 
           name: string; 
           price: number; 
@@ -357,31 +395,50 @@ export default function AdminPackagesPage() {
                     )}
                   </CardContent>
                   <CardFooter className="gap-2">
+                    {activeTab === "active" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditPackage(pkg)}
+                      >
+                        <Edit className="mr-1 h-3 w-3" />
+                        Edit
+                      </Button>
+                    )}
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditPackage(pkg)}
-                    >
-                      <Edit className="mr-1 h-3 w-3" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
+                      variant={activeTab === "active" ? "destructive" : "default"}
                       size="sm"
                       onClick={() => {
-                        if (confirm("Delete this package?")) {
-                          deletePackage.mutate({ id: pkg.id });
+                        if (activeTab === "active") {
+                          if (confirm("Delete this package?")) {
+                            deletePackage.mutate({ id: pkg.id });
+                          }
+                        } else if (confirm("Restore this package?")) {
+                          restorePackage.mutate({ id: pkg.id });
                         }
                       }}
                     >
-                      <Trash className="mr-1 h-3 w-3" />
-                      Delete
+                      {activeTab === "active" ? (
+                        <>
+                          <Trash className="mr-1 h-3 w-3" />
+                          Delete
+                        </>
+                      ) : (
+                        <>
+                          <RotateCcw className="mr-1 h-3 w-3" />
+                          Restore
+                        </>
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
               )
             )}
-      </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
