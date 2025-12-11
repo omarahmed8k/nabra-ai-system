@@ -40,6 +40,10 @@ export default function RequestDetailPage() {
     id: requestId,
   });
 
+  // Validation constants
+  const MIN_REVISION_FEEDBACK = 10;
+  const revisionFeedbackValid = revisionFeedback.trim().length >= MIN_REVISION_FEEDBACK;
+
   const approveRequest = trpc.request.approve.useMutation({
     onSuccess: () => {
       utils.request.getById.invalidate({ id: requestId });
@@ -82,7 +86,12 @@ export default function RequestDetailPage() {
   };
 
   const handleRequestRevision = () => {
-    if (!revisionFeedback.trim()) return;
+    if (!revisionFeedbackValid) {
+      toast.error("Invalid Feedback", {
+        description: `Please provide at least ${MIN_REVISION_FEEDBACK} characters describing the changes needed.`,
+      });
+      return;
+    }
     requestRevision.mutate({ requestId, feedback: revisionFeedback });
   };
 
@@ -165,24 +174,42 @@ export default function RequestDetailPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <RotateCcw className="h-4 w-4" />
-                    <span className="font-medium">Request Revision</span>
+                    <RotateCcw className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-600">Request Revision</span>
                     {revisionInfo && (
                       <span className="text-sm text-muted-foreground">
-                        ({revisionInfo.freeRevisionsRemaining} free remaining,
-                        next costs {revisionInfo.nextRevisionCost} credit)
+                        {revisionInfo.freeRevisionsRemaining > 0 ? (
+                          <span className="text-green-600">
+                            ({revisionInfo.freeRevisionsRemaining} free {revisionInfo.freeRevisionsRemaining === 1 ? 'revision' : 'revisions'} remaining)
+                          </span>
+                        ) : (
+                          <span className="text-orange-600">
+                            (No free revisions left - costs {revisionInfo.nextRevisionCost} credit)
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>
-                  <Textarea
-                    placeholder="Describe what changes you need..."
-                    value={revisionFeedback}
-                    onChange={(e) => setRevisionFeedback(e.target.value)}
-                  />
+                  <div className="space-y-1">
+                    <Textarea
+                      placeholder="Describe what changes you need..."
+                      value={revisionFeedback}
+                      onChange={(e) => setRevisionFeedback(e.target.value)}
+                      className={revisionFeedback.length > 0 && !revisionFeedbackValid ? "border-red-500" : ""}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span className={revisionFeedback.length > 0 && !revisionFeedbackValid ? "text-red-500" : ""}>
+                        {revisionFeedback.length > 0 && !revisionFeedbackValid && `Minimum ${MIN_REVISION_FEEDBACK} characters required`}
+                      </span>
+                      <span className={revisionFeedback.trim().length < MIN_REVISION_FEEDBACK ? "text-red-500" : "text-green-600"}>
+                        {revisionFeedback.trim().length}/{MIN_REVISION_FEEDBACK}
+                      </span>
+                    </div>
+                  </div>
                   <Button
                     variant="outline"
                     onClick={handleRequestRevision}
-                    disabled={!revisionFeedback.trim() || requestRevision.isPending}
+                    disabled={!revisionFeedbackValid || requestRevision.isPending}
                   >
                     {requestRevision.isPending ? "Requesting..." : "Request Revision"}
                   </Button>
@@ -214,11 +241,18 @@ export default function RequestDetailPage() {
                     </button>
                   ))}
                 </div>
-                <Textarea
-                  placeholder="Write a review (optional)..."
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                />
+                <div className="space-y-1">
+                  <Textarea
+                    placeholder="Write a review (optional)..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                  />
+                  {reviewText.length > 0 && (
+                    <div className="flex justify-end text-xs text-muted-foreground">
+                      <span>{reviewText.length} characters</span>
+                    </div>
+                  )}
+                </div>
                 <Button
                   onClick={handleSubmitRating}
                   disabled={rating === 0 || submitRating.isPending}
@@ -273,6 +307,7 @@ export default function RequestDetailPage() {
           createdAt={request.createdAt}
           estimatedDelivery={request.estimatedDelivery}
           completedAt={request.completedAt}
+          currentRevisionCount={request.currentRevisionCount}
           totalRevisions={request.totalRevisions}
           revisionInfo={revisionInfo || undefined}
         />

@@ -140,13 +140,17 @@ export function RequestSidebar({
               <div>
                 <p className="text-sm text-muted-foreground">Revisions</p>
                 <p className="font-medium">
-                  {currentRevisionCount || 0} / {totalRevisions || 0} total
+                  {totalRevisions || 0} total requested
                   {revisionInfo && (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      ({revisionInfo.freeRevisionsRemaining}/{revisionInfo.maxFree}{" "}
-                      free remaining)
-                    </span>
+                    <>
+                      <br />
+                      <span className="text-sm text-muted-foreground">
+                        Free: {revisionInfo.maxFree - revisionInfo.freeRevisionsRemaining}/{revisionInfo.maxFree} used
+                        {revisionInfo.freeRevisionsRemaining > 0 && (
+                          <span className="text-green-600"> ({revisionInfo.freeRevisionsRemaining} remaining)</span>
+                        )}
+                      </span>
+                    </>
                   )}
                 </p>
               </div>
