@@ -572,8 +572,12 @@ export const requestRouter = router({
       const isClient = request.clientId === userId;
       const isProvider = request.providerId === userId;
       const isAdmin = ctx.session.user.role === "SUPER_ADMIN";
+      const isProviderRole = ctx.session.user.role === "PROVIDER";
+      
+      // Allow providers to comment on unassigned requests (for asking questions before claiming)
+      const canProviderComment = isProviderRole && request.providerId === null && request.status === "PENDING";
 
-      if (!isClient && !isProvider && !isAdmin) {
+      if (!isClient && !isProvider && !isAdmin && !canProviderComment) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You don't have access to this request",
@@ -596,7 +600,19 @@ export const requestRouter = router({
       });
 
       // Notify the other party
-      const recipientId = isClient ? request.providerId : request.clientId;
+      let recipientId: string | null = null;
+      let recipientLink = "";
+      
+      if (isClient) {
+        // Client commented - notify provider if assigned
+        recipientId = request.providerId;
+        recipientLink = `/provider/requests/${request.id}`;
+      } else {
+        // Provider commented (whether assigned or not) - notify client
+        recipientId = request.clientId;
+        recipientLink = `/client/requests/${request.id}`;
+      }
+      
       if (recipientId) {
         await ctx.db.notification.create({
           data: {
@@ -604,7 +620,7 @@ export const requestRouter = router({
             title: "New Message",
             message: `New message on "${request.title}"`,
             type: "request",
-            link: isClient ? `/provider/requests/${request.id}` : `/client/requests/${request.id}`,
+            link: recipientLink,
           },
         });
       }
