@@ -3,8 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
+import { NotificationProvider } from "@/components/providers/notification-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ChunkReloadOnError } from "@/components/system/chunk-reloader";
+
+// Initialize notification system on server
+import "@/lib/notifications/init";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,9 +33,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <TRPCProvider>
-            <ChunkReloadOnError />
-            {children}
-            <Toaster position="top-right" richColors closeButton />
+            <NotificationProvider>
+              <ChunkReloadOnError />
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </NotificationProvider>
           </TRPCProvider>
         </AuthProvider>
       </body>

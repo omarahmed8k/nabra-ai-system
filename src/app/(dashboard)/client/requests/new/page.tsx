@@ -198,7 +198,8 @@ export default function NewRequestPage() {
                 <strong>
                   {totalCreditCost} credit{totalCreditCost === 1 ? "" : "s"}
                 </strong>
-                . You have <strong>{subscription?.remainingCredits || 0} credits</strong> available.
+                {". "}You have <strong>{subscription?.remainingCredits || 0} credits</strong>{" "}
+                available.
               </>
             ) : (
               <>

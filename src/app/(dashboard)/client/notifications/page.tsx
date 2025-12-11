@@ -1,46 +1,48 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
+import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import { formatDateTime } from "@/lib/utils";
 import { Bell, Check } from "lucide-react";
 
 export default function NotificationsPage() {
   const utils = trpc.useUtils();
-  const { data: notifications, isLoading } =
-    trpc.notification.getAll.useQuery();
+  const { refreshUnreadCount } = useRealtimeNotifications();
+  const { data: notifications, isLoading } = trpc.notification.getAll.useQuery();
 
   const markAsRead = trpc.notification.markAsRead.useMutation({
     onSuccess: () => {
       utils.notification.getAll.invalidate();
+      refreshUnreadCount();
     },
   });
 
   const markAllAsRead = trpc.notification.markAllAsRead.useMutation({
     onSuccess: () => {
       utils.notification.getAll.invalidate();
+      refreshUnreadCount();
     },
   });
 
-  const unreadCount = notifications?.notifications.filter((n: { isRead: boolean }) => !n.isRead).length || 0;
+  // Refresh count when page loads
+  useEffect(() => {
+    refreshUnreadCount();
+  }, [refreshUnreadCount]);
+
+  const unreadCount =
+    notifications?.notifications.filter((n: { isRead: boolean }) => !n.isRead).length || 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">
-            Stay updated on your requests and activity
-          </p>
+          <p className="text-muted-foreground">Stay updated on your requests and activity</p>
         </div>
         {unreadCount > 0 && (
           <Button
@@ -73,54 +75,54 @@ export default function NotificationsPage() {
             <div className="text-center py-12 text-muted-foreground">
               <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p className="text-lg font-medium">No notifications</p>
-              <p className="text-sm">
-                You&apos;ll see updates about your requests here
-              </p>
+              <p className="text-sm">You&apos;ll see updates about your requests here</p>
             </div>
           )}
           {!isLoading && (notifications?.notifications.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {notifications?.notifications.map((notification: { id: string; title: string; message: string; isRead: boolean; createdAt: Date }) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 rounded-lg border transition-colors ${
-                    notification.isRead
-                      ? "bg-background"
-                      : "bg-primary/5 border-primary/20"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{notification.title}</p>
-                        {!notification.isRead && (
-                          <Badge variant="default" className="text-xs">
-                            New
-                          </Badge>
-                        )}
+              {notifications?.notifications.map(
+                (notification: {
+                  id: string;
+                  title: string;
+                  message: string;
+                  isRead: boolean;
+                  createdAt: Date;
+                }) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 rounded-lg border transition-colors ${
+                      notification.isRead ? "bg-background" : "bg-primary/5 border-primary/20"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{notification.title}</p>
+                          {!notification.isRead && (
+                            <Badge variant="default" className="text-xs">
+                              New
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDateTime(notification.createdAt)}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDateTime(notification.createdAt)}
-                      </p>
+                      {!notification.isRead && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead.mutate({ id: notification.id })}
+                          disabled={markAsRead.isPending}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                    {!notification.isRead && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          markAsRead.mutate({ id: notification.id })
-                        }
-                        disabled={markAsRead.isPending}
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </CardContent>

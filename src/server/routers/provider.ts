@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, providerProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import { notifyStatusChange } from "@/lib/notifications";
 
 export const providerRouter = router({
   // Get provider profile
@@ -58,30 +59,25 @@ export const providerRouter = router({
   getStats: providerProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const [
-      totalRequests,
-      completedRequests,
-      activeRequests,
-      pendingRequests,
-      ratings,
-    ] = await Promise.all([
-      ctx.db.request.count({ where: { providerId: userId } }),
-      ctx.db.request.count({ where: { providerId: userId, status: "COMPLETED" } }),
-      ctx.db.request.count({
-        where: {
-          providerId: userId,
-          status: { in: ["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
-        },
-      }),
-      ctx.db.request.count({
-        where: { providerId: null, status: "PENDING" },
-      }),
-      ctx.db.rating.aggregate({
-        where: { providerId: userId },
-        _avg: { rating: true },
-        _count: true,
-      }),
-    ]);
+    const [totalRequests, completedRequests, activeRequests, pendingRequests, ratings] =
+      await Promise.all([
+        ctx.db.request.count({ where: { providerId: userId } }),
+        ctx.db.request.count({ where: { providerId: userId, status: "COMPLETED" } }),
+        ctx.db.request.count({
+          where: {
+            providerId: userId,
+            status: { in: ["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
+          },
+        }),
+        ctx.db.request.count({
+          where: { providerId: null, status: "PENDING" },
+        }),
+        ctx.db.rating.aggregate({
+          where: { providerId: userId },
+          _avg: { rating: true },
+          _count: true,
+        }),
+      ]);
 
     return {
       totalRequests,
@@ -96,10 +92,12 @@ export const providerRouter = router({
   // Get available requests (pending, matching provider's supported services)
   getAvailableRequests: providerProcedure
     .input(
-      z.object({
-        limit: z.number().min(1).max(50).default(20),
-        cursor: z.string().optional(),
-      }).optional()
+      z
+        .object({
+          limit: z.number().min(1).max(50).default(20),
+          cursor: z.string().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -115,7 +113,8 @@ export const providerRouter = router({
       });
 
       // Get the service IDs this provider supports
-      const supportedServiceIds = providerProfile?.supportedServices.map((s: { id: string }) => s.id) || [];
+      const supportedServiceIds =
+        providerProfile?.supportedServices.map((s: { id: string }) => s.id) || [];
 
       // If no supported services configured, return empty (provider must have services assigned)
       if (supportedServiceIds.length === 0) {
@@ -140,10 +139,7 @@ export const providerRouter = router({
           },
           serviceType: true,
         },
-        orderBy: [
-          { priority: "desc" },
-          { createdAt: "asc" },
-        ],
+        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
         take: input?.limit || 20,
         cursor: input?.cursor ? { id: input.cursor } : undefined,
         skip: input?.cursor ? 1 : 0,
@@ -152,18 +148,22 @@ export const providerRouter = router({
       // Use stored credit cost from database
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
+        nextCursor: requests.length === (input?.limit || 20) ? (requests.at(-1)?.id ?? null) : null,
       };
     }),
 
   // Get my requests (as provider)
   getMyRequests: providerProcedure
     .input(
-      z.object({
-        status: z.enum(["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED"]).optional(),
-        limit: z.number().min(1).max(50).default(20),
-        cursor: z.string().optional(),
-      }).optional()
+      z
+        .object({
+          status: z
+            .enum(["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED"])
+            .optional(),
+          limit: z.number().min(1).max(50).default(20),
+          cursor: z.string().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -194,17 +194,19 @@ export const providerRouter = router({
       // Use stored credit cost from database
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
+        nextCursor: requests.length === (input?.limit || 20) ? (requests.at(-1)?.id ?? null) : null,
       };
     }),
 
   // Get earnings summary
   getEarnings: providerProcedure
     .input(
-      z.object({
-        startDate: z.date().optional(),
-        endDate: z.date().optional(),
-      }).optional()
+      z
+        .object({
+          startDate: z.date().optional(),
+          endDate: z.date().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -244,9 +246,11 @@ export const providerRouter = router({
   // Get recent reviews
   getReviews: providerProcedure
     .input(
-      z.object({
-        limit: z.number().min(1).max(50).default(10),
-      }).optional()
+      z
+        .object({
+          limit: z.number().min(1).max(50).default(10),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -315,6 +319,14 @@ export const providerRouter = router({
         },
       });
 
+      // Send realtime + email notification
+      await notifyStatusChange({
+        requestId: input.requestId,
+        userId: request.clientId,
+        oldStatus: "PENDING",
+        newStatus: "IN_PROGRESS",
+      });
+
       return { success: true, request: updatedRequest };
     }),
 
@@ -373,6 +385,14 @@ export const providerRouter = router({
           message: `Work has started on your request "${request.title}"`,
           link: `/client/requests/${request.id}`,
         },
+      });
+
+      // Send realtime + email notification
+      await notifyStatusChange({
+        requestId: input.requestId,
+        userId: request.clientId,
+        oldStatus: "PENDING",
+        newStatus: "IN_PROGRESS",
       });
 
       return { success: true, request: updatedRequest };
@@ -441,6 +461,14 @@ export const providerRouter = router({
           message: `Your request "${request.title}" has a new deliverable ready for review`,
           link: `/client/requests/${request.id}`,
         },
+      });
+
+      // Send realtime + email notification
+      await notifyStatusChange({
+        requestId: input.requestId,
+        userId: request.clientId,
+        oldStatus: request.status,
+        newStatus: "DELIVERED",
       });
 
       return { success: true, request: updatedRequest };

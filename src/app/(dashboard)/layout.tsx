@@ -7,6 +7,9 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { NotificationPermissionBanner } from "@/components/ui/notification-permission-banner";
+import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import {
   LayoutDashboard,
   FileText,
@@ -54,6 +57,7 @@ export default function DashboardLayout({
   const { data: session } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { unreadCount } = useRealtimeNotifications();
 
   const role = session?.user?.role;
 
@@ -76,25 +80,11 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-muted/30">
       {/* Mobile header */}
       <div className="lg:hidden sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
+        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
         <Link href={basePath} className="flex items-center gap-2">
-          <Image
-            src="/images/logo.svg"
-            alt="Nabra"
-            width={32}
-            height={32}
-            className="w-auto h-8"
-          />
+          <Image src="/images/logo.svg" alt="Nabra" width={32} height={32} className="w-auto h-8" />
         </Link>
       </div>
 
@@ -122,6 +112,9 @@ export default function DashboardLayout({
           <nav className="flex-1 space-y-1 px-3 py-4">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
+              const isNotifications = item.href.includes("/notifications");
+              const showBadge = isNotifications && unreadCount > 0;
+
               return (
                 <Link
                   key={item.href}
@@ -134,7 +127,15 @@ export default function DashboardLayout({
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {showBadge && (
+                    <Badge
+                      variant="destructive"
+                      className="ml-auto h-5 min-w-5 flex items-center justify-center px-1 text-xs"
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </Badge>
+                  )}
                 </Link>
               );
             })}
@@ -147,17 +148,11 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3 mb-4">
               <Avatar>
                 <AvatarImage src={session?.user?.image || ""} />
-                <AvatarFallback>
-                  {getInitials(session?.user?.name || "U")}
-                </AvatarFallback>
+                <AvatarFallback>{getInitials(session?.user?.name || "U")}</AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-medium truncate">
-                  {session?.user?.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {session?.user?.email}
-                </p>
+                <p className="text-sm font-medium truncate">{session?.user?.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
               </div>
             </div>
             <Button
@@ -185,7 +180,10 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <main className="lg:pl-64">
-        <div className="p-6">{children}</div>
+        <div className="p-6">
+          <NotificationPermissionBanner />
+          {children}
+        </div>
       </main>
     </div>
   );

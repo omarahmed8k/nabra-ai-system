@@ -5,6 +5,7 @@ import { deductCredits, checkCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses } from "@/lib/attribute-validation";
 import { getPriorityCostsForService } from "@/lib/priority-costs";
+import { notifyNewMessage, notifyStatusChange } from "@/lib/notifications";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 export const requestRouter = router({
@@ -547,6 +548,14 @@ export const requestRouter = router({
             link: `/provider/requests/${request.id}`,
           },
         });
+
+        // Send realtime + email notification
+        await notifyStatusChange({
+          requestId: input.requestId,
+          userId: request.providerId,
+          oldStatus: "DELIVERED",
+          newStatus: "COMPLETED",
+        });
       }
 
       return {
@@ -633,6 +642,15 @@ export const requestRouter = router({
             type: "request",
             link: recipientLink,
           },
+        });
+
+        // Send realtime + email notification
+        const senderName = comment.user.name || comment.user.email || "Someone";
+        await notifyNewMessage({
+          requestId: input.requestId,
+          senderName,
+          recipientId,
+          messagePreview: input.content.slice(0, 100),
         });
       }
 

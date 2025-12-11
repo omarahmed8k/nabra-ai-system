@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { deductCredits } from "@/lib/credit-logic";
+import { notifyStatusChange } from "@/lib/notifications";
 
 export interface RevisionResult {
   allowed: boolean;
@@ -144,6 +145,14 @@ export async function handleRevisionRequest(
           link: `/provider/requests/${requestId}`,
         },
       });
+
+      // Send realtime + email notification
+      await notifyStatusChange({
+        requestId,
+        userId: request.providerId,
+        oldStatus: "DELIVERED",
+        newStatus: "REVISION_REQUESTED",
+      });
     }
 
     return {
@@ -221,6 +230,14 @@ export async function handleRevisionRequest(
         type: "request",
         link: `/provider/requests/${requestId}`,
       },
+    });
+
+    // Send realtime + email notification
+    await notifyStatusChange({
+      requestId,
+      userId: request.providerId,
+      oldStatus: "DELIVERED",
+      newStatus: "REVISION_REQUESTED",
     });
   }
 

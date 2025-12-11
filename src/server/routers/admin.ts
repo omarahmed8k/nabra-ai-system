@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
+import { notifyProviderAssignment, notifyStatusChange } from "@/lib/notifications";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -23,7 +24,9 @@ export const adminRouter = router({
       ctx.db.user.count({ where: { role: "CLIENT" } }),
       ctx.db.user.count({ where: { role: "PROVIDER" } }),
       ctx.db.request.count(),
-      ctx.db.request.count({ where: { status: { in: ["PENDING", "IN_PROGRESS", "REVISION_REQUESTED"] } } }),
+      ctx.db.request.count({
+        where: { status: { in: ["PENDING", "IN_PROGRESS", "REVISION_REQUESTED"] } },
+      }),
       ctx.db.request.count({ where: { status: "PENDING" } }),
       ctx.db.request.count({ where: { status: "COMPLETED" } }),
       ctx.db.clientSubscription.count({
@@ -37,7 +40,10 @@ export const adminRouter = router({
       }),
     ]);
 
-    const revenue = totalRevenue.reduce((sum: number, sub: { package: { price: number } }) => sum + sub.package.price, 0);
+    const revenue = totalRevenue.reduce(
+      (sum: number, sub: { package: { price: number } }) => sum + sub.package.price,
+      0
+    );
 
     return {
       totalUsers,
@@ -58,7 +64,7 @@ export const adminRouter = router({
   getAnalytics: adminProcedure.query(async ({ ctx }) => {
     // Get requests by status for pie chart
     const requestsByStatus = await ctx.db.request.groupBy({
-      by: ['status'],
+      by: ["status"],
       _count: { id: true },
     });
 
@@ -68,28 +74,34 @@ export const adminRouter = router({
       include: { package: true },
     });
 
-    const packageCounts = subscriptionsByPackage.reduce((acc: Record<string, number>, sub: { package: { name: string } }) => {
-      const name = sub.package.name;
-      acc[name] = (acc[name] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const packageCounts = subscriptionsByPackage.reduce(
+      (acc: Record<string, number>, sub: { package: { name: string } }) => {
+        const name = sub.package.name;
+        acc[name] = (acc[name] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Get requests by service type
     const requestsByService = await ctx.db.request.groupBy({
-      by: ['serviceTypeId'],
+      by: ["serviceTypeId"],
       _count: { id: true },
     });
 
     const serviceTypes = await ctx.db.serviceType.findMany();
-    const serviceMap = serviceTypes.reduce((acc: Record<string, string>, s: { id: string; name: string }) => {
-      acc[s.id] = s.name;
-      return acc;
-    }, {} as Record<string, string>);
+    const serviceMap = serviceTypes.reduce(
+      (acc: Record<string, string>, s: { id: string; name: string }) => {
+        acc[s.id] = s.name;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     // Get recent users (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const recentUsers = await ctx.db.user.count({
       where: { createdAt: { gte: thirtyDaysAgo } },
     });
@@ -102,53 +114,75 @@ export const adminRouter = router({
     // Monthly revenue trend (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    
+
     const subscriptions = await ctx.db.clientSubscription.findMany({
       where: { createdAt: { gte: sixMonthsAgo } },
       include: { package: true },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     const monthlyRevenue: { month: string; revenue: number }[] = [];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const monthName = months[date.getMonth()];
       const monthSubs = subscriptions.filter((s: { createdAt: Date }) => {
         const subDate = new Date(s.createdAt);
-        return subDate.getMonth() === date.getMonth() && subDate.getFullYear() === date.getFullYear();
+        return (
+          subDate.getMonth() === date.getMonth() && subDate.getFullYear() === date.getFullYear()
+        );
       });
-      const revenue = monthSubs.reduce((sum: number, s: { package: { price: number } }) => sum + s.package.price, 0);
+      const revenue = monthSubs.reduce(
+        (sum: number, s: { package: { price: number } }) => sum + s.package.price,
+        0
+      );
       monthlyRevenue.push({ month: monthName, revenue });
     }
 
     // Get top providers by completed requests
     const topProviders = await ctx.db.request.groupBy({
-      by: ['providerId'],
-      where: { 
-        status: 'COMPLETED',
-        providerId: { not: null }
+      by: ["providerId"],
+      where: {
+        status: "COMPLETED",
+        providerId: { not: null },
       },
       _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
+      orderBy: { _count: { id: "desc" } },
       take: 5,
     });
 
-    const providerIds = topProviders.map((p: { providerId: string | null }) => p.providerId).filter(Boolean) as string[];
+    const providerIds = topProviders
+      .map((p: { providerId: string | null }) => p.providerId)
+      .filter(Boolean) as string[];
     const providers = await ctx.db.user.findMany({
       where: { id: { in: providerIds } },
       select: { id: true, name: true, email: true },
     });
 
-    const topProvidersWithInfo = topProviders.map((p: { providerId: string | null; _count: { id: number } }) => {
-      const provider = providers.find((u: { id: string }) => u.id === p.providerId);
-      return {
-        name: provider?.name || provider?.email || 'Unknown',
-        completedRequests: p._count.id,
-      };
-    });
+    const topProvidersWithInfo = topProviders.map(
+      (p: { providerId: string | null; _count: { id: number } }) => {
+        const provider = providers.find((u: { id: string }) => u.id === p.providerId);
+        return {
+          name: provider?.name || provider?.email || "Unknown",
+          completedRequests: p._count.id,
+        };
+      }
+    );
 
     return {
       requestsByStatus: requestsByStatus.map((r: { status: string; _count: { id: number } }) => ({
@@ -159,10 +193,12 @@ export const adminRouter = router({
         name,
         count,
       })),
-      requestsByService: requestsByService.map((r: { serviceTypeId: string; _count: { id: number } }) => ({
-        service: serviceMap[r.serviceTypeId] || 'Unknown',
-        count: r._count.id,
-      })),
+      requestsByService: requestsByService.map(
+        (r: { serviceTypeId: string; _count: { id: number } }) => ({
+          service: serviceMap[r.serviceTypeId] || "Unknown",
+          count: r._count.id,
+        })
+      ),
       recentUsers,
       recentRequests,
       monthlyRevenue,
@@ -173,21 +209,23 @@ export const adminRouter = router({
   // Get all subscriptions with user info
   getAllSubscriptions: adminProcedure
     .input(
-      z.object({
-        status: z.enum(['active', 'expired', 'cancelled', 'all']).optional(),
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().default(0),
-      }).optional()
+      z
+        .object({
+          status: z.enum(["active", "expired", "cancelled", "all"]).optional(),
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().default(0),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const where: any = {};
-      
-      if (input?.status === 'active') {
+
+      if (input?.status === "active") {
         where.isActive = true;
         where.endDate = { gte: new Date() };
-      } else if (input?.status === 'expired') {
+      } else if (input?.status === "expired") {
         where.endDate = { lt: new Date() };
-      } else if (input?.status === 'cancelled') {
+      } else if (input?.status === "cancelled") {
         where.cancelledAt = { not: null };
       }
 
@@ -200,7 +238,7 @@ export const adminRouter = router({
           },
           take: input?.limit || 50,
           skip: input?.offset || 0,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         ctx.db.clientSubscription.count({ where }),
       ]);
@@ -239,7 +277,10 @@ export const adminRouter = router({
       }),
     ]);
 
-    const revenue = totalRevenue.reduce((sum: number, sub: { package: { price: number } }) => sum + sub.package.price, 0);
+    const revenue = totalRevenue.reduce(
+      (sum: number, sub: { package: { price: number } }) => sum + sub.package.price,
+      0
+    );
 
     // Get recent requests
     const recentRequests = await ctx.db.request.findMany({
@@ -268,13 +309,15 @@ export const adminRouter = router({
   // Get all users
   getUsers: adminProcedure
     .input(
-      z.object({
-        role: z.enum(["SUPER_ADMIN", "PROVIDER", "CLIENT"]).optional(),
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().default(0),
-        search: z.string().optional(),
-        showDeleted: z.boolean().optional(),
-      }).optional()
+      z
+        .object({
+          role: z.enum(["SUPER_ADMIN", "PROVIDER", "CLIENT"]).optional(),
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().default(0),
+          search: z.string().optional(),
+          showDeleted: z.boolean().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const where: any = {};
@@ -339,10 +382,12 @@ export const adminRouter = router({
       // Calculate average rating for each provider
       const usersWithRating = users.map((user: any) => {
         const ratings = user.receivedRatings;
-        const avgRating = ratings.length > 0
-          ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length
-          : null;
-        
+        const avgRating =
+          ratings.length > 0
+            ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) /
+              ratings.length
+            : null;
+
         return {
           ...user,
           averageRating: avgRating,
@@ -360,11 +405,22 @@ export const adminRouter = router({
   // Get all requests
   getAllRequests: adminProcedure
     .input(
-      z.object({
-        status: z.enum(["PENDING", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED", "CANCELLED"]).optional(),
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().default(0),
-      }).optional()
+      z
+        .object({
+          status: z
+            .enum([
+              "PENDING",
+              "IN_PROGRESS",
+              "DELIVERED",
+              "REVISION_REQUESTED",
+              "COMPLETED",
+              "CANCELLED",
+            ])
+            .optional(),
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().default(0),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const where: any = {};
@@ -553,14 +609,14 @@ export const adminRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { serviceIds, ...packageData } = input;
-      
+
       // Validate service IDs exist if provided
       if (serviceIds.length > 0) {
         const validServices = await ctx.db.serviceType.findMany({
           where: { id: { in: serviceIds } },
           select: { id: true },
         });
-        
+
         if (validServices.length !== serviceIds.length) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -568,7 +624,7 @@ export const adminRouter = router({
           });
         }
       }
-      
+
       const pkg = await ctx.db.package.create({
         data: {
           ...packageData,
@@ -612,7 +668,7 @@ export const adminRouter = router({
           where: { id: { in: serviceIds } },
           select: { id: true },
         });
-        
+
         if (validServices.length !== serviceIds.length) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -728,8 +784,8 @@ export const adminRouter = router({
     .query(async ({ ctx, input }) => {
       const showDeleted = input?.showDeleted ?? false;
       return ctx.db.package.findMany({
-        where: showDeleted 
-          ? { deletedAt: { not: null }, isFreePackage: false } 
+        where: showDeleted
+          ? { deletedAt: { not: null }, isFreePackage: false }
           : { deletedAt: null, isFreePackage: false },
         orderBy: { sortOrder: "asc" },
         include: {
@@ -791,13 +847,15 @@ export const adminRouter = router({
   // Get all providers for assignment
   getProviders: adminProcedure
     .input(
-      z.object({
-        serviceTypeId: z.string().optional(), // Filter providers by supported service
-      }).optional()
+      z
+        .object({
+          serviceTypeId: z.string().optional(), // Filter providers by supported service
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const providers = await ctx.db.user.findMany({
-        where: { 
+        where: {
           role: "PROVIDER",
           ...(input?.serviceTypeId && {
             providerProfile: {
@@ -836,7 +894,7 @@ export const adminRouter = router({
         orderBy: { name: "asc" },
       });
 
-      type ProviderWithProfile = typeof providers[number];
+      type ProviderWithProfile = (typeof providers)[number];
 
       return providers.map((p: ProviderWithProfile) => ({
         id: p.id,
@@ -896,6 +954,23 @@ export const adminRouter = router({
           serviceType: true,
         },
       });
+
+      // Notify provider about assignment
+      await notifyProviderAssignment({
+        requestId: input.requestId,
+        providerId: input.providerId,
+        providerName: provider.name || provider.email,
+      });
+
+      // Notify client if status changed
+      if (request.status === "PENDING") {
+        await notifyStatusChange({
+          requestId: input.requestId,
+          userId: request.clientId,
+          oldStatus: "PENDING",
+          newStatus: "IN_PROGRESS",
+        });
+      }
 
       return {
         success: true,
