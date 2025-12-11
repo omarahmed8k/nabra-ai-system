@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "./datepicker.css";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +33,7 @@ import {
   CheckCircle2,
   XCircle,
   Building2,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 
 // Explicit types for the data
@@ -71,7 +75,7 @@ interface FormData {
   senderName: string;
   senderBank: string;
   senderCountry: string;
-  transferDate: string;
+  transferDate: Date | null;
   referenceNumber: string;
   notes: string;
   transferImageUrl: string;
@@ -86,7 +90,7 @@ function getStatusBadgeVariant(status: string) {
 // Component for when there's no pending payment
 function NoPendingPayment() {
   const router = useRouter();
-  
+
   return (
     <div className="space-y-8">
       <div>
@@ -100,9 +104,7 @@ function NoPendingPayment() {
           <p className="text-muted-foreground mb-4">
             You don&apos;t have any pending subscriptions that require payment.
           </p>
-          <Button onClick={() => router.push("/client/subscription")}>
-            View Subscriptions
-          </Button>
+          <Button onClick={() => router.push("/client/subscription")}>View Subscriptions</Button>
         </CardContent>
       </Card>
     </div>
@@ -127,9 +129,7 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{subscription.package.name} Plan</CardTitle>
-              <CardDescription>
-                {formatCurrency(subscription.package.price)}
-              </CardDescription>
+              <CardDescription>{formatCurrency(subscription.package.price)}</CardDescription>
             </div>
             <Badge variant={badgeVariant}>
               {proof.status === "PENDING" && <Clock className="h-3 w-3 mr-1" />}
@@ -155,7 +155,8 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
               <XCircle className="h-4 w-4" />
               <AlertTitle>Payment Rejected</AlertTitle>
               <AlertDescription>
-                {proof.rejectionReason ?? "Your payment could not be verified. Please contact support."}
+                {proof.rejectionReason ??
+                  "Your payment could not be verified. Please contact support."}
               </AlertDescription>
             </Alert>
           )}
@@ -233,7 +234,6 @@ function BankDetailsCard({
   copied: string | null;
   onCopy: (text: string, field: string) => void;
 }) {
-
   return (
     <Card>
       <CardHeader>
@@ -252,9 +252,7 @@ function BankDetailsCard({
             <span className="font-semibold">{subscription.package.name}</span>
             <Badge>{subscription.package.credits} Credits</Badge>
           </div>
-          <p className="text-2xl font-bold">
-            {formatCurrency(subscription.package.price)}
-          </p>
+          <p className="text-2xl font-bold">{formatCurrency(subscription.package.price)}</p>
         </div>
 
         {/* Bank Details */}
@@ -264,7 +262,12 @@ function BankDetailsCard({
               <p className="text-xs text-muted-foreground">Bank Name</p>
               <p className="font-medium">{paymentInfo.bankName}</p>
             </div>
-            <CopyButton field="bankName" value={paymentInfo.bankName} copied={copied} onCopy={onCopy} />
+            <CopyButton
+              field="bankName"
+              value={paymentInfo.bankName}
+              copied={copied}
+              onCopy={onCopy}
+            />
           </div>
 
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
@@ -272,7 +275,12 @@ function BankDetailsCard({
               <p className="text-xs text-muted-foreground">Account Name</p>
               <p className="font-medium">{paymentInfo.accountName}</p>
             </div>
-            <CopyButton field="accountName" value={paymentInfo.accountName} copied={copied} onCopy={onCopy} />
+            <CopyButton
+              field="accountName"
+              value={paymentInfo.accountName}
+              copied={copied}
+              onCopy={onCopy}
+            />
           </div>
 
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
@@ -288,7 +296,12 @@ function BankDetailsCard({
               <p className="text-xs text-muted-foreground">SWIFT/BIC</p>
               <p className="font-mono font-medium">{paymentInfo.swiftCode}</p>
             </div>
-            <CopyButton field="swiftCode" value={paymentInfo.swiftCode} copied={copied} onCopy={onCopy} />
+            <CopyButton
+              field="swiftCode"
+              value={paymentInfo.swiftCode}
+              copied={copied}
+              onCopy={onCopy}
+            />
           </div>
         </div>
 
@@ -315,7 +328,7 @@ function PaymentProofForm({
     senderName: "",
     senderBank: "",
     senderCountry: "",
-    transferDate: "",
+    transferDate: null,
     referenceNumber: "",
     notes: "",
     transferImageUrl: "",
@@ -360,14 +373,18 @@ function PaymentProofForm({
       senderCountry: formData.senderCountry,
       amount: packagePrice,
       currency: "USD",
-      transferDate: new Date(formData.transferDate),
+      transferDate: formData.transferDate!,
       referenceNumber: formData.referenceNumber || undefined,
       notes: formData.notes || undefined,
     });
   };
 
-  const updateField = (field: keyof FormData, value: string) => {
+  const updateField = (field: keyof Omit<FormData, "transferDate">, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateDateField = (date: Date | null) => {
+    setFormData((prev) => ({ ...prev, transferDate: date }));
   };
 
   return (
@@ -431,17 +448,19 @@ function PaymentProofForm({
             <div className="space-y-2">
               <Label htmlFor="transferDate">Transfer Date *</Label>
               <div className="relative">
-                <Input
+                <DatePicker
                   id="transferDate"
-                  type="date"
+                  selected={formData.transferDate}
+                  onChange={(date) => updateDateField(date)}
+                  dateFormat="yyyy-MM-dd"
+                  maxDate={new Date()}
+                  placeholderText="Select transfer date"
                   required
-                  value={formData.transferDate}
-                  onChange={(e) => updateField("transferDate", e.target.value)}
-                  className="pr-10"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  calendarClassName="!bg-background !border-border"
+                  wrapperClassName="w-full"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground text-sm">
-                  📅
-                </span>
+                <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               </div>
             </div>
           </div>
@@ -467,11 +486,7 @@ function PaymentProofForm({
           </div>
         </CardContent>
         <CardFooter>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={submitProofMutation.isPending}
-          >
+          <Button type="submit" className="w-full" disabled={submitProofMutation.isPending}>
             {submitProofMutation.isPending ? "Submitting..." : "Submit Payment Proof"}
           </Button>
         </CardFooter>
@@ -491,8 +506,7 @@ export default function PaymentPage() {
       refetchOnMount: "always",
       staleTime: 0,
     });
-  const { data: paymentInfoData, isLoading: infoLoading } =
-    trpc.payment.getPaymentInfo.useQuery();
+  const { data: paymentInfoData, isLoading: infoLoading } = trpc.payment.getPaymentInfo.useQuery();
 
   const cancelMutation = trpc.subscription.cancel.useMutation({
     onSuccess: () => {
@@ -547,7 +561,11 @@ export default function PaymentPage() {
   }
 
   const handleCancelSubscription = () => {
-    if (confirm("Are you sure you want to cancel this subscription? You will need to subscribe again.")) {
+    if (
+      confirm(
+        "Are you sure you want to cancel this subscription? You will need to subscribe again."
+      )
+    ) {
       cancelMutation.mutate({ subscriptionId: pendingSubscription.id });
     }
   };
