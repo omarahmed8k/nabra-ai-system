@@ -105,10 +105,8 @@ export default function AdminPackagesPage() {
   };
 
   const toggleService = useCallback((serviceId: string) => {
-    setSelectedServiceIds((prev) => 
-      prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId]
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
     );
   }, []);
 
@@ -132,9 +130,7 @@ export default function AdminPackagesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Packages</h1>
-          <p className="text-muted-foreground">
-            Manage subscription packages
-          </p>
+          <p className="text-muted-foreground">Manage subscription packages</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -157,13 +153,7 @@ export default function AdminPackagesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="price">Price ($)</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    step="0.01"
-                    required
-                  />
+                  <Input id="price" name="price" type="number" step="0.01" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="credits">Credits</Label>
@@ -179,46 +169,38 @@ export default function AdminPackagesPage() {
                     required
                   />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="resetFreeRevisionsOnPaid"
-                      name="resetFreeRevisionsOnPaid"
-                      defaultChecked
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    <Label htmlFor="resetFreeRevisionsOnPaid" className="font-normal">
-                      Reset free revisions after paid revision (client gets free revisions again after paying)
-                    </Label>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="features">Features (one per line)</Label>
-                  <textarea
-                    id="features"
-                    name="features"
-                    className="w-full min-h-[100px] p-2 border rounded-md"
-                    placeholder="Feature 1\nFeature 2\nFeature 3"
-                  />
-                </div>
               </div>
-              
+
+              <div className="space-y-2">
+                <Label htmlFor="features">Features (one per line)</Label>
+                <textarea
+                  id="features"
+                  name="features"
+                  className="w-full min-h-[100px] p-2 border rounded-md"
+                  placeholder="Feature 1\nFeature 2\nFeature 3"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label>Included Services</Label>
                 <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
-                  {allServices?.map((service: { id: string; name: string; icon: string | null }) => (
-                    <div key={service.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`service-${service.id}`}
-                        checked={selectedServiceIds.includes(service.id)}
-                        onCheckedChange={() => toggleService(service.id)}
-                      />
-                      <Label htmlFor={`service-${service.id}`} className="cursor-pointer font-normal">
-                        {service.icon} {service.name}
-                      </Label>
-                    </div>
-                  ))}
+                  {allServices?.map(
+                    (service: { id: string; name: string; icon: string | null }) => (
+                      <div key={service.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`service-${service.id}`}
+                          checked={selectedServiceIds.includes(service.id)}
+                          onCheckedChange={() => toggleService(service.id)}
+                        />
+                        <Label
+                          htmlFor={`service-${service.id}`}
+                          className="cursor-pointer font-normal"
+                        >
+                          {service.icon} {service.name}
+                        </Label>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -238,12 +220,14 @@ export default function AdminPackagesPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Packages</CardTitle>
-          <CardDescription>
-            {packages?.length || 0} packages
-          </CardDescription>
+          <CardDescription>{packages?.length || 0} packages</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "deleted")} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as "active" | "deleted")}
+            className="w-full"
+          >
             <TabsList className="mb-4">
               <TabsTrigger value="active">Active Packages</TabsTrigger>
               <TabsTrigger value="deleted">Deleted Packages</TabsTrigger>
@@ -258,175 +242,191 @@ export default function AdminPackagesPage() {
                       {activeTab === "active" ? "No packages yet" : "No deleted packages"}
                     </p>
                     <p className="text-sm">
-                      {activeTab === "active" 
-                        ? "Create your first package to get started" 
+                      {activeTab === "active"
+                        ? "Create your first package to get started"
                         : "Deleted packages will appear here"}
                     </p>
                   </div>
                 )}
-                {!isLoading && packages && packages.length > 0 && packages.map((pkg: { 
-          id: string; 
-          name: string; 
-          price: number; 
-          credits: number; 
-          durationDays: number; 
-          features: string[];
-          services?: Array<{ serviceType: { id: string; name: string; icon: string | null } }>;
-        }) =>
-              editingId === pkg.id ? (
-                <Card key={pkg.id}>
-                  <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
-                    <CardHeader>
-                      <Input name="name" defaultValue={pkg.name} />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Price ($)</Label>
-                        <Input
-                          name="price"
-                          type="number"
-                          step="0.01"
-                          defaultValue={pkg.price}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Credits</Label>
-                        <Input
-                          name="credits"
-                          type="number"
-                          defaultValue={pkg.credits}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Features</Label>
-                        <textarea
-                          name="features"
-                          className="w-full min-h-[80px] p-2 border rounded-md text-sm"
-                          defaultValue={pkg.features.join("\n")}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Included Services</Label>
-                        <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
-                          {allServices?.map((service: { id: string; name: string; icon: string | null }) => (
-                            <div key={service.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`edit-service-${service.id}`}
-                                checked={selectedServiceIds.includes(service.id)}
-                                onCheckedChange={() => toggleService(service.id)}
-                              />
-                              <Label htmlFor={`edit-service-${service.id}`} className="cursor-pointer font-normal">
-                                {service.icon} {service.name}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCancelEdit}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        size="sm"
-                        disabled={updatePackage.isPending}
-                      >
-                        Save
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </Card>
-              ) : (
-                <Card key={pkg.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>{pkg.name}</CardTitle>
-                      <Package className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                    <CardDescription>
-                      <span className="text-2xl font-bold text-foreground">
-                        {formatCurrency(pkg.price)}
-                      </span>{" "}
-                      /month
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 text-sm">
-                      <li>{pkg.credits} credits</li>
-                      <li>{pkg.durationDays} day duration</li>
-                      {pkg.features.map((feature: string, i: number) => (
-                        <li key={`${pkg.id}-feature-${i}`} className="text-muted-foreground">
-                          • {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    {pkg.services && pkg.services.length > 0 && (
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm font-medium mb-2">Included Services:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {pkg.services.map((ps) => (
-                            <Badge key={ps.serviceType.id} variant="secondary" className="text-xs">
-                              {ps.serviceType.icon} {ps.serviceType.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {(!pkg.services || pkg.services.length === 0) && (
-                      <div className="mt-4 pt-4 border-t">
-                        <p className="text-sm text-muted-foreground italic">No services configured</p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="gap-2">
-                    {activeTab === "active" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditPackage(pkg)}
-                      >
-                        <Edit className="mr-1 h-3 w-3" />
-                        Edit
-                      </Button>
-                    )}
-                    <Button
-                      variant={activeTab === "active" ? "destructive" : "default"}
-                      size="sm"
-                      onClick={() => {
-                        if (activeTab === "active") {
-                          if (confirm("Delete this package?")) {
-                            deletePackage.mutate({ id: pkg.id });
-                          }
-                        } else if (confirm("Restore this package?")) {
-                          restorePackage.mutate({ id: pkg.id });
-                        }
-                      }}
-                    >
-                      {activeTab === "active" ? (
-                        <>
-                          <Trash className="mr-1 h-3 w-3" />
-                          Delete
-                        </>
+                {!isLoading &&
+                  packages &&
+                  packages.length > 0 &&
+                  packages.map(
+                    (pkg: {
+                      id: string;
+                      name: string;
+                      price: number;
+                      credits: number;
+                      durationDays: number;
+                      features: string[];
+                      services?: Array<{
+                        serviceType: { id: string; name: string; icon: string | null };
+                      }>;
+                    }) =>
+                      editingId === pkg.id ? (
+                        <Card key={pkg.id}>
+                          <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
+                            <CardHeader>
+                              <Input name="name" defaultValue={pkg.name} />
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>Price ($)</Label>
+                                <Input
+                                  name="price"
+                                  type="number"
+                                  step="0.01"
+                                  defaultValue={pkg.price}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Credits</Label>
+                                <Input name="credits" type="number" defaultValue={pkg.credits} />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Features</Label>
+                                <textarea
+                                  name="features"
+                                  className="w-full min-h-[80px] p-2 border rounded-md text-sm"
+                                  defaultValue={pkg.features.join("\n")}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Included Services</Label>
+                                <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
+                                  {allServices?.map(
+                                    (service: {
+                                      id: string;
+                                      name: string;
+                                      icon: string | null;
+                                    }) => (
+                                      <div key={service.id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`edit-service-${service.id}`}
+                                          checked={selectedServiceIds.includes(service.id)}
+                                          onCheckedChange={() => toggleService(service.id)}
+                                        />
+                                        <Label
+                                          htmlFor={`edit-service-${service.id}`}
+                                          className="cursor-pointer font-normal"
+                                        >
+                                          {service.icon} {service.name}
+                                        </Label>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                            <CardFooter className="gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </Button>
+                              <Button type="submit" size="sm" disabled={updatePackage.isPending}>
+                                Save
+                              </Button>
+                            </CardFooter>
+                          </form>
+                        </Card>
                       ) : (
-                        <>
-                          <RotateCcw className="mr-1 h-3 w-3" />
-                          Restore
-                        </>
-                      )}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )
-            )}
+                        <Card key={pkg.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle>{pkg.name}</CardTitle>
+                              <Package className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <CardDescription>
+                              <span className="text-2xl font-bold text-foreground">
+                                {formatCurrency(pkg.price)}
+                              </span>{" "}
+                              /month
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2 text-sm">
+                              <li>{pkg.credits} credits</li>
+                              <li>{pkg.durationDays} day duration</li>
+                              {pkg.features.map((feature: string, i: number) => (
+                                <li
+                                  key={`${pkg.id}-feature-${i}`}
+                                  className="text-muted-foreground"
+                                >
+                                  • {feature}
+                                </li>
+                              ))}
+                            </ul>
+
+                            {pkg.services && pkg.services.length > 0 && (
+                              <div className="mt-4 pt-4 border-t">
+                                <p className="text-sm font-medium mb-2">Included Services:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {pkg.services.map((ps) => (
+                                    <Badge
+                                      key={ps.serviceType.id}
+                                      variant="secondary"
+                                      className="text-xs"
+                                    >
+                                      {ps.serviceType.icon} {ps.serviceType.name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {(!pkg.services || pkg.services.length === 0) && (
+                              <div className="mt-4 pt-4 border-t">
+                                <p className="text-sm text-muted-foreground italic">
+                                  No services configured
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                          <CardFooter className="gap-2">
+                            {activeTab === "active" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditPackage(pkg)}
+                              >
+                                <Edit className="mr-1 h-3 w-3" />
+                                Edit
+                              </Button>
+                            )}
+                            <Button
+                              variant={activeTab === "active" ? "destructive" : "default"}
+                              size="sm"
+                              onClick={() => {
+                                if (activeTab === "active") {
+                                  if (confirm("Delete this package?")) {
+                                    deletePackage.mutate({ id: pkg.id });
+                                  }
+                                } else if (confirm("Restore this package?")) {
+                                  restorePackage.mutate({ id: pkg.id });
+                                }
+                              }}
+                            >
+                              {activeTab === "active" ? (
+                                <>
+                                  <Trash className="mr-1 h-3 w-3" />
+                                  Delete
+                                </>
+                              ) : (
+                                <>
+                                  <RotateCcw className="mr-1 h-3 w-3" />
+                                  Restore
+                                </>
+                              )}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      )
+                  )}
               </div>
             </TabsContent>
           </Tabs>
