@@ -315,11 +315,17 @@ export const adminRouter = router({
                 },
               },
             },
+            receivedRatings: {
+              select: {
+                rating: true,
+              },
+            },
             _count: {
               select: {
                 clientRequests: true,
                 providerRequests: true,
                 clientSubscriptions: true,
+                receivedRatings: true,
               },
             },
           },
@@ -330,8 +336,22 @@ export const adminRouter = router({
         ctx.db.user.count({ where }),
       ]);
 
+      // Calculate average rating for each provider
+      const usersWithRating = users.map((user) => {
+        const ratings = user.receivedRatings;
+        const avgRating = ratings.length > 0
+          ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+          : null;
+        
+        return {
+          ...user,
+          averageRating: avgRating,
+          receivedRatings: undefined, // Remove from response
+        };
+      });
+
       return {
-        users,
+        users: usersWithRating,
         total,
         hasMore: (input?.offset || 0) + users.length < total,
       };

@@ -64,6 +64,7 @@ type UserData = {
   image: string | null;
   role: string;
   createdAt: Date;
+  averageRating?: number | null;
   providerProfile: {
     id: string;
     supportedServices: ServiceType[];
@@ -72,6 +73,7 @@ type UserData = {
     clientRequests: number;
     providerRequests: number;
     clientSubscriptions: number;
+    receivedRatings: number;
   };
 };
 
@@ -146,9 +148,11 @@ function UserStatsClient({ count }: { count: UserData["_count"] }): JSX.Element 
 
 function UserStatsProvider({
   count,
+  averageRating,
   onEditServices,
 }: {
   count: UserData["_count"];
+  averageRating?: number | null;
   onEditServices: () => void;
 }): JSX.Element {
   return (
@@ -160,6 +164,17 @@ function UserStatsProvider({
           <p className="text-xs text-muted-foreground">Jobs</p>
         </div>
       </div>
+      {averageRating !== null && averageRating !== undefined && (
+        <div className="flex items-center gap-2 text-sm">
+          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+          <div>
+            <p className="font-medium">{averageRating.toFixed(1)}</p>
+            <p className="text-xs text-muted-foreground">
+              {count.receivedRatings} {count.receivedRatings === 1 ? 'rating' : 'ratings'}
+            </p>
+          </div>
+        </div>
+      )}
       <Button variant="outline" size="sm" onClick={onEditServices}>
         <Settings className="h-4 w-4 mr-1" />
         Services
@@ -214,7 +229,11 @@ function UserListItem({
       <div className="flex flex-wrap items-center gap-4">
         {user.role === "CLIENT" && <UserStatsClient count={user._count} />}
         {user.role === "PROVIDER" && (
-          <UserStatsProvider count={user._count} onEditServices={onEditServices} />
+          <UserStatsProvider 
+            count={user._count} 
+            averageRating={user.averageRating}
+            onEditServices={onEditServices} 
+          />
         )}
         {isDeleted ? (
           user.role !== "SUPER_ADMIN" && onRestore && (
