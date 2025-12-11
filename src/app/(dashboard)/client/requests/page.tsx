@@ -9,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RequestCard } from "@/components/requests/request-card";
+import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
 import { trpc } from "@/lib/trpc/client";
-import { formatDate, getStatusColor } from "@/lib/utils";
-import { Plus, FileText } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export default function RequestsPage() {
   const { data: requestsData, isLoading } = trpc.request.getAll.useQuery({
@@ -53,53 +53,29 @@ export default function RequestsPage() {
             </div>
           )}
           {!isLoading && requestsData?.requests.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No requests yet</p>
-              <p className="text-sm">Create your first request to get started</p>
-              <Link href="/client/requests/new">
-                <Button className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Request
-                </Button>
-              </Link>
-            </div>
+            <EmptyRequestsState
+              title="No requests yet"
+              description="Create your first request to get started"
+              actionLabel="Create Request"
+              actionHref="/client/requests/new"
+            />
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string }; provider?: { name: string | null } | null; _count: { comments: number }; creditCost: number }) => (
-                <Link
+              {requestsData?.requests.map((request: any) => (
+                <RequestCard
                   key={request.id}
+                  id={request.id}
+                  title={request.title}
+                  status={request.status}
+                  creditCost={request.creditCost || 0}
+                  createdAt={request.createdAt}
+                  serviceType={request.serviceType}
+                  provider={request.provider}
+                  commentCount={request._count.comments}
                   href={`/client/requests/${request.id}`}
-                  className="block"
-                >
-                  <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                    <div className="space-y-1">
-                      <p className="font-medium">{request.title}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{request.serviceType.name}</span>
-                        <span>•</span>
-                        <span>{formatDate(request.createdAt)}</span>
-                        <span>•</span>
-                        <span className="font-medium">💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}</span>
-                        {request.provider && (
-                          <>
-                            <span>•</span>
-                            <span>Provider: {request.provider.name}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {request._count.comments} messages
-                      </span>
-                      <Badge className={getStatusColor(request.status)}>
-                        {request.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                  </div>
-                </Link>
+                  variant="compact"
+                />
               ))}
             </div>
           )}

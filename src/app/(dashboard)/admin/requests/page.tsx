@@ -4,7 +4,8 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { RequestCard } from "@/components/requests/request-card";
+import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
 import {
   Select,
   SelectContent,
@@ -18,36 +19,13 @@ import {
   Eye,
   Clock,
   CheckCircle,
-  XCircle,
-  AlertCircle,
   Loader2,
   PlayCircle,
-  Package,
   UserPlus,
   Trash,
 } from "lucide-react";
 import Link from "next/link";
 import { AssignProviderDialog } from "@/components/admin/assign-provider-dialog";
-
-const statusColors: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  APPROVED: "bg-blue-100 text-blue-800",
-  IN_PROGRESS: "bg-purple-100 text-purple-800",
-  DELIVERED: "bg-green-100 text-green-800",
-  REVISION_REQUESTED: "bg-orange-100 text-orange-800",
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  CANCELLED: "bg-red-100 text-red-800",
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  PENDING: <Clock className="h-3 w-3" />,
-  APPROVED: <CheckCircle className="h-3 w-3" />,
-  IN_PROGRESS: <PlayCircle className="h-3 w-3" />,
-  DELIVERED: <Package className="h-3 w-3" />,
-  REVISION_REQUESTED: <AlertCircle className="h-3 w-3" />,
-  COMPLETED: <CheckCircle className="h-3 w-3" />,
-  CANCELLED: <XCircle className="h-3 w-3" />,
-};
 
 type Request = {
   id: string;
@@ -200,88 +178,61 @@ export default function AdminRequestsPage() {
         </CardHeader>
         <CardContent>
           {filteredRequests.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No requests found</h3>
-              <p className="text-muted-foreground">
-                {searchQuery || statusFilter !== "all"
+            <EmptyRequestsState
+              title="No requests found"
+              description={
+                searchQuery || statusFilter !== "all"
                   ? "Try adjusting your filters"
-                  : "No requests have been created yet"}
-              </p>
-            </div>
+                  : "No requests have been created yet"
+              }
+            />
           ) : (
             <div className="space-y-4">
               {filteredRequests.map((request: any) => (
-                <div
+                <RequestCard
                   key={request.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium truncate">{request.title}</h3>
-                      <Badge
-                        className={`${statusColors[request.status]} flex items-center gap-1`}
+                  id={request.id}
+                  title={request.title}
+                  status={request.status}
+                  creditCost={request.creditCost || 0}
+                  createdAt={request.createdAt}
+                  serviceType={request.serviceType}
+                  client={request.client}
+                  provider={request.provider}
+                  href={`/admin/requests/${request.id}`}
+                  variant="compact"
+                  actions={
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAssignClick(request)}
                       >
-                        {statusIcons[request.status]}
-                        {request.status.replace("_", " ")}
-                      </Badge>
-                      {!request.provider && (
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">
-                          Unassigned
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <span>
-                        <strong>Client:</strong> {request.client.name || request.client.email}
-                      </span>
-                      <span>
-                        <strong>Service:</strong> {request.serviceType.name}
-                      </span>
-                      <span className="font-medium text-foreground">
-                        💳 {request.creditCost} {request.creditCost === 1 ? 'credit' : 'credits'}
-                      </span>
-                      {request.provider && (
-                        <span>
-                          <strong>Provider:</strong> {request.provider.name || request.provider.email}
-                        </span>
-                      )}
-                      <span>
-                        <strong>Created:</strong>{" "}
-                        {new Date(request.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAssignClick(request)}
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      {request.provider ? "Reassign" : "Assign"}
-                    </Button>
-                    <Link href={`/admin/requests/${request.id}`}>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        {request.provider ? "Reassign" : "Assign"}
                       </Button>
-                    </Link>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        if (confirm(`Delete request "${request.title}"? This action cannot be undone.`)) {
-                          deleteRequest.mutate({ requestId: request.id });
-                        }
-                      }}
-                      disabled={deleteRequest.isPending}
-                    >
-                      <Trash className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
+                      <Link href={`/admin/requests/${request.id}`}>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm(`Delete request "${request.title}"? This action cannot be undone.`)) {
+                            deleteRequest.mutate({ requestId: request.id });
+                          }
+                        }}
+                        disabled={deleteRequest.isPending}
+                      >
+                        <Trash className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </>
+                  }
+                />
               ))}
             </div>
           )}
