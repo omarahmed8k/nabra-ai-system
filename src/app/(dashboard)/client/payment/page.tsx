@@ -81,6 +81,16 @@ interface FormData {
   transferImageUrl: string;
 }
 
+interface FormErrors {
+  senderName?: string;
+  senderBank?: string;
+  senderCountry?: string;
+  transferDate?: string;
+  referenceNumber?: string;
+  notes?: string;
+  transferImageUrl?: string;
+}
+
 function getStatusBadgeVariant(status: string) {
   if (status === "APPROVED") return "default" as const;
   if (status === "REJECTED") return "destructive" as const;
@@ -334,6 +344,8 @@ function PaymentProofForm({
     transferImageUrl: "",
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
+
   const submitProofMutation = trpc.payment.submitProof.useMutation({
     onSuccess: () => {
       showSuccess("Payment proof submitted successfully! We'll verify it soon.");
@@ -352,16 +364,54 @@ function PaymentProofForm({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
 
     if (!formData.transferImageUrl) {
-      showError("Please upload the transfer receipt image");
-      return;
+      newErrors.transferImageUrl = "Transfer receipt is required";
+    }
+
+    if (!formData.senderName || formData.senderName.trim().length < 2) {
+      newErrors.senderName = "Sender name must be at least 2 characters";
+    } else if (formData.senderName.length > 100) {
+      newErrors.senderName = "Sender name must not exceed 100 characters";
+    }
+
+    if (!formData.senderBank || formData.senderBank.trim().length < 2) {
+      newErrors.senderBank = "Bank name must be at least 2 characters";
+    } else if (formData.senderBank.length > 100) {
+      newErrors.senderBank = "Bank name must not exceed 100 characters";
+    }
+
+    if (!formData.senderCountry || formData.senderCountry.trim().length < 2) {
+      newErrors.senderCountry = "Country must be at least 2 characters";
+    } else if (formData.senderCountry.length > 100) {
+      newErrors.senderCountry = "Country must not exceed 100 characters";
     }
 
     if (!formData.transferDate) {
-      showError("Please select the transfer date");
+      newErrors.transferDate = "Transfer date is required";
+    } else if (formData.transferDate > new Date()) {
+      newErrors.transferDate = "Transfer date cannot be in the future";
+    }
+
+    if (formData.referenceNumber && formData.referenceNumber.length > 50) {
+      newErrors.referenceNumber = "Reference number must not exceed 50 characters";
+    }
+
+    if (formData.notes && formData.notes.length > 500) {
+      newErrors.notes = "Notes must not exceed 500 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      showError("Please fix the validation errors before submitting");
       return;
     }
 
@@ -381,10 +431,18 @@ function PaymentProofForm({
 
   const updateField = (field: keyof Omit<FormData, "transferDate">, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
 
   const updateDateField = (date: Date | null) => {
     setFormData((prev) => ({ ...prev, transferDate: date }));
+    // Clear error for this field when user selects a date
+    if (errors.transferDate) {
+      setErrors((prev) => ({ ...prev, transferDate: undefined }));
+    }
   };
 
   return (
@@ -409,6 +467,12 @@ function PaymentProofForm({
               maxSizeMB={10}
               accept="image/*"
             />
+            {errors.transferImageUrl && (
+              <p className="text-sm text-destructive">{errors.transferImageUrl}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Upload an image of your transfer receipt (Max 10MB)
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -418,9 +482,14 @@ function PaymentProofForm({
                 id="senderName"
                 placeholder="Name on bank account"
                 required
+                minLength={2}
+                maxLength={100}
                 value={formData.senderName}
                 onChange={(e) => updateField("senderName", e.target.value)}
+                className={errors.senderName ? "border-destructive" : ""}
               />
+              {errors.senderName && <p className="text-sm text-destructive">{errors.senderName}</p>}
+              <p className="text-xs text-muted-foreground">2-100 characters</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="senderBank">Bank Name *</Label>
@@ -428,9 +497,14 @@ function PaymentProofForm({
                 id="senderBank"
                 placeholder="e.g., Chase, HSBC"
                 required
+                minLength={2}
+                maxLength={100}
                 value={formData.senderBank}
                 onChange={(e) => updateField("senderBank", e.target.value)}
+                className={errors.senderBank ? "border-destructive" : ""}
               />
+              {errors.senderBank && <p className="text-sm text-destructive">{errors.senderBank}</p>}
+              <p className="text-xs text-muted-foreground">2-100 characters</p>
             </div>
           </div>
 
@@ -441,9 +515,16 @@ function PaymentProofForm({
                 id="senderCountry"
                 placeholder="e.g., United States"
                 required
+                minLength={2}
+                maxLength={100}
                 value={formData.senderCountry}
                 onChange={(e) => updateField("senderCountry", e.target.value)}
+                className={errors.senderCountry ? "border-destructive" : ""}
               />
+              {errors.senderCountry && (
+                <p className="text-sm text-destructive">{errors.senderCountry}</p>
+              )}
+              <p className="text-xs text-muted-foreground">2-100 characters</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="transferDate">Transfer Date *</Label>
@@ -456,12 +537,16 @@ function PaymentProofForm({
                   maxDate={new Date()}
                   placeholderText="Select transfer date"
                   required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`flex h-10 w-full rounded-md border ${errors.transferDate ? "border-destructive" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
                   calendarClassName="!bg-background !border-border"
                   wrapperClassName="w-full"
                 />
                 <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               </div>
+              {errors.transferDate && (
+                <p className="text-sm text-destructive">{errors.transferDate}</p>
+              )}
+              <p className="text-xs text-muted-foreground">Date cannot be in the future</p>
             </div>
           </div>
 
@@ -470,9 +555,15 @@ function PaymentProofForm({
             <Input
               id="referenceNumber"
               placeholder="Bank reference or transaction ID"
+              maxLength={50}
               value={formData.referenceNumber}
               onChange={(e) => updateField("referenceNumber", e.target.value)}
+              className={errors.referenceNumber ? "border-destructive" : ""}
             />
+            {errors.referenceNumber && (
+              <p className="text-sm text-destructive">{errors.referenceNumber}</p>
+            )}
+            <p className="text-xs text-muted-foreground">Max 50 characters</p>
           </div>
 
           <div className="space-y-2">

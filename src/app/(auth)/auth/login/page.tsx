@@ -77,11 +77,11 @@ export default function LoginPage() {
 
       // Get the updated session to determine user role
       const session = await getSession();
-      
+
       toast.success("Welcome back!", {
         description: "You have been successfully logged in.",
       });
-      
+
       // Redirect based on user role with full page reload to ensure proper session initialization
       if (session?.user?.role === "SUPER_ADMIN") {
         globalThis.location.href = "/admin";
@@ -109,10 +109,14 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-              >
-                <Image src="/images/favicon.svg" alt="Nabra" width={48} height={48} className="w-12 h-12" />
+              <motion.div whileHover={{ scale: 1.1 }}>
+                <Image
+                  src="/images/favicon.svg"
+                  alt="Nabra"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
               </motion.div>
             </Link>
           </div>
@@ -124,7 +128,7 @@ export default function LoginPage() {
         <form onSubmit={onSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 name="email"
@@ -135,12 +139,13 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password *</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 required
+                minLength={6}
                 disabled={isLoading}
               />
             </div>
@@ -153,10 +158,7 @@ export default function LoginPage() {
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
               Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/register"
-                className="text-primary hover:underline"
-              >
+              <Link href="/auth/register" className="text-primary hover:underline">
                 Sign up
               </Link>
             </p>

@@ -148,26 +148,31 @@ export default function AdminPackagesPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" name="name" required />
+                  <Label htmlFor="name">Name *</Label>
+                  <Input id="name" name="name" required minLength={2} maxLength={100} />
+                  <p className="text-xs text-muted-foreground">2-100 characters</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
-                  <Input id="price" name="price" type="number" step="0.01" required />
+                  <Label htmlFor="price">Price ($) *</Label>
+                  <Input id="price" name="price" type="number" step="0.01" min="0" required />
+                  <p className="text-xs text-muted-foreground">Price in USD (e.g., 29.99)</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="credits">Credits</Label>
-                  <Input id="credits" name="credits" type="number" required />
+                  <Label htmlFor="credits">Credits *</Label>
+                  <Input id="credits" name="credits" type="number" min="1" required />
+                  <p className="text-xs text-muted-foreground">Number of credits included</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="durationDays">Duration (days)</Label>
+                  <Label htmlFor="durationDays">Duration (days) *</Label>
                   <Input
                     id="durationDays"
                     name="durationDays"
                     type="number"
+                    min="1"
                     defaultValue="30"
                     required
                   />
+                  <p className="text-xs text-muted-foreground">Package validity period</p>
                 </div>
               </div>
 
@@ -178,7 +183,11 @@ export default function AdminPackagesPage() {
                   name="features"
                   className="w-full min-h-[100px] p-2 border rounded-md"
                   placeholder="Feature 1\nFeature 2\nFeature 3"
+                  maxLength={2000}
                 />
+                <p className="text-xs text-muted-foreground">
+                  List key features, one per line (max 2000 characters)
+                </p>
               </div>
 
               <div className="space-y-2">

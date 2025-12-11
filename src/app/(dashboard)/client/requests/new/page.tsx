@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,8 +30,7 @@ export default function NewRequestPage() {
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
   const [attributeResponses, setAttributeResponses] = useState<AttributeResponse[]>([]);
 
-  const { data: serviceTypes } =
-    trpc.request.getServiceTypes.useQuery();
+  const { data: serviceTypes } = trpc.request.getServiceTypes.useQuery();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
 
   const selectedService = useMemo(
@@ -64,18 +57,18 @@ export default function NewRequestPage() {
 
   const hasCredits = subscription && subscription.remainingCredits > 0;
   const baseCreditCost = (selectedService as { creditCost?: number })?.creditCost || 1;
-  
+
   // Priority costs from the selected service type
   const lowCost = (selectedService as { priorityCostLow?: number })?.priorityCostLow ?? 0;
   const mediumCost = (selectedService as { priorityCostMedium?: number })?.priorityCostMedium ?? 1;
   const highCost = (selectedService as { priorityCostHigh?: number })?.priorityCostHigh ?? 2;
-  
+
   const priorityCostsMap: Record<string, number> = { "1": lowCost, "2": mediumCost, "3": highCost };
   const priorityCost = priorityCostsMap[priority] ?? lowCost;
   const totalCreditCost = baseCreditCost + priorityCost;
-  
+
   const canAffordService = subscription && subscription.remainingCredits >= totalCreditCost;
-  
+
   let buttonText = "Create Request (1 Credit)";
   if (createRequest.isPending) {
     buttonText = "Creating...";
@@ -143,8 +136,10 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-orange-800">Insufficient Credits</CardTitle>
             <CardDescription className="text-orange-700">
-              This request requires {totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'} ({baseCreditCost} base + {priorityCost} priority) but you only have {subscription?.remainingCredits || 0}. Please subscribe to a plan
-              or purchase more credits.
+              This request requires {totalCreditCost} credit{totalCreditCost === 1 ? "" : "s"} (
+              {baseCreditCost} base + {priorityCost} priority) but you only have{" "}
+              {subscription?.remainingCredits || 0}. Please subscribe to a plan or purchase more
+              credits.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -160,7 +155,8 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-yellow-800">No Active Subscription</CardTitle>
             <CardDescription className="text-yellow-700">
-              You need an active subscription to create requests. Please subscribe to a package to get started.
+              You need an active subscription to create requests. Please subscribe to a package to
+              get started.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -176,7 +172,8 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-blue-800">No Services Available</CardTitle>
             <CardDescription className="text-blue-700">
-              Your current package ({subscription.package?.name}) does not include any services. Please upgrade to access services.
+              Your current package ({subscription.package?.name}) does not include any services.
+              Please upgrade to access services.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -192,11 +189,22 @@ export default function NewRequestPage() {
           <CardTitle>Request Details</CardTitle>
           <CardDescription>
             {selectedServiceType ? (
-              <>Base cost: <strong>{baseCreditCost} credit{baseCreditCost === 1 ? '' : 's'}</strong> + Priority cost ({priorityCost} credit{priorityCost === 1 ? '' : 's'}) = <strong>{totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'}</strong>. You have{" "}
-              <strong>{subscription?.remainingCredits || 0} credits</strong> available.</>
+              <>
+                Base cost:{" "}
+                <strong>
+                  {baseCreditCost} credit{baseCreditCost === 1 ? "" : "s"}
+                </strong>{" "}
+                + Priority cost ({priorityCost} credit{priorityCost === 1 ? "" : "s"}) ={" "}
+                <strong>
+                  {totalCreditCost} credit{totalCreditCost === 1 ? "" : "s"}
+                </strong>
+                . You have <strong>{subscription?.remainingCredits || 0} credits</strong> available.
+              </>
             ) : (
-              <>Select a service to see the credit cost. You have{" "}
-              {subscription?.remainingCredits || 0} credits available.</>
+              <>
+                Select a service to see the credit cost. You have{" "}
+                {subscription?.remainingCredits || 0} credits available.
+              </>
             )}
           </CardDescription>
         </CardHeader>
@@ -230,8 +238,12 @@ export default function NewRequestPage() {
                 placeholder="E.g., Company Website Redesign"
                 required
                 minLength={5}
+                maxLength={200}
                 disabled={!hasCredits || createRequest.isPending}
               />
+              <p className="text-xs text-muted-foreground">
+                5-200 characters - Be clear and concise
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -242,25 +254,37 @@ export default function NewRequestPage() {
                 placeholder="Describe your project in detail. Include any specific requirements, preferences, or references..."
                 required
                 minLength={20}
+                maxLength={5000}
                 rows={6}
                 disabled={!hasCredits || createRequest.isPending}
               />
+              <p className="text-xs text-muted-foreground">
+                20-5000 characters - Provide detailed requirements and expectations
+              </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select name="priority" value={priority} onValueChange={setPriority} disabled={!hasCredits}>
+              <Select
+                name="priority"
+                value={priority}
+                onValueChange={setPriority}
+                disabled={!hasCredits}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">Low (+{lowCost} credits)</SelectItem>
-                  <SelectItem value="2">Medium (+{mediumCost} credit{mediumCost === 1 ? '' : 's'})</SelectItem>
+                  <SelectItem value="2">
+                    Medium (+{mediumCost} credit{mediumCost === 1 ? "" : "s"})
+                  </SelectItem>
                   <SelectItem value="3">High (+{highCost} credits)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Priority adds to base cost: Low=+{lowCost}, Medium=+{mediumCost}, High=+{highCost} credits
+                Priority adds to base cost: Low=+{lowCost}, Medium=+{mediumCost}, High=+{highCost}{" "}
+                credits
               </p>
             </div>
 
@@ -290,10 +314,7 @@ export default function NewRequestPage() {
                   Cancel
                 </Button>
               </Link>
-              <Button
-                type="submit"
-                disabled={!canAffordService || createRequest.isPending}
-              >
+              <Button type="submit" disabled={!canAffordService || createRequest.isPending}>
                 {buttonText}
               </Button>
             </div>

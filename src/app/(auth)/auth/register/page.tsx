@@ -100,90 +100,96 @@ export default function RegisterPage() {
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
-                <Image src="/images/favicon.svg" alt="Nabra" width={48} height={48} className="w-12 h-12" />
+                <Image
+                  src="/images/favicon.svg"
+                  alt="Nabra"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
+                />
               </motion.div>
             </Link>
           </div>
-        <CardTitle className="text-2xl text-center">
-          Create an account
-        </CardTitle>
-        <CardDescription className="text-center">
-          Enter your details to get started
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={onSubmit}>
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
-              {error}
+          <CardTitle className="text-2xl text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">
+            Enter your details to get started
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={onSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-md">
+                {error}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="John Doe"
+                required
+                minLength={2}
+                maxLength={100}
+                disabled={registerMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">2-100 characters</p>
             </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="John Doe"
-              required
-              disabled={registerMutation.isPending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="name@example.com"
-              required
-              disabled={registerMutation.isPending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={6}
-              disabled={registerMutation.isPending}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              minLength={6}
-              disabled={registerMutation.isPending}
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <motion.div className="w-full" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={registerMutation.isPending}
-            >
-              {registerMutation.isPending
-                ? "Creating account..."
-                : "Create Account"}
-            </Button>
-          </motion.div>
-          <p className="text-sm text-muted-foreground text-center">
-            Already have an account?{" "}
-            <Link href="/auth/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
-      </form>
-    </Card>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                required
+                disabled={registerMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">Valid email address required</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minLength={6}
+                maxLength={100}
+                disabled={registerMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">Minimum 6 characters required</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password *</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                minLength={6}
+                maxLength={100}
+                disabled={registerMutation.isPending}
+              />
+              <p className="text-xs text-muted-foreground">Must match password above</p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <motion.div className="w-full" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+                {registerMutation.isPending ? "Creating account..." : "Create Account"}
+              </Button>
+            </motion.div>
+            <p className="text-sm text-muted-foreground text-center">
+              Already have an account?{" "}
+              <Link href="/auth/login" className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
     </motion.div>
   );
 }

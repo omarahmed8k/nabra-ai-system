@@ -71,12 +71,8 @@ const EMOJI_LIST = [
 export default function AdminServicesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [selectedIconField, setSelectedIconField] = useState<
-    "create" | "edit" | null
-  >(null);
-  const [createAttributes, setCreateAttributes] = useState<ServiceAttribute[]>(
-    []
-  );
+  const [selectedIconField, setSelectedIconField] = useState<"create" | "edit" | null>(null);
+  const [createAttributes, setCreateAttributes] = useState<ServiceAttribute[]>([]);
   const [editAttributes, setEditAttributes] = useState<ServiceAttribute[]>([]);
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
 
@@ -130,34 +126,23 @@ export default function AdminServicesPage() {
     const creditCostValue = formData.get("creditCost") as string;
     const maxFreeRevisionsValue = formData.get("maxFreeRevisions") as string;
     const paidRevisionCostValue = formData.get("paidRevisionCost") as string;
-    const resetFreeRevisionsOnPaidValue =
-      formData.get("resetFreeRevisionsOnPaid") === "on";
+    const resetFreeRevisionsOnPaidValue = formData.get("resetFreeRevisionsOnPaid") === "on";
     const priorityCostLowValue = formData.get("priorityCostLow") as string;
-    const priorityCostMediumValue = formData.get(
-      "priorityCostMedium"
-    ) as string;
+    const priorityCostMediumValue = formData.get("priorityCostMedium") as string;
     const priorityCostHighValue = formData.get("priorityCostHigh") as string;
     createService.mutate({
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       icon: iconValue || undefined,
       creditCost: creditCostValue ? Number.parseInt(creditCostValue, 10) : 1,
-      maxFreeRevisions: maxFreeRevisionsValue
-        ? Number.parseInt(maxFreeRevisionsValue, 10)
-        : 3,
-      paidRevisionCost: paidRevisionCostValue
-        ? Number.parseInt(paidRevisionCostValue, 10)
-        : 1,
+      maxFreeRevisions: maxFreeRevisionsValue ? Number.parseInt(maxFreeRevisionsValue, 10) : 3,
+      paidRevisionCost: paidRevisionCostValue ? Number.parseInt(paidRevisionCostValue, 10) : 1,
       resetFreeRevisionsOnPaid: resetFreeRevisionsOnPaidValue,
-      priorityCostLow: priorityCostLowValue
-        ? Number.parseInt(priorityCostLowValue, 10)
-        : 0,
+      priorityCostLow: priorityCostLowValue ? Number.parseInt(priorityCostLowValue, 10) : 0,
       priorityCostMedium: priorityCostMediumValue
         ? Number.parseInt(priorityCostMediumValue, 10)
         : 1,
-      priorityCostHigh: priorityCostHighValue
-        ? Number.parseInt(priorityCostHighValue, 10)
-        : 2,
+      priorityCostHigh: priorityCostHighValue ? Number.parseInt(priorityCostHighValue, 10) : 2,
       attributes: createAttributes.length > 0 ? createAttributes : undefined,
     });
   };
@@ -169,21 +154,16 @@ export default function AdminServicesPage() {
     const creditCostValue = formData.get("creditCost") as string;
     const maxFreeRevisionsValue = formData.get("maxFreeRevisions") as string;
     const paidRevisionCostValue = formData.get("paidRevisionCost") as string;
-    const resetFreeRevisionsOnPaidValue =
-      formData.get("resetFreeRevisionsOnPaid") === "on";
+    const resetFreeRevisionsOnPaidValue = formData.get("resetFreeRevisionsOnPaid") === "on";
     const priorityCostLowValue = formData.get("priorityCostLow") as string;
-    const priorityCostMediumValue = formData.get(
-      "priorityCostMedium"
-    ) as string;
+    const priorityCostMediumValue = formData.get("priorityCostMedium") as string;
     const priorityCostHighValue = formData.get("priorityCostHigh") as string;
     updateService.mutate({
       id,
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       icon: iconValue || undefined,
-      creditCost: creditCostValue
-        ? Number.parseInt(creditCostValue, 10)
-        : undefined,
+      creditCost: creditCostValue ? Number.parseInt(creditCostValue, 10) : undefined,
       maxFreeRevisions: maxFreeRevisionsValue
         ? Number.parseInt(maxFreeRevisionsValue, 10)
         : undefined,
@@ -191,9 +171,7 @@ export default function AdminServicesPage() {
         ? Number.parseInt(paidRevisionCostValue, 10)
         : undefined,
       resetFreeRevisionsOnPaid: resetFreeRevisionsOnPaidValue,
-      priorityCostLow: priorityCostLowValue
-        ? Number.parseInt(priorityCostLowValue, 10)
-        : undefined,
+      priorityCostLow: priorityCostLowValue ? Number.parseInt(priorityCostLowValue, 10) : undefined,
       priorityCostMedium: priorityCostMediumValue
         ? Number.parseInt(priorityCostMediumValue, 10)
         : undefined,
@@ -220,9 +198,7 @@ export default function AdminServicesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Service Types</h1>
-          <p className="text-muted-foreground">
-            Manage available service categories
-          </p>
+          <p className="text-muted-foreground">Manage available service categories</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -241,10 +217,7 @@ export default function AdminServicesPage() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="create-icon">
-                    Icon (emoji){" "}
-                    <span className="text-muted-foreground text-xs">
-                      (optional)
-                    </span>
+                    Icon (emoji) <span className="text-muted-foreground text-xs">(optional)</span>
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -258,9 +231,7 @@ export default function AdminServicesPage() {
                       type="button"
                       variant="outline"
                       onClick={() =>
-                        setSelectedIconField(
-                          selectedIconField === "create" ? null : "create"
-                        )
+                        setSelectedIconField(selectedIconField === "create" ? null : "create")
                       }
                     >
                       {selectedIconField === "create" ? "Hide" : "Pick"}
@@ -284,18 +255,26 @@ export default function AdminServicesPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" name="name" required />
+                  <Label htmlFor="name">Name *</Label>
+                  <Input id="name" name="name" required minLength={2} maxLength={100} />
+                  <p className="text-xs text-muted-foreground">2-100 characters</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input id="description" name="description" required />
+                  <Label htmlFor="description">Description *</Label>
+                  <Input
+                    id="description"
+                    name="description"
+                    required
+                    minLength={10}
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground">10-500 characters</p>
                 </div>
               </div>
 
               {/* Credit Cost */}
               <div className="space-y-2">
-                <Label htmlFor="creditCost">Base Credit Cost</Label>
+                <Label htmlFor="creditCost">Base Credit Cost *</Label>
                 <Input
                   id="creditCost"
                   name="creditCost"
@@ -305,8 +284,7 @@ export default function AdminServicesPage() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Number of credits required to create a request for this
-                  service
+                  Number of credits required to create a request for this service
                 </p>
               </div>
 
@@ -327,9 +305,7 @@ export default function AdminServicesPage() {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priorityCostMedium">
-                    Medium Priority Cost
-                  </Label>
+                  <Label htmlFor="priorityCostMedium">Medium Priority Cost</Label>
                   <Input
                     id="priorityCostMedium"
                     name="priorityCostMedium"
@@ -370,14 +346,10 @@ export default function AdminServicesPage() {
                     defaultValue="3"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Number of free revisions allowed
-                  </p>
+                  <p className="text-xs text-muted-foreground">Number of free revisions allowed</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="paidRevisionCost">
-                    Paid Revision Cost (credits)
-                  </Label>
+                  <Label htmlFor="paidRevisionCost">Paid Revision Cost (credits)</Label>
                   <Input
                     id="paidRevisionCost"
                     name="paidRevisionCost"
@@ -397,9 +369,7 @@ export default function AdminServicesPage() {
                       defaultChecked={true}
                       className="h-4 w-4"
                     />
-                    <Label htmlFor="resetFreeRevisionsOnPaid">
-                      Reset free revisions on paid
-                    </Label>
+                    <Label htmlFor="resetFreeRevisionsOnPaid">Reset free revisions on paid</Label>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Reset free revision count after a paid revision
@@ -408,10 +378,7 @@ export default function AdminServicesPage() {
               </div>
 
               {/* Attributes Manager */}
-              <AttributesManager
-                attributes={createAttributes}
-                onChange={setCreateAttributes}
-              />
+              <AttributesManager attributes={createAttributes} onChange={setCreateAttributes} />
             </CardContent>
             <CardFooter className="gap-2">
               <Button
@@ -437,9 +404,7 @@ export default function AdminServicesPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Service Types</CardTitle>
-          <CardDescription>
-            {services?.length || 0} service types
-          </CardDescription>
+          <CardDescription>{services?.length || 0} service types</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs
@@ -460,9 +425,7 @@ export default function AdminServicesPage() {
                 </div>
               )}
               {!isLoading && services?.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No service types yet
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No service types yet</div>
               )}
               {!isLoading && (services?.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -477,9 +440,7 @@ export default function AdminServicesPage() {
                           <div className="space-y-2">
                             <Label>
                               Icon (emoji){" "}
-                              <span className="text-muted-foreground text-xs">
-                                (optional)
-                              </span>
+                              <span className="text-muted-foreground text-xs">(optional)</span>
                             </Label>
                             <div className="flex gap-2">
                               <Input
@@ -494,9 +455,7 @@ export default function AdminServicesPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() =>
-                                  setSelectedIconField(
-                                    selectedIconField === "edit" ? null : "edit"
-                                  )
+                                  setSelectedIconField(selectedIconField === "edit" ? null : "edit")
                                 }
                               >
                                 {selectedIconField === "edit" ? "Hide" : "Pick"}
@@ -525,10 +484,7 @@ export default function AdminServicesPage() {
                           </div>
                           <div className="space-y-2">
                             <Label>Description</Label>
-                            <Input
-                              name="description"
-                              defaultValue={service.description || ""}
-                            />
+                            <Input name="description" defaultValue={service.description || ""} />
                           </div>
                         </div>
                         <div className="space-y-2">
@@ -541,8 +497,7 @@ export default function AdminServicesPage() {
                             required
                           />
                           <p className="text-xs text-muted-foreground">
-                            Number of credits required to create a request for
-                            this service
+                            Number of credits required to create a request for this service
                           </p>
                         </div>
 
@@ -636,14 +591,10 @@ export default function AdminServicesPage() {
                                 id={`resetFreeRevisionsOnPaid-${service.id}`}
                                 name="resetFreeRevisionsOnPaid"
                                 type="checkbox"
-                                defaultChecked={
-                                  service.resetFreeRevisionsOnPaid ?? true
-                                }
+                                defaultChecked={service.resetFreeRevisionsOnPaid ?? true}
                                 className="h-4 w-4"
                               />
-                              <Label
-                                htmlFor={`resetFreeRevisionsOnPaid-${service.id}`}
-                              >
+                              <Label htmlFor={`resetFreeRevisionsOnPaid-${service.id}`}>
                                 Reset free revisions on paid
                               </Label>
                             </div>
@@ -672,11 +623,7 @@ export default function AdminServicesPage() {
                           >
                             Cancel
                           </Button>
-                          <Button
-                            type="submit"
-                            size="sm"
-                            disabled={updateService.isPending}
-                          >
+                          <Button type="submit" size="sm" disabled={updateService.isPending}>
                             Save
                           </Button>
                         </div>
@@ -687,22 +634,17 @@ export default function AdminServicesPage() {
                         className="flex items-center justify-between p-4 rounded-lg border"
                       >
                         <div className="flex items-center gap-4">
-                          {service.icon && (
-                            <span className="text-2xl">{service.icon}</span>
-                          )}
+                          {service.icon && <span className="text-2xl">{service.icon}</span>}
                           <div>
                             <p className="font-medium">{service.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {service.description}
-                            </p>
+                            <p className="text-sm text-muted-foreground">{service.description}</p>
                             <div className="flex gap-3 mt-1">
-                              {service.attributes &&
-                                service.attributes.length > 0 && (
-                                  <p className="text-xs text-muted-foreground">
-                                    📋 {service.attributes.length} question
-                                    {service.attributes.length === 1 ? "" : "s"}
-                                  </p>
-                                )}
+                              {service.attributes && service.attributes.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  📋 {service.attributes.length} question
+                                  {service.attributes.length === 1 ? "" : "s"}
+                                </p>
+                              )}
                               <p className="text-xs font-medium text-primary">
                                 💳 {service.creditCost || 1} credit
                                 {(service.creditCost || 1) === 1 ? "" : "s"}
@@ -710,20 +652,14 @@ export default function AdminServicesPage() {
                               <p className="text-xs text-muted-foreground">
                                 🔄 {service.maxFreeRevisions ?? 3} free, then{" "}
                                 {service.paidRevisionCost ?? 1} credit
-                                {(service.paidRevisionCost || 1) === 1
-                                  ? ""
-                                  : "s"}
+                                {(service.paidRevisionCost || 1) === 1 ? "" : "s"}
                                 /revision
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {service.resetFreeRevisionsOnPaid ? (
-                                  <span className="text-xs text-green-600">
-                                    ♻️ Resets on paid
-                                  </span>
+                                  <span className="text-xs text-green-600">♻️ Resets on paid</span>
                                 ) : (
-                                  <span className="text-xs text-red-600">
-                                    ❌ No reset on paid
-                                  </span>
+                                  <span className="text-xs text-red-600">❌ No reset on paid</span>
                                 )}
                               </p>
                             </div>
