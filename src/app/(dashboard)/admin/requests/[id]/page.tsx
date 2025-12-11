@@ -1,10 +1,16 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { trpc } from "@/lib/trpc/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { InlineFileUpload, type UploadedFile } from "@/components/ui/file-upload";
 import {
   ArrowLeft,
   Clock,
@@ -17,9 +23,12 @@ import {
   User,
   Calendar,
   FileText,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
+import { showError } from "@/lib/error-handler";
+import { formatDateTime, getInitials } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-800",
@@ -56,8 +65,35 @@ const priorityColors: Record<number, string> = {
 export default function AdminRequestDetailPage() {
   const params = useParams();
   const requestId = params.id as string;
+  const [comment, setComment] = useState("");
+  const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
+
+  const utils = trpc.useUtils();
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({ id: requestId });
+
+  const addComment = trpc.request.addComment.useMutation({
+    onSuccess: () => {
+      setComment("");
+      setCommentFiles([]);
+      utils.request.getById.invalidate({ id: requestId });
+      toast.success("Message Sent", {
+        description: "Your message has been sent.",
+      });
+    },
+    onError: (error: unknown) => {
+      showError(error, "Failed to send message");
+    },
+  });
+
+  const handleSendComment = () => {
+    if (!comment.trim() && commentFiles.length === 0) return;
+    addComment.mutate({ 
+      requestId, 
+      content: comment || "(Attachment)",
+      files: commentFiles.map((f) => f.url),
+    });
+  };
 
   if (isLoading) {
     return (
@@ -156,36 +192,100 @@ export default function AdminRequestDetailPage() {
             <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
           )}
 
-          {/* Comments/Activity */}
+          {/* Messages */}
           <Card>
             <CardHeader>
-              <CardTitle>Activity ({request.comments?.length || 0} comments)</CardTitle>
+              <CardTitle>Messages</CardTitle>
+              <CardDescription>
+                Communicate with client and provider
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              {request.comments && request.comments.length > 0 ? (
-                <div className="space-y-4">
-                  {request.comments.map((comment: any) => (
-                    <div key={comment.id} className="border-l-2 pl-4 py-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">
-                          {comment.user?.name || comment.user?.email || "System"}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </span>
-                        <Badge variant="outline" className="text-xs">
-                          {comment.type}
-                        </Badge>
+            <CardContent className="space-y-4">
+              {request.comments.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No messages yet
+                </p>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {request.comments.map((comment: { id: string; type: string; content: string; createdAt: Date; user: { name: string | null; email: string | null; image: string | null }; files: string[] }) => (
+                    <div
+                      key={comment.id}
+                      className={`flex gap-3 ${
+                        comment.type === "SYSTEM"
+                          ? "bg-muted/50 p-3 rounded-lg"
+                          : ""
+                      }`}
+                    >
+                      {comment.type !== "SYSTEM" && (
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={comment.user.image || ""} />
+                          <AvatarFallback>
+                            {getInitials(comment.user.name || comment.user.email || "")}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">
+                            {comment.type === "SYSTEM"
+                              ? "System"
+                              : comment.user.name || comment.user.email}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDateTime(comment.createdAt)}
+                          </span>
+                          {comment.type === "DELIVERABLE" && (
+                            <Badge variant="secondary">Deliverable</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm mt-1 whitespace-pre-wrap">
+                          {comment.content}
+                        </p>
+                        {comment.files.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {comment.files.map((file: string, i: number) => (
+                              <a
+                                key={`${comment.id}-file-${i}`}
+                                href={file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline block"
+                              >
+                                📎 Attachment {i + 1}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm">{comment.content}</p>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  No comments yet
-                </p>
               )}
+
+              <Separator />
+
+              <div className="space-y-3">
+                <InlineFileUpload
+                  onFilesChange={setCommentFiles}
+                  maxFiles={3}
+                  disabled={addComment.isPending}
+                />
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Send a message to client or provider..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={2}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={handleSendComment}
+                    disabled={(!comment.trim() && commentFiles.length === 0) || addComment.isPending}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
