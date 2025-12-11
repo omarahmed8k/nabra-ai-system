@@ -5,14 +5,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
 import { RequestHeader } from "@/components/requests/request-header";
@@ -21,11 +16,7 @@ import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
-import {
-  CheckCircle,
-  RotateCcw,
-  Star,
-} from "lucide-react";
+import { CheckCircle, RotateCcw, Star } from "lucide-react";
 
 export default function RequestDetailPage() {
   const params = useParams();
@@ -133,6 +124,11 @@ export default function RequestDetailPage() {
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
+        baseCreditCost={(request as any).baseCreditCost}
+        priorityCreditCost={(request as any).priorityCreditCost}
+        isRevision={(request as any).isRevision}
+        revisionType={(request as any).revisionType}
+        paidRevisionCost={(request.serviceType as any).paidRevisionCost}
         serviceTypeName={request.serviceType.name}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
@@ -143,15 +139,14 @@ export default function RequestDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
-          <RequestDescription
-            description={request.description}
-            attachments={request.attachments}
-          />
+          <RequestDescription description={request.description} attachments={request.attachments} />
 
           {/* Service-Specific Q&A Responses */}
-          {(request as any).attributeResponses && Array.isArray((request as any).attributeResponses) && (request as any).attributeResponses.length > 0 && (
-            <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
-          )}
+          {(request as any).attributeResponses &&
+            Array.isArray((request as any).attributeResponses) &&
+            (request as any).attributeResponses.length > 0 && (
+              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+            )}
 
           {/* Actions for DELIVERED status */}
           {canApprove && (
@@ -180,7 +175,9 @@ export default function RequestDetailPage() {
                       <span className="text-sm text-muted-foreground">
                         {revisionInfo.freeRevisionsRemaining > 0 ? (
                           <span className="text-green-600">
-                            ({revisionInfo.freeRevisionsRemaining} free {revisionInfo.freeRevisionsRemaining === 1 ? 'revision' : 'revisions'} remaining)
+                            ({revisionInfo.freeRevisionsRemaining} free{" "}
+                            {revisionInfo.freeRevisionsRemaining === 1 ? "revision" : "revisions"}{" "}
+                            remaining)
                           </span>
                         ) : (
                           <span className="text-orange-600">
@@ -195,13 +192,31 @@ export default function RequestDetailPage() {
                       placeholder="Describe what changes you need..."
                       value={revisionFeedback}
                       onChange={(e) => setRevisionFeedback(e.target.value)}
-                      className={revisionFeedback.length > 0 && !revisionFeedbackValid ? "border-red-500" : ""}
+                      className={
+                        revisionFeedback.length > 0 && !revisionFeedbackValid
+                          ? "border-red-500"
+                          : ""
+                      }
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span className={revisionFeedback.length > 0 && !revisionFeedbackValid ? "text-red-500" : ""}>
-                        {revisionFeedback.length > 0 && !revisionFeedbackValid && `Minimum ${MIN_REVISION_FEEDBACK} characters required`}
+                      <span
+                        className={
+                          revisionFeedback.length > 0 && !revisionFeedbackValid
+                            ? "text-red-500"
+                            : ""
+                        }
+                      >
+                        {revisionFeedback.length > 0 &&
+                          !revisionFeedbackValid &&
+                          `Minimum ${MIN_REVISION_FEEDBACK} characters required`}
                       </span>
-                      <span className={revisionFeedback.trim().length < MIN_REVISION_FEEDBACK ? "text-red-500" : "text-green-600"}>
+                      <span
+                        className={
+                          revisionFeedback.trim().length < MIN_REVISION_FEEDBACK
+                            ? "text-red-500"
+                            : "text-green-600"
+                        }
+                      >
                         {revisionFeedback.trim().length}/{MIN_REVISION_FEEDBACK}
                       </span>
                     </div>
@@ -233,9 +248,7 @@ export default function RequestDetailPage() {
                     <button
                       key={star}
                       onClick={() => setRating(star)}
-                      className={`p-1 ${
-                        star <= rating ? "text-yellow-500" : "text-gray-300"
-                      }`}
+                      className={`p-1 ${star <= rating ? "text-yellow-500" : "text-gray-300"}`}
                     >
                       <Star className="h-8 w-8 fill-current" />
                     </button>
@@ -296,6 +309,7 @@ export default function RequestDetailPage() {
             title="Messages"
             description="Communicate with your provider"
             placeholder="Type your message..."
+            canSendMessages={request.status !== "COMPLETED"}
           />
         </div>
 

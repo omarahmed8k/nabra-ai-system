@@ -51,6 +51,11 @@ export default function AdminRequestDetailPage() {
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
+        baseCreditCost={request.baseCreditCost}
+        priorityCreditCost={request.priorityCreditCost}
+        isRevision={request.isRevision}
+        revisionType={request.revisionType}
+        paidRevisionCost={(request.serviceType as any).paidRevisionCost}
         serviceTypeName={request.serviceType.name}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
@@ -62,15 +67,14 @@ export default function AdminRequestDetailPage() {
         {/* Main Content */}
         <div className="md:col-span-2 space-y-6">
           {/* Description */}
-          <RequestDescription
-            description={request.description}
-            attachments={request.attachments}
-          />
+          <RequestDescription description={request.description} attachments={request.attachments} />
 
           {/* Service-Specific Q&A Responses */}
-          {(request as any).attributeResponses && Array.isArray((request as any).attributeResponses) && (request as any).attributeResponses.length > 0 && (
-            <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
-          )}
+          {(request as any).attributeResponses &&
+            Array.isArray((request as any).attributeResponses) &&
+            (request as any).attributeResponses.length > 0 && (
+              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+            )}
 
           {/* Messages */}
           <MessagesCard
@@ -79,6 +83,7 @@ export default function AdminRequestDetailPage() {
             title="Messages"
             description="Communicate with client and provider"
             placeholder="Send a message to client or provider..."
+            canSendMessages={request.status !== "COMPLETED"}
           />
         </div>
 

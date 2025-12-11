@@ -72,16 +72,17 @@ export default function AvailableJobDetailPage() {
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
+        baseCreditCost={(request as any).baseCreditCost}
+        priorityCreditCost={(request as any).priorityCreditCost}
+        isRevision={(request as any).isRevision}
+        revisionType={(request as any).revisionType}
+        paidRevisionCost={(request.serviceType as any).paidRevisionCost}
         serviceTypeName={request.serviceType.name}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/provider/available"
         actions={
-          <Button
-            size="lg"
-            onClick={handleClaim}
-            disabled={claimRequest.isPending}
-          >
+          <Button size="lg" onClick={handleClaim} disabled={claimRequest.isPending}>
             {claimRequest.isPending ? "Claiming..." : "Claim This Job"}
           </Button>
         }
@@ -90,15 +91,14 @@ export default function AvailableJobDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          <RequestDescription
-            description={request.description}
-            attachments={request.attachments}
-          />
+          <RequestDescription description={request.description} attachments={request.attachments} />
 
           {/* Service-Specific Q&A Responses */}
-          {(request as any).attributeResponses && Array.isArray((request as any).attributeResponses) && (request as any).attributeResponses.length > 0 && (
-            <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
-          )}
+          {(request as any).attributeResponses &&
+            Array.isArray((request as any).attributeResponses) &&
+            (request as any).attributeResponses.length > 0 && (
+              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+            )}
 
           {/* Messages */}
           <MessagesCard

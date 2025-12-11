@@ -3,13 +3,7 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
@@ -18,13 +12,13 @@ import { FileText, CheckCircle, Star, TrendingUp } from "lucide-react";
 
 export default function ProviderDashboard() {
   const { data: session } = useSession();
-  
-  const { data: myRequests, isLoading: myReqLoading } =
-    trpc.provider.getMyRequests.useQuery({ limit: 5 });
+
+  const { data: myRequests, isLoading: myReqLoading } = trpc.provider.getMyRequests.useQuery({
+    limit: 5,
+  });
   const { data: availableRequests, isLoading: availableLoading } =
     trpc.provider.getAvailableRequests.useQuery({ limit: 5 });
-  const { data: stats, isLoading: statsLoading } =
-    trpc.provider.getStats.useQuery();
+  const { data: stats, isLoading: statsLoading } = trpc.provider.getStats.useQuery();
 
   const isLoading = myReqLoading || availableLoading || statsLoading;
 
@@ -32,12 +26,8 @@ export default function ProviderDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">
-          Welcome back, {session?.user?.name?.split(" ")[0]}!
-        </h1>
-        <p className="text-muted-foreground">
-          Here&apos;s your provider dashboard overview
-        </p>
+        <h1 className="text-3xl font-bold">Welcome back, {session?.user?.name?.split(" ")[0]}!</h1>
+        <p className="text-muted-foreground">Here&apos;s your provider dashboard overview</p>
       </div>
 
       {/* Stats Cards */}
@@ -69,9 +59,7 @@ export default function ProviderDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {stats?.completedRequests || 0}
-                </div>
+                <div className="text-2xl font-bold">{stats?.completedRequests || 0}</div>
                 <p className="text-xs text-muted-foreground">All time</p>
               </>
             )}
@@ -88,12 +76,8 @@ export default function ProviderDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {(stats?.averageRating ?? 0).toFixed(1)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.totalRatings || 0} reviews
-                </p>
+                <div className="text-2xl font-bold">{(stats?.averageRating ?? 0).toFixed(1)}</div>
+                <p className="text-xs text-muted-foreground">{stats?.totalRatings || 0} reviews</p>
               </>
             )}
           </CardContent>
@@ -109,12 +93,8 @@ export default function ProviderDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {availableRequests?.requests.length || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Waiting for provider
-                </p>
+                <div className="text-2xl font-bold">{availableRequests?.requests.length || 0}</div>
+                <p className="text-xs text-muted-foreground">Waiting for provider</p>
               </>
             )}
           </CardContent>
@@ -151,25 +131,33 @@ export default function ProviderDashboard() {
             )}
             {!isLoading && (myRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
-                {myRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
-                  <Link
-                    key={request.id}
-                    href={`/provider/requests/${request.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">{request.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {request.serviceType.name} • {formatDate(request.createdAt)}
-                        </p>
+                {myRequests?.requests.map(
+                  (request: {
+                    id: string;
+                    title: string;
+                    status: string;
+                    createdAt: Date;
+                    serviceType: { name: string };
+                  }) => (
+                    <Link
+                      key={request.id}
+                      href={`/provider/requests/${request.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                        <div className="space-y-1">
+                          <p className="font-medium">{request.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {request.serviceType.name} • {formatDate(request.createdAt)}
+                          </p>
+                        </div>
+                        <Badge variant={null} className={getStatusColor(request.status)}>
+                          {request.status.replace("_", " ")}
+                        </Badge>
                       </div>
-                      <Badge className={getStatusColor(request.status)}>
-                        {request.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  )
+                )}
               </div>
             )}
           </CardContent>
@@ -204,23 +192,31 @@ export default function ProviderDashboard() {
             )}
             {!isLoading && (availableRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
-                {availableRequests?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
-                  <Link
-                    key={request.id}
-                    href={`/provider/available/${request.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">{request.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {request.serviceType.name} • {formatDate(request.createdAt)}
-                        </p>
+                {availableRequests?.requests.map(
+                  (request: {
+                    id: string;
+                    title: string;
+                    status: string;
+                    createdAt: Date;
+                    serviceType: { name: string };
+                  }) => (
+                    <Link
+                      key={request.id}
+                      href={`/provider/available/${request.id}`}
+                      className="block"
+                    >
+                      <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                        <div className="space-y-1">
+                          <p className="font-medium">{request.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {request.serviceType.name} • {formatDate(request.createdAt)}
+                          </p>
+                        </div>
+                        <Badge variant="secondary">New</Badge>
                       </div>
-                      <Badge variant="secondary">New</Badge>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  )
+                )}
               </div>
             )}
           </CardContent>

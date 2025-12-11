@@ -60,11 +60,11 @@ export function RequestCard({
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="font-medium truncate">{title}</h3>
-          <Badge className={getStatusColor(status)}>
+          <Badge variant={null} className={getStatusColor(status)}>
             {status.replace("_", " ")}
           </Badge>
           {priority && (
-            <Badge className={getPriorityColor(priority)}>
+            <Badge variant={null} className={getPriorityColor(priority)}>
               {getPriorityLabel(priority)}
             </Badge>
           )}
@@ -79,8 +79,8 @@ export function RequestCard({
             </Badge>
           )}
           {isRevision && revisionType && (
-            <Badge variant={revisionType === 'free' ? 'secondary' : 'default'} className="text-xs">
-              {revisionType === 'free' ? '🔄' : '💰'}
+            <Badge variant={revisionType === "free" ? "secondary" : "default"} className="text-xs">
+              {revisionType === "free" ? "🔄" : "💰"}
             </Badge>
           )}
           {provider === null && (
@@ -91,9 +91,7 @@ export function RequestCard({
         </div>
 
         {variant === "detailed" && description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {description}
-          </p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
         )}
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
@@ -115,17 +113,11 @@ export function RequestCard({
               <strong>Provider:</strong> {provider.name || provider.email}
             </span>
           )}
-          {commentCount !== undefined && (
-            <span>{commentCount} messages</span>
-          )}
+          {commentCount !== undefined && <span>{commentCount} messages</span>}
         </div>
       </div>
 
-      {actions && (
-        <div className="flex items-center gap-2 ml-4">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="flex items-center gap-2 ml-4">{actions}</div>}
     </div>
   );
 

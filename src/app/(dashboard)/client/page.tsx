@@ -3,13 +3,7 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
@@ -18,12 +12,11 @@ import { Plus, CreditCard, FileText, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
   const { data: session } = useSession();
-  const { data: subscription, isLoading: subLoading } =
-    trpc.subscription.getActive.useQuery();
-  const { data: usageStats, isLoading: statsLoading } =
-    trpc.subscription.getUsageStats.useQuery();
-  const { data: requestsData, isLoading: requestsLoading } =
-    trpc.request.getAll.useQuery({ limit: 5 });
+  const { data: subscription, isLoading: subLoading } = trpc.subscription.getActive.useQuery();
+  const { data: usageStats, isLoading: statsLoading } = trpc.subscription.getUsageStats.useQuery();
+  const { data: requestsData, isLoading: requestsLoading } = trpc.request.getAll.useQuery({
+    limit: 5,
+  });
 
   const isLoading = subLoading || statsLoading || requestsLoading;
 
@@ -35,9 +28,7 @@ export default function ClientDashboard() {
           <h1 className="text-3xl font-bold">
             Welcome back, {session?.user?.name?.split(" ")[0]}!
           </h1>
-          <p className="text-muted-foreground">
-            Here&apos;s an overview of your account
-          </p>
+          <p className="text-muted-foreground">Here&apos;s an overview of your account</p>
         </div>
         <Link href="/client/requests/new">
           <Button>
@@ -59,9 +50,7 @@ export default function ClientDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {subscription?.remainingCredits || 0}
-                </div>
+                <div className="text-2xl font-bold">{subscription?.remainingCredits || 0}</div>
                 <p className="text-xs text-muted-foreground">
                   {subscription ? `${subscription.package.name} plan` : "No active plan"}
                 </p>
@@ -80,12 +69,8 @@ export default function ClientDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {usageStats?.activeRequests || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  In progress or pending
-                </p>
+                <div className="text-2xl font-bold">{usageStats?.activeRequests || 0}</div>
+                <p className="text-xs text-muted-foreground">In progress or pending</p>
               </>
             )}
           </CardContent>
@@ -101,9 +86,7 @@ export default function ClientDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {usageStats?.completedRequests || 0}
-                </div>
+                <div className="text-2xl font-bold">{usageStats?.completedRequests || 0}</div>
                 <p className="text-xs text-muted-foreground">All time</p>
               </>
             )}
@@ -119,9 +102,7 @@ export default function ClientDashboard() {
             {isLoading && <Skeleton className="h-8 w-20" />}
             {!isLoading && subscription && (
               <>
-                <div className="text-2xl font-bold">
-                  {subscription.daysRemaining}
-                </div>
+                <div className="text-2xl font-bold">{subscription.daysRemaining}</div>
                 <p className="text-xs text-muted-foreground">Days remaining</p>
               </>
             )}
@@ -182,27 +163,31 @@ export default function ClientDashboard() {
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map((request: { id: string; title: string; status: string; createdAt: Date; serviceType: { name: string } }) => (
-                <Link
-                  key={request.id}
-                  href={`/client/requests/${request.id}`}
-                  className="block"
-                >
-                  <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                    <div className="space-y-1">
-                      <p className="font-medium">{request.title}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{request.serviceType.name}</span>
-                        <span>•</span>
-                        <span>{formatDate(request.createdAt)}</span>
+              {requestsData?.requests.map(
+                (request: {
+                  id: string;
+                  title: string;
+                  status: string;
+                  createdAt: Date;
+                  serviceType: { name: string };
+                }) => (
+                  <Link key={request.id} href={`/client/requests/${request.id}`} className="block">
+                    <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-medium">{request.title}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{request.serviceType.name}</span>
+                          <span>•</span>
+                          <span>{formatDate(request.createdAt)}</span>
+                        </div>
                       </div>
+                      <Badge variant={null} className={getStatusColor(request.status)}>
+                        {request.status.replace("_", " ")}
+                      </Badge>
                     </div>
-                    <Badge className={getStatusColor(request.status)}>
-                      {request.status.replace("_", " ")}
-                    </Badge>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              )}
             </div>
           )}
         </CardContent>

@@ -11,19 +11,19 @@ export interface RevisionResult {
 
 /**
  * Smart Revision Algorithm
- * 
+ *
  * This is the core algorithm for handling revision requests:
- * 
+ *
  * 1. Get the request and active subscription
  * 2. Check current revision count vs. max free revisions from package
  * 3. IF count < max: Allow FREE revision, increment counter
  * 4. ELSE (count >= max): Check if client has credits
  *    - IF yes: Deduct 1 credit, RESET counter to 0
  *    - IF no: Block revision
- * 
+ *
  * Key Innovation: Counter resets after paid revision!
  * This allows clients to get free revisions again after paying.
- * 
+ *
  * Example with 3 free revisions:
  * Request created → Delivered
  * - Revision 1: Free (count=1) ✅
@@ -118,6 +118,8 @@ export async function handleRevisionRequest(
         currentRevisionCount: currentCount + 1,
         totalRevisions: request.totalRevisions + 1,
         status: "REVISION_REQUESTED",
+        isRevision: true,
+        revisionType: "free",
       },
     });
 
@@ -160,7 +162,7 @@ export async function handleRevisionRequest(
       isFree: false,
       creditCost: paidRevisionCost,
       newRevisionCount: currentCount,
-      message: `You've used all ${maxFreeRevisions} free revisions. Additional revisions cost ${paidRevisionCost} ${paidRevisionCost === 1 ? 'credit' : 'credits'}, but you have ${subscription.remainingCredits} credits remaining. Please purchase more credits.`,
+      message: `You've used all ${maxFreeRevisions} free revisions. Additional revisions cost ${paidRevisionCost} ${paidRevisionCost === 1 ? "credit" : "credits"}, but you have ${subscription.remainingCredits} credits remaining. Please purchase more credits.`,
     };
   }
 
@@ -186,22 +188,25 @@ export async function handleRevisionRequest(
   const updatedRequest = await db.request.update({
     where: { id: requestId },
     data: {
-        currentRevisionCount: newRevisionCount, // Reset to 0 if package allows, otherwise keep count
-        totalRevisions: request.totalRevisions + 1,
-        status: "REVISION_REQUESTED",
+      currentRevisionCount: newRevisionCount, // Reset to 0 if package allows, otherwise keep count
+      totalRevisions: request.totalRevisions + 1,
+      status: "REVISION_REQUESTED",
+      isRevision: true,
+      revisionType: "paid",
+      creditCost: request.creditCost + paidRevisionCost, // Accumulate the paid revision cost
     },
   });
 
   // Create system comment
-  const resetMessage = resetFreeRevisionsOnPaid 
+  const resetMessage = resetFreeRevisionsOnPaid
     ? ` Free revision counter reset - you now have ${maxFreeRevisions} free revisions available again.`
-    : ' Free revision counter NOT reset - you will need to pay for additional revisions.';
-  
+    : " Free revision counter NOT reset - you will need to pay for additional revisions.";
+
   await db.requestComment.create({
     data: {
       requestId,
       userId,
-      content: `Paid revision requested (${paidRevisionCost} ${paidRevisionCost === 1 ? 'credit' : 'credits'} used).${resetMessage}`,
+      content: `Paid revision requested (${paidRevisionCost} ${paidRevisionCost === 1 ? "credit" : "credits"} used).${resetMessage}`,
       type: "SYSTEM",
     },
   });
@@ -224,18 +229,28 @@ export async function handleRevisionRequest(
     isFree: false,
     creditCost: paidRevisionCost,
     newRevisionCount: updatedRequest.currentRevisionCount,
-    message: buildPaidRevisionMessage(paidRevisionCost, maxFreeRevisions, resetFreeRevisionsOnPaid, deductResult.newBalance),
+    message: buildPaidRevisionMessage(
+      paidRevisionCost,
+      maxFreeRevisions,
+      resetFreeRevisionsOnPaid,
+      deductResult.newBalance
+    ),
   };
 }
 
-function buildPaidRevisionMessage(cost: number, maxFree: number, reset: boolean, balance: number): string {
-  const creditText = cost === 1 ? 'credit' : 'credits';
+function buildPaidRevisionMessage(
+  cost: number,
+  maxFree: number,
+  reset: boolean,
+  balance: number
+): string {
+  const creditText = cost === 1 ? "credit" : "credits";
   const baseMessage = `Paid revision requested (${cost} ${creditText} deducted).`;
-  
+
   if (reset) {
     return `${baseMessage} Your free revision counter has been reset - you now have ${maxFree} free revisions available again. Credits remaining: ${balance}`;
   }
-  
+
   return `${baseMessage} Note: Free revision counter was NOT reset. Credits remaining: ${balance}`;
 }
 
@@ -288,10 +303,7 @@ export async function getRevisionInfo(
 /**
  * Check if revision request would be free
  */
-export async function isRevisionFree(
-  requestId: string,
-  userId: string
-): Promise<boolean> {
+export async function isRevisionFree(requestId: string, userId: string): Promise<boolean> {
   const info = await getRevisionInfo(requestId, userId);
   return info.freeRevisionsRemaining > 0;
 }

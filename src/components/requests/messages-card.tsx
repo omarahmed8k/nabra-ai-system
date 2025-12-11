@@ -78,9 +78,7 @@ export function MessagesCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {comments.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No messages yet
-          </p>
+          <p className="text-center text-muted-foreground py-8">No messages yet</p>
         ) : (
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {comments.map((comment) => (
@@ -94,9 +92,7 @@ export function MessagesCard({
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={comment.user.image || ""} />
                     <AvatarFallback>
-                      {getInitials(
-                        comment.user.name || comment.user.email || ""
-                      )}
+                      {getInitials(comment.user.name || comment.user.email || "")}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -114,9 +110,7 @@ export function MessagesCard({
                       <Badge variant="secondary">Deliverable</Badge>
                     )}
                   </div>
-                  <p className="text-sm mt-1 whitespace-pre-wrap">
-                    {comment.content}
-                  </p>
+                  <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
                   {comment.files.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {comment.files.map((file: string, i: number) => (
@@ -157,14 +151,22 @@ export function MessagesCard({
                 <Button
                   size="icon"
                   onClick={handleSendComment}
-                  disabled={
-                    (!comment.trim() && commentFiles.length === 0) ||
-                    addComment.isPending
-                  }
+                  disabled={(!comment.trim() && commentFiles.length === 0) || addComment.isPending}
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
+            </div>
+          </>
+        )}
+
+        {!canSendMessages && (
+          <>
+            <Separator />
+            <div className="text-center py-4 text-muted-foreground">
+              <p className="text-sm">
+                This request has been completed. Comments are no longer available.
+              </p>
             </div>
           </>
         )}
