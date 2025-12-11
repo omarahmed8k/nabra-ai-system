@@ -39,7 +39,6 @@ export default function NewRequestPage() {
   const { data: serviceTypes } =
     trpc.request.getServiceTypes.useQuery();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
-  const { data: adminPriorityCosts } = trpc.admin.getPriorityCosts.useQuery();
 
   const selectedService = useMemo(
     () => serviceTypes?.find((s: { id: string }) => s.id === selectedServiceType),
@@ -66,10 +65,10 @@ export default function NewRequestPage() {
   const hasCredits = subscription && subscription.remainingCredits > 0;
   const baseCreditCost = (selectedService as { creditCost?: number })?.creditCost || 1;
   
-  // Priority cost from admin settings (defaults if not loaded)
-  const lowCost = adminPriorityCosts?.low ?? 0;
-  const mediumCost = adminPriorityCosts?.medium ?? 1;
-  const highCost = adminPriorityCosts?.high ?? 2;
+  // Priority costs from the selected service type
+  const lowCost = (selectedService as { priorityCostLow?: number })?.priorityCostLow ?? 0;
+  const mediumCost = (selectedService as { priorityCostMedium?: number })?.priorityCostMedium ?? 1;
+  const highCost = (selectedService as { priorityCostHigh?: number })?.priorityCostHigh ?? 2;
   
   const priorityCostsMap: Record<string, number> = { "1": lowCost, "2": mediumCost, "3": highCost };
   const priorityCost = priorityCostsMap[priority] ?? lowCost;

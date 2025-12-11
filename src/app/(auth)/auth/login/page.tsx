@@ -82,15 +82,14 @@ export default function LoginPage() {
         description: "You have been successfully logged in.",
       });
       
-      // Redirect based on user role
+      // Redirect based on user role with full page reload to ensure proper session initialization
       if (session?.user?.role === "SUPER_ADMIN") {
-        router.push("/admin");
+        globalThis.location.href = "/admin";
       } else if (session?.user?.role === "PROVIDER") {
-        router.push("/provider");
+        globalThis.location.href = "/provider";
       } else {
-        router.push("/client");
+        globalThis.location.href = "/client";
       }
-      router.refresh();
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Error", {
