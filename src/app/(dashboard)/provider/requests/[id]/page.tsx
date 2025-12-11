@@ -443,6 +443,47 @@ export default function ProviderRequestDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Rating */}
+          {(request as any).rating && (
+            <Card className="border-amber-200 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-amber-800">Client Rating</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`text-2xl ${
+                          i < (request as any).rating.rating ? "text-amber-500" : "text-gray-300"
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-xl font-bold text-amber-800">
+                    {(request as any).rating.rating}/5
+                  </span>
+                </div>
+                {(request as any).rating.reviewText && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Review</p>
+                    <p className="text-sm text-black whitespace-pre-wrap">
+                      {(request as any).rating.reviewText}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Rated on {formatDateTime((request as any).rating.createdAt)}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
