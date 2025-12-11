@@ -138,7 +138,18 @@ export function NotificationProvider({ children }: { readonly children: React.Re
             action: notification.link
               ? {
                   label: "View",
-                  onClick: () => router.push(notification.link!),
+                  onClick: () => {
+                    const currentPath = globalThis.location.pathname;
+                    const targetPath = notification.link!;
+
+                    if (currentPath === targetPath) {
+                      // If already on the target page, refresh it
+                      globalThis.location.reload();
+                    } else {
+                      // Navigate to the page
+                      router.push(targetPath);
+                    }
+                  },
                 }
               : undefined,
           });

@@ -160,6 +160,40 @@ export const requestRouter = router({
         },
       });
 
+      // Notify all providers who support this service type
+      const providersWithService = await ctx.db.providerProfile.findMany({
+        where: {
+          isActive: true,
+          supportedServices: {
+            some: {
+              id: input.serviceTypeId,
+            },
+          },
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      // Send real-time notifications to all matching providers
+      if (providersWithService.length > 0) {
+        const { createNotification } = await import("@/lib/notifications");
+
+        // Send notifications in parallel
+        await Promise.all(
+          providersWithService.map((provider) =>
+            createNotification({
+              userId: provider.userId,
+              title: "New Request Available",
+              message: `New ${serviceType.name} request: "${input.title}"`,
+              type: "general",
+              link: `/provider/available`,
+              sendEmail: false, // Don't send email for new request notifications
+            })
+          )
+        );
+      }
+
       return {
         success: true,
         request,
@@ -700,15 +734,15 @@ export const requestRouter = router({
         },
       });
 
-      // Notify provider
-      await ctx.db.notification.create({
-        data: {
-          userId: request.providerId,
-          title: "New Rating",
-          message: `You received a ${input.rating}-star rating for "${request.title}"`,
-          type: "request",
-          link: `/provider/requests/${request.id}`,
-        },
+      // Send real-time notification to provider
+      const { createNotification } = await import("@/lib/notifications");
+      await createNotification({
+        userId: request.providerId,
+        title: "Rating Submitted",
+        message: `You received a ${input.rating}-star rating for "${request.title}"`,
+        type: "general",
+        link: `/provider/requests/${request.id}`,
+        sendEmail: false,
       });
 
       return {
