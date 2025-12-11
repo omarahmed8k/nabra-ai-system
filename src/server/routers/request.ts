@@ -95,7 +95,7 @@ export const requestRouter = router({
       // Apply priority cost from settings
       const costs = await getPriorityCosts();
       const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
-      const priorityCost = priorityCosts[input.priority] || costs.medium;
+      const priorityCost = priorityCosts[input.priority] ?? costs.medium;
       const totalCreditCost = baseCreditCost + priorityCost;
 
       // Check credits before creating
