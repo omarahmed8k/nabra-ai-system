@@ -25,9 +25,9 @@ export const requestRouter = router({
       const userId = ctx.session.user.id;
 
       // Get service type to validate attributes and credit cost
-      const serviceType = await ctx.db.serviceType.findUnique({
+      const serviceType = (await ctx.db.serviceType.findUnique({
         where: { id: input.serviceTypeId },
-      }) as any; // Cast to any to avoid type issues with Json fields
+      })) as any; // Cast to any to avoid type issues with Json fields
 
       if (!serviceType) {
         throw new TRPCError({
@@ -60,12 +60,15 @@ export const requestRouter = router({
       if (!activeSubscription) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: "No active subscription found. Please subscribe to a package to create requests.",
+          message:
+            "No active subscription found. Please subscribe to a package to create requests.",
         });
       }
 
       // Check if the selected service is allowed by the user's package
-      const allowedServiceIds = activeSubscription.package.services.map((s: { serviceId: string }) => s.serviceId);
+      const allowedServiceIds = activeSubscription.package.services.map(
+        (s: { serviceId: string }) => s.serviceId
+      );
       if (!allowedServiceIds.includes(input.serviceTypeId)) {
         const serviceName = serviceType.name;
         throw new TRPCError({
@@ -80,7 +83,7 @@ export const requestRouter = router({
           serviceType.attributes as ServiceAttribute[],
           input.attributeResponses as AttributeResponse[]
         );
-        
+
         if (!validation.valid) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -91,10 +94,14 @@ export const requestRouter = router({
 
       // Get credit cost from service type (default to 1 if not set)
       const baseCreditCost = serviceType.creditCost || 1;
-      
+
       // Apply priority cost from service type
       const costs = await getPriorityCostsForService(input.serviceTypeId);
-      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      const priorityCosts: Record<number, number> = {
+        1: costs.low,
+        2: costs.medium,
+        3: costs.high,
+      };
       const priorityCost = priorityCosts[input.priority] ?? costs.medium;
       const totalCreditCost = baseCreditCost + priorityCost;
 
@@ -108,7 +115,11 @@ export const requestRouter = router({
       }
 
       // Deduct credits based on service type and priority
-      const deductResult = await deductCredits(userId, totalCreditCost, `New request: ${input.title} (Priority ${input.priority})`);
+      const deductResult = await deductCredits(
+        userId,
+        totalCreditCost,
+        `New request: ${input.title} (Priority ${input.priority})`
+      );
       if (!deductResult.success) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
@@ -152,18 +163,29 @@ export const requestRouter = router({
         success: true,
         request,
         creditsRemaining: deductResult.newBalance,
-        message: `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? '' : 's'} ${totalCreditCost === 1 ? 'has' : 'have'} been deducted.`,
+        message: `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? "" : "s"} ${totalCreditCost === 1 ? "has" : "have"} been deducted.`,
       };
     }),
 
   // Get all requests for current user (role-based)
   getAll: protectedProcedure
     .input(
-      z.object({
-        status: z.enum(["PENDING", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED", "COMPLETED", "CANCELLED"]).optional(),
-        limit: z.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
-      }).optional()
+      z
+        .object({
+          status: z
+            .enum([
+              "PENDING",
+              "IN_PROGRESS",
+              "DELIVERED",
+              "REVISION_REQUESTED",
+              "COMPLETED",
+              "CANCELLED",
+            ])
+            .optional(),
+          limit: z.number().min(1).max(100).default(20),
+          cursor: z.string().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -183,10 +205,7 @@ export const requestRouter = router({
           OR: [
             { providerId: userId },
             {
-              AND: [
-                { status: "PENDING" },
-                { providerId: null },
-              ],
+              AND: [{ status: "PENDING" }, { providerId: null }],
             },
           ],
         };
@@ -220,73 +239,71 @@ export const requestRouter = router({
       // Use stored credit cost (no need to recalculate, preserves historical costs)
       return {
         requests,
-        nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
+        nextCursor: requests.length === (input?.limit || 20) ? (requests.at(-1)?.id ?? null) : null,
       };
     }),
 
   // Get single request by ID
-  getById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-      const role = ctx.session.user.role;
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const userId = ctx.session.user.id;
+    const role = ctx.session.user.role;
 
-      const request = await ctx.db.request.findUnique({
-        where: { id: input.id },
-        include: {
-          client: {
-            select: { id: true, name: true, email: true, image: true },
-          },
-          provider: {
-            select: { id: true, name: true, email: true, image: true },
-          },
-          serviceType: true,
-          comments: {
-            include: {
-              user: {
-                select: { id: true, name: true, email: true, image: true, role: true },
-              },
-            },
-            orderBy: { createdAt: "asc" },
-          },
-          rating: true,
+    const request = await ctx.db.request.findUnique({
+      where: { id: input.id },
+      include: {
+        client: {
+          select: { id: true, name: true, email: true, image: true },
         },
+        provider: {
+          select: { id: true, name: true, email: true, image: true },
+        },
+        serviceType: true,
+        comments: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true, role: true },
+            },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+        rating: true,
+      },
+    });
+
+    if (!request) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Request not found",
       });
+    }
 
-      if (!request) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Request not found",
-        });
-      }
+    // Access control
+    if (role === "CLIENT" && request.clientId !== userId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You don't have access to this request",
+      });
+    }
 
-      // Access control
-      if (role === "CLIENT" && request.clientId !== userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have access to this request",
-        });
-      }
+    if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You don't have access to this request",
+      });
+    }
 
-      if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have access to this request",
-        });
-      }
+    // Get revision info if client
+    let revisionInfo = null;
+    if (role === "CLIENT" || role === "SUPER_ADMIN") {
+      revisionInfo = await getRevisionInfo(input.id, request.clientId);
+    }
 
-      // Get revision info if client
-      let revisionInfo = null;
-      if (role === "CLIENT" || role === "SUPER_ADMIN") {
-        revisionInfo = await getRevisionInfo(input.id, request.clientId);
-      }
-
-      // Use stored credit cost (preserves cost at time of creation)
-      return {
-        ...request,
-        revisionInfo,
-      };
-    }),
+    // Use stored credit cost (preserves cost at time of creation)
+    return {
+      ...request,
+      revisionInfo,
+    };
+  }),
 
   // Provider accepts a request
   accept: protectedProcedure
@@ -421,9 +438,10 @@ export const requestRouter = router({
         data: {
           userId: request.clientId,
           title: input.status === "DELIVERED" ? "Deliverable Ready" : "Status Update",
-          message: input.status === "DELIVERED"
-            ? `Your request "${request.title}" has a new deliverable ready for review.`
-            : `Your request "${request.title}" status has been updated.`,
+          message:
+            input.status === "DELIVERED"
+              ? `Your request "${request.title}" has a new deliverable ready for review.`
+              : `Your request "${request.title}" status has been updated.`,
           type: "request",
           link: `/client/requests/${request.id}`,
         },
@@ -565,9 +583,10 @@ export const requestRouter = router({
       const isProvider = request.providerId === userId;
       const isAdmin = ctx.session.user.role === "SUPER_ADMIN";
       const isProviderRole = ctx.session.user.role === "PROVIDER";
-      
+
       // Allow providers to comment on unassigned requests (for asking questions before claiming)
-      const canProviderComment = isProviderRole && request.providerId === null && request.status === "PENDING";
+      const canProviderComment =
+        isProviderRole && request.providerId === null && request.status === "PENDING";
 
       if (!isClient && !isProvider && !isAdmin && !canProviderComment) {
         throw new TRPCError({
@@ -594,7 +613,7 @@ export const requestRouter = router({
       // Notify the other party
       let recipientId: string | null = null;
       let recipientLink = "";
-      
+
       if (isClient) {
         // Client commented - notify provider if assigned
         recipientId = request.providerId;
@@ -604,7 +623,7 @@ export const requestRouter = router({
         recipientId = request.clientId;
         recipientLink = `/client/requests/${request.id}`;
       }
-      
+
       if (recipientId) {
         await ctx.db.notification.create({
           data: {
@@ -727,6 +746,9 @@ export const requestRouter = router({
                     icon: true,
                     attributes: true,
                     creditCost: true,
+                    priorityCostLow: true,
+                    priorityCostMedium: true,
+                    priorityCostHigh: true,
                     isActive: true,
                     sortOrder: true,
                   },
