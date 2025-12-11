@@ -11,13 +11,11 @@ let sseNotificationSender: ((userId: string, notification: any) => void) | null 
 let sseInitialized = false;
 
 // Immediately try to load SSE route on server-side to register sender
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 if (globalThis.window === undefined) {
-  try {
-    await import("@/app/api/notifications/sse/route");
-    console.log("✅ SSE route preloaded");
-  } catch (err) {
-    console.error("❌ Failed to preload SSE route:", err);
-  }
+  import("@/app/api/notifications/sse/route")
+    .then(() => console.log("✅ SSE route preloaded"))
+    .catch((err) => console.error("❌ Failed to preload SSE route:", err));
 }
 
 export function setSseNotificationSender(sender: (userId: string, notification: any) => void) {
