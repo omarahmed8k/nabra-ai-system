@@ -99,13 +99,6 @@ export default function SubscriptionPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Free Revisions</p>
-                <p className="text-3xl font-bold">
-                  {subscription.package.maxFreeRevisions}
-                </p>
-                <p className="text-sm text-muted-foreground">per request</p>
-              </div>
-              <div>
                 <p className="text-sm text-muted-foreground">Days Remaining</p>
                 <p className="text-3xl font-bold">{subscription.daysRemaining}</p>
                 <p className="text-sm text-muted-foreground">
@@ -159,7 +152,7 @@ export default function SubscriptionPage() {
               <p className="text-sm">Please check back soon or contact support</p>
             </div>
           )}
-          {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; maxFreeRevisions: number; features: string[] }) => {
+          {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; features: string[] }) => {
                 const isCurrentPlan = subscription?.package.id === pkg.id;
                 return (
                   <Card
@@ -186,12 +179,9 @@ export default function SubscriptionPage() {
                           <CreditCard className="h-4 w-4 text-primary" />
                           <span>{pkg.credits} credits</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-500" />
-                          <span>{pkg.maxFreeRevisions} free revisions/request</span>
-                        </li>
+
                         {pkg.features.map((feature: string, i: number) => (
-                          <li key={feature} className="flex items-center gap-2">
+                          <li key={`${pkg.id}-feature-${i}`} className="flex items-center gap-2">
                             <Check className="h-4 w-4 text-green-500" />
                             <span className="text-sm">{feature}</span>
                           </li>

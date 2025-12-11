@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -21,7 +22,36 @@ import { trpc } from "@/lib/trpc/client";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [error, setError] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      // Redirect based on user role
+      if (session.user.role === "SUPER_ADMIN") {
+        router.push("/admin");
+      } else if (session.user.role === "PROVIDER") {
+        router.push("/provider");
+      } else {
+        router.push("/client");
+      }
+    }
+  }, [status, session, router]);
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Don't render register form if already authenticated
+  if (status === "authenticated") {
+    return null;
+  }
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {

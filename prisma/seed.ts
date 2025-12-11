@@ -42,11 +42,10 @@ async function main() {
   const freePackage = await prisma.package.create({
     data: {
       name: "Free Plan",
-      description: "Basic free plan for all new users with 10 credits valid for 30 days",
+      description: "Basic free plan for all new users with 1 credit valid for 14 days",
       price: 0,
       credits: 1,
-      durationDays: 30,
-      maxFreeRevisions: 1,
+      durationDays: 14,
       isActive: true,
       isFreePackage: true,
       sortOrder: 0,

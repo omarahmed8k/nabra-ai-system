@@ -10,6 +10,10 @@ interface RequestCardProps {
   readonly status: string;
   readonly priority?: number;
   readonly creditCost: number;
+  readonly baseCreditCost?: number;
+  readonly priorityCreditCost?: number;
+  readonly isRevision?: boolean;
+  readonly revisionType?: string | null;
   readonly createdAt: Date;
   readonly serviceType: {
     name: string;
@@ -36,6 +40,10 @@ export function RequestCard({
   status,
   priority,
   creditCost,
+  baseCreditCost,
+  priorityCreditCost,
+  isRevision,
+  revisionType,
   createdAt,
   serviceType,
   client,
@@ -45,6 +53,8 @@ export function RequestCard({
   actions,
   variant = "compact",
 }: RequestCardProps) {
+  const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
+
   const content = (
     <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
       <div className="flex-1 min-w-0 space-y-2">
@@ -59,8 +69,18 @@ export function RequestCard({
             </Badge>
           )}
           {creditCost !== undefined && creditCost !== null && (
-            <Badge variant="outline" className="font-semibold">
-              💳 {creditCost} {creditCost === 1 ? "credit" : "credits"}
+            <Badge variant="outline" className="font-semibold text-xs">
+              💳 {creditCost}
+              {hasCreditBreakdown && (
+                <span className="ml-1 text-muted-foreground">
+                  ({baseCreditCost}+{priorityCreditCost})
+                </span>
+              )}
+            </Badge>
+          )}
+          {isRevision && revisionType && (
+            <Badge variant={revisionType === 'free' ? 'secondary' : 'default'} className="text-xs">
+              {revisionType === 'free' ? '🔄' : '💰'}
             </Badge>
           )}
           {provider === null && (

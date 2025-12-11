@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { router, adminProcedure, protectedProcedure } from "@/server/trpc";
+import { router, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { clearPriorityCostCache } from "@/lib/priority-costs";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -407,6 +406,12 @@ export const adminRouter = router({
         formFields: z.any().optional(),
         attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
         creditCost: z.number().min(1).default(1), // Number of credits required for this service
+        maxFreeRevisions: z.number().min(0).default(3), // Number of free revisions per request
+        paidRevisionCost: z.number().min(1).default(1), // Cost in credits for paid revisions
+        resetFreeRevisionsOnPaid: z.boolean().default(true), // Reset free revision counter after paid revision
+        priorityCostLow: z.number().min(0).default(0), // Additional credits for low priority
+        priorityCostMedium: z.number().min(0).default(1), // Additional credits for medium priority
+        priorityCostHigh: z.number().min(0).default(2), // Additional credits for high priority
         sortOrder: z.number().default(0),
       })
     )
@@ -430,6 +435,12 @@ export const adminRouter = router({
           formFields: input.formFields,
           attributes: input.attributes,
           creditCost: input.creditCost,
+          maxFreeRevisions: input.maxFreeRevisions,
+          paidRevisionCost: input.paidRevisionCost,
+          resetFreeRevisionsOnPaid: input.resetFreeRevisionsOnPaid,
+          priorityCostLow: input.priorityCostLow,
+          priorityCostMedium: input.priorityCostMedium,
+          priorityCostHigh: input.priorityCostHigh,
           sortOrder: input.sortOrder,
         },
       });
@@ -451,6 +462,12 @@ export const adminRouter = router({
         formFields: z.any().optional(),
         attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
         creditCost: z.number().min(1).optional(), // Number of credits required for this service
+        maxFreeRevisions: z.number().min(0).optional(), // Number of free revisions per request
+        paidRevisionCost: z.number().min(1).optional(), // Cost in credits for paid revisions
+        resetFreeRevisionsOnPaid: z.boolean().optional(), // Reset free revision counter after paid revision
+        priorityCostLow: z.number().min(0).optional(), // Additional credits for low priority
+        priorityCostMedium: z.number().min(0).optional(), // Additional credits for medium priority
+        priorityCostHigh: z.number().min(0).optional(), // Additional credits for high priority
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
       })
@@ -529,7 +546,6 @@ export const adminRouter = router({
         name: z.string().min(2),
         price: z.number().min(0),
         credits: z.number().min(1),
-        maxFreeRevisions: z.number().min(0),
         durationDays: z.number().min(1).default(30),
         features: z.array(z.string()).default([]),
         serviceIds: z.array(z.string()).default([]),
@@ -582,7 +598,6 @@ export const adminRouter = router({
         name: z.string().min(2).optional(),
         price: z.number().min(0).optional(),
         credits: z.number().min(1).optional(),
-        maxFreeRevisions: z.number().min(0).optional(),
         features: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
         serviceIds: z.array(z.string()).optional(),
@@ -699,7 +714,7 @@ export const adminRouter = router({
     .query(async ({ ctx, input }) => {
       const showDeleted = input?.showDeleted ?? false;
       return ctx.db.serviceType.findMany({
-        where: showDeleted ? undefined : { deletedAt: null },
+        where: showDeleted ? { deletedAt: { not: null } } : { deletedAt: null },
         orderBy: { sortOrder: "asc" },
         include: {
           _count: { select: { requests: true } },
@@ -713,7 +728,9 @@ export const adminRouter = router({
     .query(async ({ ctx, input }) => {
       const showDeleted = input?.showDeleted ?? false;
       return ctx.db.package.findMany({
-        where: showDeleted ? undefined : { deletedAt: null },
+        where: showDeleted 
+          ? { deletedAt: { not: null }, isFreePackage: false } 
+          : { deletedAt: null, isFreePackage: false },
         orderBy: { sortOrder: "asc" },
         include: {
           services: {
@@ -1176,57 +1193,6 @@ export const adminRouter = router({
       return {
         success: true,
         message: `Request "${request.title}" has been restored`,
-      };
-    }),
-
-  // Get priority cost settings (accessible to all authenticated users)
-  getPriorityCosts: protectedProcedure.query(async ({ ctx }) => {
-    const setting = await ctx.db.systemSettings.findUnique({
-      where: { key: "priority_costs" },
-    });
-
-    if (!setting) {
-      // Return default values if not set
-      return {
-        low: 0,
-        medium: 1,
-        high: 2,
-      };
-    }
-
-    return setting.value as { low: number; medium: number; high: number };
-  }),
-
-  // Update priority cost settings
-  updatePriorityCosts: adminProcedure
-    .input(
-      z.object({
-        low: z.number().int().min(0),
-        medium: z.number().int().min(0),
-        high: z.number().int().min(0),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.systemSettings.upsert({
-        where: { key: "priority_costs" },
-        update: {
-          value: input,
-          description: "Credit cost added to base cost for each priority level",
-        },
-        create: {
-          key: "priority_costs",
-          value: input,
-          description: "Credit cost added to base cost for each priority level",
-        },
-      });
-
-      // Clear cache so new values are fetched immediately
-      clearPriorityCostCache();
-
-      return {
-        success: true,
-        message: "Priority costs updated successfully",
-        values: input,
       };
     }),
 });

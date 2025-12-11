@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { deductCredits, checkCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses } from "@/lib/attribute-validation";
-import { getPriorityCosts } from "@/lib/priority-costs";
+import { getPriorityCostsForService } from "@/lib/priority-costs";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 export const requestRouter = router({
@@ -92,8 +92,8 @@ export const requestRouter = router({
       // Get credit cost from service type (default to 1 if not set)
       const baseCreditCost = serviceType.creditCost || 1;
       
-      // Apply priority cost from settings
-      const costs = await getPriorityCosts();
+      // Apply priority cost from service type
+      const costs = await getPriorityCostsForService(input.serviceTypeId);
       const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
       const priorityCost = priorityCosts[input.priority] ?? costs.medium;
       const totalCreditCost = baseCreditCost + priorityCost;
@@ -124,7 +124,10 @@ export const requestRouter = router({
           clientId: userId,
           serviceTypeId: input.serviceTypeId,
           priority: input.priority,
-          creditCost: totalCreditCost, // Store the credit cost at creation time
+          creditCost: totalCreditCost, // Store the total credit cost at creation time
+          baseCreditCost, // Store base cost from service type
+          priorityCreditCost: priorityCost, // Store priority cost
+          isRevision: false, // Initial request, not a revision
           formData: input.formData || {},
           attributeResponses: input.attributeResponses || null,
           attachments: input.attachments || [],

@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
 import {
   Card,
   CardContent,
@@ -510,6 +511,9 @@ export default function LandingPage() {
           </div>
         </div>
       </motion.footer>
+
+      {/* WhatsApp Floating Button */}
+      <WhatsAppSupport />
     </div>
   );
 }

@@ -4,12 +4,14 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
-export const createTRPCContext = async () => {
+export const createTRPCContext = async (opts?: FetchCreateContextFnOptions) => {
   const session = await getServerSession(authOptions);
   return {
     db,
     session,
+    req: opts?.req,
   };
 };
 

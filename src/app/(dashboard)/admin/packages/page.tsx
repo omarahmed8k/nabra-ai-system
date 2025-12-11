@@ -85,7 +85,6 @@ export default function AdminPackagesPage() {
       name: formData.get("name") as string,
       price: Number.parseFloat(formData.get("price") as string),
       credits: Number.parseInt(formData.get("credits") as string),
-      maxFreeRevisions: Number.parseInt(formData.get("maxFreeRevisions") as string),
       durationDays: Number.parseInt(formData.get("durationDays") as string),
       features: (formData.get("features") as string).split("\n").filter(Boolean),
       serviceIds: selectedServiceIds,
@@ -100,7 +99,6 @@ export default function AdminPackagesPage() {
       name: formData.get("name") as string,
       price: Number.parseFloat(formData.get("price") as string),
       credits: Number.parseInt(formData.get("credits") as string),
-      maxFreeRevisions: Number.parseInt(formData.get("maxFreeRevisions") as string),
       features: (formData.get("features") as string).split("\n").filter(Boolean),
       serviceIds: selectedServiceIds,
     });
@@ -172,15 +170,6 @@ export default function AdminPackagesPage() {
                   <Input id="credits" name="credits" type="number" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="maxFreeRevisions">Free Revisions</Label>
-                  <Input
-                    id="maxFreeRevisions"
-                    name="maxFreeRevisions"
-                    type="number"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="durationDays">Duration (days)</Label>
                   <Input
                     id="durationDays"
@@ -189,6 +178,20 @@ export default function AdminPackagesPage() {
                     defaultValue="30"
                     required
                   />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="resetFreeRevisionsOnPaid"
+                      name="resetFreeRevisionsOnPaid"
+                      defaultChecked
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="resetFreeRevisionsOnPaid" className="font-normal">
+                      Reset free revisions after paid revision (client gets free revisions again after paying)
+                    </Label>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="features">Features (one per line)</Label>
@@ -266,7 +269,6 @@ export default function AdminPackagesPage() {
           name: string; 
           price: number; 
           credits: number; 
-          maxFreeRevisions: number; 
           durationDays: number; 
           features: string[];
           services?: Array<{ serviceType: { id: string; name: string; icon: string | null } }>;
@@ -293,14 +295,6 @@ export default function AdminPackagesPage() {
                           name="credits"
                           type="number"
                           defaultValue={pkg.credits}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Free Revisions</Label>
-                        <Input
-                          name="maxFreeRevisions"
-                          type="number"
-                          defaultValue={pkg.maxFreeRevisions}
                         />
                       </div>
                       <div className="space-y-2">
@@ -366,10 +360,9 @@ export default function AdminPackagesPage() {
                   <CardContent>
                     <ul className="space-y-2 text-sm">
                       <li>{pkg.credits} credits</li>
-                      <li>{pkg.maxFreeRevisions} free revisions/request</li>
                       <li>{pkg.durationDays} day duration</li>
                       {pkg.features.map((feature: string, i: number) => (
-                        <li key={feature} className="text-muted-foreground">
+                        <li key={`${pkg.id}-feature-${i}`} className="text-muted-foreground">
                           • {feature}
                         </li>
                       ))}

@@ -25,6 +25,28 @@ export const authRouter = router({
         });
       }
 
+      // Get IP address from request headers
+      const forwarded = ctx.req?.headers.get("x-forwarded-for");
+      const realIp = ctx.req?.headers.get("x-real-ip");
+      const ip = forwarded?.split(",")[0] || realIp || null;
+
+      // Check if IP has already registered to prevent free plan abuse
+      if (ip) {
+        const ipAlreadyRegistered = await ctx.db.user.findFirst({
+          where: {
+            registrationIp: ip,
+            deletedAt: null,
+          },
+        });
+
+        if (ipAlreadyRegistered) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "An account has already been registered from this network. Please contact support if you need assistance.",
+          });
+        }
+      }
+
       const hashedPassword = await bcrypt.hash(input.password, 12);
 
       const user = await ctx.db.user.create({
@@ -33,6 +55,7 @@ export const authRouter = router({
           email: input.email,
           password: hashedPassword,
           role: "CLIENT", // Default role
+          registrationIp: ip,
         },
       });
 

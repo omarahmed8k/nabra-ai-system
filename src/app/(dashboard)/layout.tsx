@@ -13,7 +13,6 @@ import {
   CreditCard,
   Bell,
   Settings,
-  Settings2,
   LogOut,
   Menu,
   X,
@@ -45,7 +44,6 @@ const adminNavItems = [
   { href: "/admin/payments", label: "Payments", icon: CheckCircle },
   { href: "/admin/packages", label: "Packages", icon: CreditCard },
   { href: "/admin/services", label: "Services", icon: Settings },
-  { href: "/admin/settings", label: "Settings", icon: Settings2 },
 ];
 
 export default function DashboardLayout({

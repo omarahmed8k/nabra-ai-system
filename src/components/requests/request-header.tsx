@@ -14,6 +14,10 @@ interface RequestHeaderProps {
   readonly status: string;
   readonly priority: number;
   readonly creditCost: number;
+  readonly baseCreditCost?: number;
+  readonly priorityCreditCost?: number;
+  readonly isRevision?: boolean;
+  readonly revisionType?: string | null;
   readonly serviceTypeName: string;
   readonly serviceTypeIcon?: string;
   readonly createdAt: Date;
@@ -27,6 +31,10 @@ export function RequestHeader({
   status,
   priority,
   creditCost,
+  baseCreditCost,
+  priorityCreditCost,
+  isRevision,
+  revisionType,
   serviceTypeName,
   serviceTypeIcon,
   createdAt,
@@ -34,6 +42,18 @@ export function RequestHeader({
   backLabel = "Back",
   actions,
 }: RequestHeaderProps) {
+  // Build credit breakdown tooltip
+  const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
+  
+  let creditBreakdown: string | undefined;
+  if (hasCreditBreakdown) {
+    let revisionInfo = '';
+    if (isRevision) {
+      revisionInfo = revisionType === 'free' ? ' (Free Revision)' : ' (Paid Revision)';
+    }
+    creditBreakdown = `Base: ${baseCreditCost} + Priority: ${priorityCreditCost}${revisionInfo}`;
+  }
+
   return (
     <div className="flex items-start gap-4">
       <Link href={backUrl}>
@@ -50,9 +70,23 @@ export function RequestHeader({
           <Badge className={getPriorityColor(priority)}>
             {getPriorityLabel(priority)} Priority
           </Badge>
-          <Badge variant="outline" className="font-semibold">
+          <Badge 
+            variant="outline" 
+            className="font-semibold"
+            title={creditBreakdown}
+          >
             💳 {creditCost} {creditCost === 1 ? "credit" : "credits"}
+            {hasCreditBreakdown && (
+              <span className="text-xs ml-1 text-muted-foreground">
+                ({baseCreditCost}+{priorityCreditCost})
+              </span>
+            )}
           </Badge>
+          {isRevision && revisionType && (
+            <Badge variant={revisionType === 'free' ? 'secondary' : 'default'} className="text-xs">
+              {revisionType === 'free' ? '🔄 Free Revision' : '💰 Paid Revision'}
+            </Badge>
+          )}
         </div>
         <p className="text-muted-foreground mt-1">
           {serviceTypeIcon && `${serviceTypeIcon} `}

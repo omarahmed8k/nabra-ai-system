@@ -39,11 +39,12 @@ export async function handleRevisionRequest(
   requestId: string,
   userId: string
 ): Promise<RevisionResult> {
-  // Step 1: Get the request
+  // Step 1: Get the request with its service type
   const request = await db.request.findUnique({
     where: { id: requestId },
     include: {
       client: true,
+      serviceType: true,
     },
   });
 
@@ -102,8 +103,11 @@ export async function handleRevisionRequest(
     };
   }
 
-  const maxFreeRevisions = subscription.package.maxFreeRevisions;
+  // Read all revision settings from the service type (current values)
+  const maxFreeRevisions = request.serviceType.maxFreeRevisions;
   const currentCount = request.currentRevisionCount;
+  const paidRevisionCost = request.serviceType.paidRevisionCost;
+  const resetFreeRevisionsOnPaid = request.serviceType.resetFreeRevisionsOnPaid;
 
   // Step 3: Check if this revision is free
   if (currentCount < maxFreeRevisions) {
@@ -150,20 +154,20 @@ export async function handleRevisionRequest(
   }
 
   // Step 4: Paid revision - check credits
-  if (subscription.remainingCredits < 1) {
+  if (subscription.remainingCredits < paidRevisionCost) {
     return {
       allowed: false,
       isFree: false,
-      creditCost: 1,
+      creditCost: paidRevisionCost,
       newRevisionCount: currentCount,
-      message: `You've used all ${maxFreeRevisions} free revisions. Additional revisions cost 1 credit, but you have 0 credits remaining. Please purchase more credits.`,
+      message: `You've used all ${maxFreeRevisions} free revisions. Additional revisions cost ${paidRevisionCost} ${paidRevisionCost === 1 ? 'credit' : 'credits'}, but you have ${subscription.remainingCredits} credits remaining. Please purchase more credits.`,
     };
   }
 
-  // Deduct credit and RESET counter
+  // Deduct credits for paid revision
   const deductResult = await deductCredits(
     userId,
-    1,
+    paidRevisionCost,
     `Paid revision for request: ${request.title}`
   );
 
@@ -171,28 +175,33 @@ export async function handleRevisionRequest(
     return {
       allowed: false,
       isFree: false,
-      creditCost: 1,
+      creditCost: paidRevisionCost,
       newRevisionCount: currentCount,
       message: deductResult.message || "Failed to deduct credits.",
     };
   }
 
-  // Update request - RESET counter to 0!
+  // Update request - conditionally RESET counter based on package settings
+  const newRevisionCount = resetFreeRevisionsOnPaid ? 0 : currentCount;
   const updatedRequest = await db.request.update({
     where: { id: requestId },
     data: {
-        currentRevisionCount: 0, // RESET!
+        currentRevisionCount: newRevisionCount, // Reset to 0 if package allows, otherwise keep count
         totalRevisions: request.totalRevisions + 1,
         status: "REVISION_REQUESTED",
     },
   });
 
   // Create system comment
+  const resetMessage = resetFreeRevisionsOnPaid 
+    ? ` Free revision counter reset - you now have ${maxFreeRevisions} free revisions available again.`
+    : ' Free revision counter NOT reset - you will need to pay for additional revisions.';
+  
   await db.requestComment.create({
     data: {
       requestId,
       userId,
-      content: `Paid revision requested (1 credit used). Free revision counter reset - you now have ${maxFreeRevisions} free revisions available again.`,
+      content: `Paid revision requested (${paidRevisionCost} ${paidRevisionCost === 1 ? 'credit' : 'credits'} used).${resetMessage}`,
       type: "SYSTEM",
     },
   });
@@ -213,10 +222,21 @@ export async function handleRevisionRequest(
   return {
     allowed: true,
     isFree: false,
-    creditCost: 1,
+    creditCost: paidRevisionCost,
     newRevisionCount: updatedRequest.currentRevisionCount,
-    message: `Paid revision requested (1 credit deducted). Your free revision counter has been reset - you now have ${maxFreeRevisions} free revisions available again. Credits remaining: ${deductResult.newBalance}`,
+    message: buildPaidRevisionMessage(paidRevisionCost, maxFreeRevisions, resetFreeRevisionsOnPaid, deductResult.newBalance),
   };
+}
+
+function buildPaidRevisionMessage(cost: number, maxFree: number, reset: boolean, balance: number): string {
+  const creditText = cost === 1 ? 'credit' : 'credits';
+  const baseMessage = `Paid revision requested (${cost} ${creditText} deducted).`;
+  
+  if (reset) {
+    return `${baseMessage} Your free revision counter has been reset - you now have ${maxFree} free revisions available again. Credits remaining: ${balance}`;
+  }
+  
+  return `${baseMessage} Note: Free revision counter was NOT reset. Credits remaining: ${balance}`;
 }
 
 /**
@@ -234,6 +254,9 @@ export async function getRevisionInfo(
 }> {
   const request = await db.request.findUnique({
     where: { id: requestId },
+    include: {
+      serviceType: true,
+    },
   });
 
   if (request?.clientId !== userId) {
@@ -246,22 +269,12 @@ export async function getRevisionInfo(
     };
   }
 
-  const subscription = await db.clientSubscription.findFirst({
-    where: {
-      userId,
-      isActive: true,
-      endDate: { gte: new Date() },
-    },
-    include: {
-      package: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const maxFree = subscription?.package.maxFreeRevisions || 0;
+  // Read all revision settings from the service type (current values)
+  const maxFree = request.serviceType.maxFreeRevisions;
+  const paidCost = request.serviceType.paidRevisionCost;
   const currentCount = request.currentRevisionCount;
   const freeRevisionsRemaining = Math.max(0, maxFree - currentCount);
-  const nextRevisionCost = freeRevisionsRemaining > 0 ? 0 : 1;
+  const nextRevisionCost = freeRevisionsRemaining > 0 ? 0 : paidCost;
 
   return {
     currentCount,

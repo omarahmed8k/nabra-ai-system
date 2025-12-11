@@ -16,6 +16,7 @@ model User {
   password            String?
   image               String?
   role                Role                 @default(CLIENT)
+  registrationIp      String?              // IP address during registration for abuse prevention
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   deletedAt           DateTime?
@@ -33,6 +34,7 @@ model User {
   sessions            Session[]
 
   @@index([deletedAt])
+  @@index([registrationIp])
 }
 
 model Account {
@@ -83,43 +85,48 @@ model ProviderProfile {
 }
 
 model ServiceType {
-  id          String            @id @default(cuid())
-  name        String            @unique
-  description String?
-  icon        String?
-  formFields  Json?
-  attributes  Json? // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
-  creditCost  Int               @default(1) // Number of credits required to create a request for this service
-  isActive    Boolean           @default(true)
-  sortOrder   Int               @default(0)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  deletedAt   DateTime?
-  requests    Request[]
-  providers   ProviderProfile[] @relation("ProviderServices")
-  packages    PackageService[]
+  id                        String            @id @default(cuid())
+  name                      String            @unique
+  description               String?
+  icon                      String?
+  formFields                Json?
+  attributes                Json? // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
+  creditCost                Int               @default(1) // Number of credits required to create a request for this service
+  maxFreeRevisions          Int               @default(3) // Number of free revisions per request
+  paidRevisionCost          Int               @default(1) // Cost in credits for paid revisions
+  resetFreeRevisionsOnPaid  Boolean           @default(true) // Whether to reset free revision counter after paid revision
+  priorityCostLow           Int               @default(0) // Additional credits for low priority
+  priorityCostMedium        Int               @default(1) // Additional credits for medium priority
+  priorityCostHigh          Int               @default(2) // Additional credits for high priority
+  isActive                  Boolean           @default(true)
+  sortOrder                 Int               @default(0)
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+  deletedAt                 DateTime?
+  requests                  Request[]
+  providers                 ProviderProfile[] @relation("ProviderServices")
+  packages                  PackageService[]
 
   @@index([deletedAt])
 }
 
 model Package {
-  id               String               @id @default(cuid())
-  name             String
-  description      String?
-  credits          Int
-  price            Float
-  durationDays     Int                  @default(30)
-  maxFreeRevisions Int                  @default(3)
-  features         String[]             @default([])
-  isActive         Boolean              @default(true)
-  isFreePackage    Boolean              @default(false)
-  sortOrder        Int                  @default(0)
-  version          Int                  @default(1)
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  deletedAt        DateTime?
-  subscriptions    ClientSubscription[]
-  services         PackageService[]
+  id                        String               @id @default(cuid())
+  name                      String
+  description               String?
+  credits                   Int
+  price                     Float
+  durationDays              Int                  @default(30)
+  features                  String[]             @default([])
+  isActive                  Boolean              @default(true)
+  isFreePackage             Boolean              @default(false)
+  sortOrder                 Int                  @default(0)
+  version                   Int                  @default(1)
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  deletedAt                 DateTime?
+  subscriptions             ClientSubscription[]
+  services                  PackageService[]
 
   @@index([deletedAt])
 }
@@ -138,21 +145,21 @@ model PackageService {
 }
 
 model ClientSubscription {
-  id               String        @id @default(cuid())
-  userId           String
-  packageId        String
-  packageVersion   Int           @default(1)
-  remainingCredits Int
-  startDate        DateTime      @default(now())
-  endDate          DateTime
-  isActive         Boolean       @default(true)
-  isFreeTrialUsed  Boolean       @default(false)
-  cancelledAt      DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  package          Package       @relation(fields: [packageId], references: [id])
-  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paymentProof     PaymentProof?
+  id                        String        @id @default(cuid())
+  userId                    String
+  packageId                 String
+  packageVersion            Int           @default(1)
+  remainingCredits          Int
+  startDate                 DateTime      @default(now())
+  endDate                   DateTime
+  isActive                  Boolean       @default(true)
+  isFreeTrialUsed           Boolean       @default(false)
+  cancelledAt               DateTime?
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
+  package                   Package       @relation(fields: [packageId], references: [id])
+  user                      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentProof              PaymentProof?
 
   @@index([userId, isActive])
 }
@@ -193,7 +200,11 @@ model Request {
   serviceTypeId        String
   status               RequestStatus    @default(PENDING)
   priority             Int              @default(1)
-  creditCost           Int              @default(1) // Stored credit cost at time of creation (prevents changes from affecting old requests)
+  creditCost           Int              @default(1) // Total credit cost at time of creation
+  baseCreditCost       Int              @default(1) // Base cost from service type
+  priorityCreditCost   Int              @default(0) // Additional cost from priority
+  isRevision           Boolean          @default(false) // Whether this is a revision request
+  revisionType         String?          // "free" or "paid"
   formData             Json?
   attributeResponses   Json? // Client's answers to service-specific Q&A: [{question: string, answer: string}]
   attachments          String[]         @default([])
