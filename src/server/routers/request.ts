@@ -539,16 +539,6 @@ export const requestRouter = router({
 
       // Notify provider
       if (request.providerId) {
-        await ctx.db.notification.create({
-          data: {
-            userId: request.providerId,
-            title: "Request Completed",
-            message: `Client has approved "${request.title}". Great job!`,
-            type: "request",
-            link: `/provider/requests/${request.id}`,
-          },
-        });
-
         // Send realtime + email notification
         await notifyStatusChange({
           requestId: input.requestId,
@@ -621,29 +611,16 @@ export const requestRouter = router({
 
       // Notify the other party
       let recipientId: string | null = null;
-      let recipientLink = "";
 
       if (isClient) {
         // Client commented - notify provider if assigned
         recipientId = request.providerId;
-        recipientLink = `/provider/requests/${request.id}`;
       } else {
         // Provider commented (whether assigned or not) - notify client
         recipientId = request.clientId;
-        recipientLink = `/client/requests/${request.id}`;
       }
 
       if (recipientId) {
-        await ctx.db.notification.create({
-          data: {
-            userId: recipientId,
-            title: "New Message",
-            message: `New message on "${request.title}"`,
-            type: "request",
-            link: recipientLink,
-          },
-        });
-
         // Send realtime + email notification
         const senderName = comment.user.name || comment.user.email || "Someone";
         await notifyNewMessage({

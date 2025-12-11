@@ -308,18 +308,7 @@ export const providerRouter = router({
         data: { providerId: userId },
       });
 
-      // Notify client
-      await ctx.db.notification.create({
-        data: {
-          userId: request.clientId,
-          type: "REQUEST_CLAIMED",
-          title: "Provider Assigned",
-          message: `A provider has been assigned to your request "${request.title}"`,
-          link: `/client/requests/${request.id}`,
-        },
-      });
-
-      // Send realtime + email notification
+      // Send notification about provider assignment
       await notifyStatusChange({
         requestId: input.requestId,
         userId: request.clientId,
@@ -376,18 +365,7 @@ export const providerRouter = router({
         },
       });
 
-      // Notify client
-      await ctx.db.notification.create({
-        data: {
-          userId: request.clientId,
-          type: "WORK_STARTED",
-          title: "Work Started",
-          message: `Work has started on your request "${request.title}"`,
-          link: `/client/requests/${request.id}`,
-        },
-      });
-
-      // Send realtime + email notification
+      // Send notification about work starting
       await notifyStatusChange({
         requestId: input.requestId,
         userId: request.clientId,
@@ -452,18 +430,7 @@ export const providerRouter = router({
         },
       });
 
-      // Notify client
-      await ctx.db.notification.create({
-        data: {
-          userId: request.clientId,
-          type: "DELIVERABLE_READY",
-          title: "Deliverable Ready",
-          message: `Your request "${request.title}" has a new deliverable ready for review`,
-          link: `/client/requests/${request.id}`,
-        },
-      });
-
-      // Send realtime + email notification
+      // Send notification about deliverable
       await notifyStatusChange({
         requestId: input.requestId,
         userId: request.clientId,

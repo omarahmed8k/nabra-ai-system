@@ -175,12 +175,20 @@ export async function notifyStatusChange(params: {
 
   const emailTemplate = getStatusChangeEmailTemplate(request.title, oldStatus, newStatus);
 
+  // Determine the correct link based on user role
+  const userRole = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  const linkPrefix = userRole?.role === "CLIENT" ? "/client" : "/provider";
+
   return createNotification({
     userId,
     title: "Request Status Updated",
     message: `Your request "${request.title}" status changed from ${oldStatus.replace("_", " ")} to ${newStatus.replace("_", " ")}`,
     type: "status_change",
-    link: `/client/requests/${requestId}`,
+    link: `${linkPrefix}/requests/${requestId}`,
     emailTemplate,
   });
 }

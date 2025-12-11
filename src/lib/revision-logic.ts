@@ -136,16 +136,6 @@ export async function handleRevisionRequest(
 
     // Notify provider
     if (request.providerId) {
-      await db.notification.create({
-        data: {
-          userId: request.providerId,
-          title: "Revision Requested",
-          message: `Client requested a revision for "${request.title}"`,
-          type: "request",
-          link: `/provider/requests/${requestId}`,
-        },
-      });
-
       // Send realtime + email notification
       await notifyStatusChange({
         requestId,
@@ -222,16 +212,6 @@ export async function handleRevisionRequest(
 
   // Notify provider
   if (request.providerId) {
-    await db.notification.create({
-      data: {
-        userId: request.providerId,
-        title: "Revision Requested",
-        message: `Client requested a paid revision for "${request.title}"`,
-        type: "request",
-        link: `/provider/requests/${requestId}`,
-      },
-    });
-
     // Send realtime + email notification
     await notifyStatusChange({
       requestId,
