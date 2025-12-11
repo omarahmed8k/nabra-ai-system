@@ -2,8 +2,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { setSseNotificationSender } from "@/lib/notifications";
 
-// Store active connections
-const clients = new Map<string, ReadableStreamDefaultController>();
+// Use global storage to persist across HMR reloads
+const getClientsMap = () => {
+  if (!(globalThis as any).__sseClients) {
+    (globalThis as any).__sseClients = new Map<string, ReadableStreamDefaultController>();
+  }
+  return (globalThis as any).__sseClients as Map<string, ReadableStreamDefaultController>;
+};
+
+const clients = getClientsMap();
 
 // Debug function to check connected clients
 export function getConnectedClients() {

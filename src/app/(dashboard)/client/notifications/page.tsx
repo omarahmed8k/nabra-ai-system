@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Bell, Check } from "lucide-react";
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const utils = trpc.useUtils();
   const { refreshUnreadCount } = useRealtimeNotifications();
   const { data: notifications, isLoading } = trpc.notification.getAll.useQuery();
@@ -85,41 +87,62 @@ export default function NotificationsPage() {
                   id: string;
                   title: string;
                   message: string;
+                  link: string | null;
                   isRead: boolean;
                   createdAt: Date;
                 }) => (
+                  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
                   <div
                     key={notification.id}
-                    className={`p-4 rounded-lg border transition-colors ${
+                    className={`relative p-4 pr-16 rounded-lg border transition-colors ${
                       notification.isRead ? "bg-background" : "bg-primary/5 border-primary/20"
-                    }`}
+                    } ${notification.link ? "cursor-pointer hover:bg-muted" : ""}`}
+                    onClick={() => {
+                      if (notification.link) {
+                        if (!notification.isRead) {
+                          markAsRead.mutate({ id: notification.id });
+                        }
+                        router.push(notification.link);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (notification.link && (e.key === "Enter" || e.key === " ")) {
+                        e.preventDefault();
+                        if (!notification.isRead) {
+                          markAsRead.mutate({ id: notification.id });
+                        }
+                        router.push(notification.link);
+                      }
+                    }}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{notification.title}</p>
-                          {!notification.isRead && (
-                            <Badge variant="default" className="text-xs">
-                              New
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{notification.message}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDateTime(notification.createdAt)}
-                        </p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{notification.title}</p>
+                        {!notification.isRead && (
+                          <Badge variant="default" className="text-xs">
+                            New
+                          </Badge>
+                        )}
                       </div>
-                      {!notification.isRead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => markAsRead.mutate({ id: notification.id })}
-                          disabled={markAsRead.isPending}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <p className="text-sm text-muted-foreground">{notification.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateTime(notification.createdAt)}
+                      </p>
                     </div>
+                    {!notification.isRead && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-4 right-4"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead.mutate({ id: notification.id });
+                        }}
+                        disabled={markAsRead.isPending}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 )
               )}
