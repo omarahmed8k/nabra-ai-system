@@ -149,7 +149,6 @@ export async function getCreditBalance(userId: string): Promise<{
   subscription: {
     packageName: string;
     endDate: Date;
-    maxFreeRevisions: number;
   } | null;
 }> {
   const subscription = await db.clientSubscription.findFirst({
@@ -176,7 +175,6 @@ export async function getCreditBalance(userId: string): Promise<{
     subscription: {
       packageName: subscription.package.name,
       endDate: subscription.endDate,
-      maxFreeRevisions: subscription.package.maxFreeRevisions,
     },
   };
 }
