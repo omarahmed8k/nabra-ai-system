@@ -11,10 +11,13 @@ let sseNotificationSender: ((userId: string, notification: any) => void) | null 
 let sseInitialized = false;
 
 // Immediately try to load SSE route on server-side to register sender
-if (typeof globalThis.window === "undefined") {
-  import("@/app/api/notifications/sse/route")
-    .then(() => console.log("✅ SSE route preloaded"))
-    .catch((err) => console.error("❌ Failed to preload SSE route:", err));
+if (globalThis.window === undefined) {
+  try {
+    await import("@/app/api/notifications/sse/route");
+    console.log("✅ SSE route preloaded");
+  } catch (err) {
+    console.error("❌ Failed to preload SSE route:", err);
+  }
 }
 
 export function setSseNotificationSender(sender: (userId: string, notification: any) => void) {
