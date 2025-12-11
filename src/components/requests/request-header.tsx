@@ -22,6 +22,111 @@ interface RequestHeaderProps {
   readonly actions?: React.ReactNode;
 }
 
+interface CreditBreakdownData {
+  hasCreditBreakdown: boolean;
+  creditBreakdown?: string;
+  base: number;
+  prio: number;
+  paidRevisionTotal: number;
+  hasPaidRevisions: boolean;
+  paidRevisionMultiplier: number;
+  canDeriveMultiplier: boolean;
+  paidUnit: number;
+  showFreeRevision: boolean;
+}
+
+function calculateCreditBreakdown(
+  creditCost: number,
+  baseCreditCost?: number,
+  priorityCreditCost?: number,
+  paidRevisionCost?: number,
+  isRevision?: boolean,
+  revisionType?: string | null
+): CreditBreakdownData {
+  const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
+  const base = baseCreditCost ?? 0;
+  const prio = priorityCreditCost ?? 0;
+  const paidUnit = paidRevisionCost ?? 0;
+  const paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - prio) : 0;
+  const hasPaidRevisions = paidRevisionTotal > 0;
+  const canDeriveMultiplier = paidUnit > 0;
+  const paidRevisionMultiplier = canDeriveMultiplier ? Math.floor(paidRevisionTotal / paidUnit) : 0;
+  const showFreeRevision = !hasPaidRevisions && isRevision === true && revisionType === "free";
+
+  let creditBreakdown: string | undefined;
+  if (hasCreditBreakdown) {
+    const revisionInfo = getRevisionInfo(
+      hasPaidRevisions,
+      canDeriveMultiplier,
+      paidRevisionMultiplier,
+      paidRevisionTotal,
+      paidUnit,
+      showFreeRevision
+    );
+    creditBreakdown = `Base: ${baseCreditCost} + Priority: ${priorityCreditCost}${revisionInfo}`;
+  }
+
+  return {
+    hasCreditBreakdown,
+    creditBreakdown,
+    base,
+    prio,
+    paidRevisionTotal,
+    hasPaidRevisions,
+    paidRevisionMultiplier,
+    canDeriveMultiplier,
+    paidUnit,
+    showFreeRevision,
+  };
+}
+
+function getRevisionInfo(
+  hasPaidRevisions: boolean,
+  canDeriveMultiplier: boolean,
+  paidRevisionMultiplier: number,
+  paidRevisionTotal: number,
+  paidUnit: number,
+  showFreeRevision: boolean
+): string {
+  if (hasPaidRevisions) {
+    const canShowMultiplier =
+      canDeriveMultiplier && paidRevisionMultiplier >= 1 && paidRevisionTotal % paidUnit === 0;
+    return canShowMultiplier
+      ? ` + Revisions: +${paidUnit} x ${paidRevisionMultiplier}`
+      : ` + Revisions: +${paidRevisionTotal}`;
+  }
+  return showFreeRevision ? " + Free Revision" : "";
+}
+
+function RevisionCostDisplay({
+  canDeriveMultiplier,
+  paidRevisionMultiplier,
+  paidRevisionTotal,
+  paidUnit,
+}: {
+  readonly canDeriveMultiplier: boolean;
+  readonly paidRevisionMultiplier: number;
+  readonly paidRevisionTotal: number;
+  readonly paidUnit: number;
+}) {
+  const canShowMultiplier =
+    canDeriveMultiplier && paidRevisionMultiplier >= 1 && paidRevisionTotal % paidUnit === 0;
+
+  if (canShowMultiplier) {
+    return (
+      <>
+        +{paidUnit} {paidUnit === 1 ? "credit" : "credits"} x {paidRevisionMultiplier}
+      </>
+    );
+  }
+
+  return (
+    <>
+      +{paidRevisionTotal} {paidRevisionTotal === 1 ? "credit" : "credits"}
+    </>
+  );
+}
+
 export function RequestHeader({
   title,
   status,
@@ -39,38 +144,14 @@ export function RequestHeader({
   backLabel = "Back",
   actions,
 }: RequestHeaderProps) {
-  // Build credit breakdown tooltip
-  const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
-
-  // Normalize values for simpler math
-  const base = baseCreditCost ?? 0;
-  const prio = priorityCreditCost ?? 0;
-  const paidUnit = paidRevisionCost ?? 0;
-
-  // Derive total paid revision credits from persisted totals
-  const paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - prio) : 0;
-  const hasPaidRevisions = paidRevisionTotal > 0;
-  const canDeriveMultiplier = paidUnit > 0;
-  const paidRevisionMultiplier = canDeriveMultiplier ? Math.floor(paidRevisionTotal / paidUnit) : 0;
-
-  let creditBreakdown: string | undefined;
-  if (hasCreditBreakdown) {
-    let revisionInfo = "";
-    if (hasPaidRevisions) {
-      if (
-        canDeriveMultiplier &&
-        paidRevisionMultiplier >= 1 &&
-        paidRevisionTotal % paidUnit === 0
-      ) {
-        revisionInfo = ` + Revisions: +${paidUnit} x ${paidRevisionMultiplier}`;
-      } else {
-        revisionInfo = ` + Revisions: +${paidRevisionTotal}`;
-      }
-    } else if (isRevision && revisionType === "free") {
-      revisionInfo = " + Free Revision";
-    }
-    creditBreakdown = `Base: ${baseCreditCost} + Priority: ${priorityCreditCost}${revisionInfo}`;
-  }
+  const breakdown = calculateCreditBreakdown(
+    creditCost,
+    baseCreditCost,
+    priorityCreditCost,
+    paidRevisionCost,
+    isRevision,
+    revisionType
+  );
 
   return (
     <div className="space-y-4">
@@ -89,7 +170,7 @@ export function RequestHeader({
             <Badge variant={null} className={getPriorityColor(priority)}>
               {getPriorityLabel(priority)} Priority
             </Badge>
-            <Badge variant="outline" className="font-semibold" title={creditBreakdown}>
+            <Badge variant="outline" className="font-semibold" title={breakdown.creditBreakdown}>
               💳 {creditCost} {creditCost === 1 ? "credit" : "credits"}
             </Badge>
           </div>
@@ -102,7 +183,7 @@ export function RequestHeader({
       </div>
 
       {/* Credit Cost Breakdown */}
-      {hasCreditBreakdown && (
+      {breakdown.hasCreditBreakdown && (
         <div className="p-4 bg-muted/50 rounded-lg border">
           <h3 className="font-semibold mb-2 text-sm">Credit Cost Breakdown:</h3>
           <div className="space-y-1 text-sm">
@@ -120,25 +201,20 @@ export function RequestHeader({
                 +{priorityCreditCost} {priorityCreditCost === 1 ? "credit" : "credits"}
               </span>
             </div>
-            {hasPaidRevisions && (
+            {breakdown.hasPaidRevisions && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Revision Cost:</span>
                 <span className="font-medium">
-                  {canDeriveMultiplier &&
-                  paidRevisionMultiplier >= 1 &&
-                  paidRevisionTotal % paidUnit === 0 ? (
-                    <>
-                      +{paidUnit} {paidUnit === 1 ? "credit" : "credits"} x {paidRevisionMultiplier}
-                    </>
-                  ) : (
-                    <>
-                      +{paidRevisionTotal} {paidRevisionTotal === 1 ? "credit" : "credits"}
-                    </>
-                  )}
+                  <RevisionCostDisplay
+                    canDeriveMultiplier={breakdown.canDeriveMultiplier}
+                    paidRevisionMultiplier={breakdown.paidRevisionMultiplier}
+                    paidRevisionTotal={breakdown.paidRevisionTotal}
+                    paidUnit={breakdown.paidUnit}
+                  />
                 </span>
               </div>
             )}
-            {isRevision && revisionType === "free" && (
+            {breakdown.showFreeRevision && (
               <div className="flex justify-between text-green-600">
                 <span>Free Revision:</span>
                 <span className="font-medium">No additional cost</span>
