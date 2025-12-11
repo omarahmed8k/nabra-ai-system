@@ -193,6 +193,7 @@ model Request {
   serviceTypeId        String
   status               RequestStatus    @default(PENDING)
   priority             Int              @default(1)
+  creditCost           Int              @default(1) // Stored credit cost at time of creation (prevents changes from affecting old requests)
   formData             Json?
   attributeResponses   Json? // Client's answers to service-specific Q&A: [{question: string, answer: string}]
   attachments          String[]         @default([])

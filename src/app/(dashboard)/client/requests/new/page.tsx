@@ -32,7 +32,7 @@ import type { AttributeResponse } from "@/types/service-attributes";
 export default function NewRequestPage() {
   const router = useRouter();
   const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [priority, setPriority] = useState("2");
+  const [priority, setPriority] = useState("1");
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
   const [attributeResponses, setAttributeResponses] = useState<AttributeResponse[]>([]);
 
@@ -72,17 +72,10 @@ export default function NewRequestPage() {
   const highCost = adminPriorityCosts?.high ?? 2;
   
   const priorityCostsMap: Record<string, number> = { "1": lowCost, "2": mediumCost, "3": highCost };
-  const priorityCost = priorityCostsMap[priority] || mediumCost;
+  const priorityCost = priorityCostsMap[priority] ?? lowCost;
   const totalCreditCost = baseCreditCost + priorityCost;
   
   const canAffordService = subscription && subscription.remainingCredits >= totalCreditCost;
-  
-  const priorityLabels: Record<string, string> = { 
-    "1": `+${lowCost}`, 
-    "2": `+${mediumCost}`, 
-    "3": `+${highCost}` 
-  };
-  const priorityLabel = priorityLabels[priority] || `+${mediumCost}`;
   
   let buttonText = "Create Request (1 Credit)";
   if (createRequest.isPending) {
@@ -151,7 +144,7 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-orange-800">Insufficient Credits</CardTitle>
             <CardDescription className="text-orange-700">
-              This request requires {totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'} ({baseCreditCost} base × {priorityLabel} priority) but you only have {subscription?.remainingCredits || 0}. Please subscribe to a plan
+              This request requires {totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'} ({baseCreditCost} base + {priorityCost} priority) but you only have {subscription?.remainingCredits || 0}. Please subscribe to a plan
               or purchase more credits.
             </CardDescription>
           </CardHeader>
@@ -200,7 +193,7 @@ export default function NewRequestPage() {
           <CardTitle>Request Details</CardTitle>
           <CardDescription>
             {selectedServiceType ? (
-              <>Base cost: <strong>{baseCreditCost} credit{baseCreditCost === 1 ? '' : 's'}</strong> × Priority multiplier ({priorityLabel}) = <strong>{totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'}</strong>. You have{" "}
+              <>Base cost: <strong>{baseCreditCost} credit{baseCreditCost === 1 ? '' : 's'}</strong> + Priority cost ({priorityCost} credit{priorityCost === 1 ? '' : 's'}) = <strong>{totalCreditCost} credit{totalCreditCost === 1 ? '' : 's'}</strong>. You have{" "}
               <strong>{subscription?.remainingCredits || 0} credits</strong> available.</>
             ) : (
               <>Select a service to see the credit cost. You have{" "}

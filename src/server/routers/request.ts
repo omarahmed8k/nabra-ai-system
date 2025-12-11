@@ -15,7 +15,7 @@ export const requestRouter = router({
         title: z.string().min(5, "Title must be at least 5 characters"),
         description: z.string().min(20, "Description must be at least 20 characters"),
         serviceTypeId: z.string(),
-        priority: z.number().min(1).max(3).default(2),
+        priority: z.number().min(1).max(3).default(1),
         formData: z.record(z.any()).optional(),
         attributeResponses: z.any().optional(), // Client's answers to service Q&A: [{question: string, answer: string}]
         attachments: z.array(z.string()).optional(),
@@ -124,6 +124,7 @@ export const requestRouter = router({
           clientId: userId,
           serviceTypeId: input.serviceTypeId,
           priority: input.priority,
+          creditCost: totalCreditCost, // Store the credit cost at creation time
           formData: input.formData || {},
           attributeResponses: input.attributeResponses || null,
           attachments: input.attachments || [],
@@ -148,7 +149,7 @@ export const requestRouter = router({
         success: true,
         request,
         creditsRemaining: deductResult.newBalance,
-        message: "Request created successfully. 1 credit has been deducted.",
+        message: `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? '' : 's'} ${totalCreditCost === 1 ? 'has' : 'have'} been deducted.`,
       };
     }),
 
@@ -213,19 +214,9 @@ export const requestRouter = router({
         skip: input?.cursor ? 1 : 0,
       });
 
-      // Calculate credit cost for each request
-      const costs = await getPriorityCosts();
-      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
-      
-      const requestsWithCredits = requests.map((req: any) => {
-        const baseCreditCost = req.serviceType.creditCost || 1;
-        const priorityCost = priorityCosts[req.priority] || costs.medium;
-        const creditCost = baseCreditCost + priorityCost;
-        return { ...req, creditCost };
-      });
-
+      // Use stored credit cost (no need to recalculate, preserves historical costs)
       return {
-        requests: requestsWithCredits,
+        requests,
         nextCursor: requests.length === (input?.limit || 20) ? requests.at(-1)?.id ?? null : null,
       };
     }),
@@ -287,17 +278,10 @@ export const requestRouter = router({
         revisionInfo = await getRevisionInfo(input.id, request.clientId);
       }
 
-      // Calculate credit cost based on service type and priority
-      const baseCreditCost = (request.serviceType as any).creditCost || 1;
-      const costs = await getPriorityCosts();
-      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
-      const priorityCost = priorityCosts[request.priority] || costs.medium;
-      const creditCost = baseCreditCost + priorityCost;
-
+      // Use stored credit cost (preserves cost at time of creation)
       return {
         ...request,
         revisionInfo,
-        creditCost,
       };
     }),
 

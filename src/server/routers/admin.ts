@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, adminProcedure, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { getPriorityCosts, clearPriorityCostCache } from "@/lib/priority-costs";
+import { clearPriorityCostCache } from "@/lib/priority-costs";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -389,19 +389,9 @@ export const adminRouter = router({
         ctx.db.request.count({ where }),
       ]);
 
-      // Calculate credit cost for each request
-      const costs = await getPriorityCosts();
-      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
-      
-      const requestsWithCredits = requests.map((req: any) => {
-        const baseCreditCost = req.serviceType.creditCost || 1;
-        const priorityCost = priorityCosts[req.priority] || costs.medium;
-        const creditCost = baseCreditCost + priorityCost;
-        return { ...req, creditCost };
-      });
-
+      // Use stored credit cost from database
       return {
-        requests: requestsWithCredits,
+        requests,
         total,
         hasMore: (input?.offset || 0) + requests.length < total,
       };
