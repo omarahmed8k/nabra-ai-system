@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { deductCredits, checkCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses } from "@/lib/attribute-validation";
+import { getPriorityCosts } from "@/lib/priority-costs";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 export const requestRouter = router({
@@ -64,7 +65,7 @@ export const requestRouter = router({
       }
 
       // Check if the selected service is allowed by the user's package
-      const allowedServiceIds = activeSubscription.package.services.map((s) => s.serviceId);
+      const allowedServiceIds = activeSubscription.package.services.map((s: { serviceId: string }) => s.serviceId);
       if (!allowedServiceIds.includes(input.serviceTypeId)) {
         const serviceName = serviceType.name;
         throw new TRPCError({
@@ -91,10 +92,11 @@ export const requestRouter = router({
       // Get credit cost from service type (default to 1 if not set)
       const baseCreditCost = serviceType.creditCost || 1;
       
-      // Apply priority multiplier: Low=1x, Medium=1.5x, High=2x
-      const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
-      const priorityMultiplier = priorityMultipliers[input.priority] || 1.5;
-      const totalCreditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+      // Apply priority cost from settings
+      const costs = await getPriorityCosts();
+      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      const priorityCost = priorityCosts[input.priority] || costs.medium;
+      const totalCreditCost = baseCreditCost + priorityCost;
 
       // Check credits before creating
       const creditCheck = await checkCredits(userId, totalCreditCost);
@@ -212,11 +214,13 @@ export const requestRouter = router({
       });
 
       // Calculate credit cost for each request
+      const costs = await getPriorityCosts();
+      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      
       const requestsWithCredits = requests.map((req: any) => {
         const baseCreditCost = req.serviceType.creditCost || 1;
-        const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
-        const priorityMultiplier = priorityMultipliers[req.priority] || 1.5;
-        const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+        const priorityCost = priorityCosts[req.priority] || costs.medium;
+        const creditCost = baseCreditCost + priorityCost;
         return { ...req, creditCost };
       });
 
@@ -285,9 +289,10 @@ export const requestRouter = router({
 
       // Calculate credit cost based on service type and priority
       const baseCreditCost = (request.serviceType as any).creditCost || 1;
-      const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
-      const priorityMultiplier = priorityMultipliers[request.priority] || 1.5;
-      const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+      const costs = await getPriorityCosts();
+      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      const priorityCost = priorityCosts[request.priority] || costs.medium;
+      const creditCost = baseCreditCost + priorityCost;
 
       return {
         ...request,
@@ -753,9 +758,9 @@ export const requestRouter = router({
 
     // Get only the service types allowed by the user's package
     const allowedServices = activeSubscription.package.services
-      .map((ps) => ps.serviceType)
-      .filter((st) => st.isActive)
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+      .map((ps: { serviceType: any }) => ps.serviceType)
+      .filter((st: { isActive: boolean }) => st.isActive)
+      .sort((a: { sortOrder: number }, b: { sortOrder: number }) => a.sortOrder - b.sortOrder);
 
     return allowedServices;
   }),

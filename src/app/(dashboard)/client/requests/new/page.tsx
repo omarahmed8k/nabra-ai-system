@@ -39,6 +39,7 @@ export default function NewRequestPage() {
   const { data: serviceTypes } =
     trpc.request.getServiceTypes.useQuery();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
+  const { data: adminPriorityCosts } = trpc.admin.getPriorityCosts.useQuery();
 
   const selectedService = useMemo(
     () => serviceTypes?.find((s: { id: string }) => s.id === selectedServiceType),
@@ -65,15 +66,23 @@ export default function NewRequestPage() {
   const hasCredits = subscription && subscription.remainingCredits > 0;
   const baseCreditCost = (selectedService as { creditCost?: number })?.creditCost || 1;
   
-  // Priority multiplier: Low=1x, Medium=1.5x, High=2x
-  const priorityMultipliers: Record<string, number> = { "1": 1, "2": 1.5, "3": 2 };
-  const priorityMultiplier = priorityMultipliers[priority] || 1.5;
-  const totalCreditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+  // Priority cost from admin settings (defaults if not loaded)
+  const lowCost = adminPriorityCosts?.low ?? 0;
+  const mediumCost = adminPriorityCosts?.medium ?? 1;
+  const highCost = adminPriorityCosts?.high ?? 2;
+  
+  const priorityCostsMap: Record<string, number> = { "1": lowCost, "2": mediumCost, "3": highCost };
+  const priorityCost = priorityCostsMap[priority] || mediumCost;
+  const totalCreditCost = baseCreditCost + priorityCost;
   
   const canAffordService = subscription && subscription.remainingCredits >= totalCreditCost;
   
-  const priorityLabels: Record<string, string> = { "1": "1x", "2": "1.5x", "3": "2x" };
-  const priorityLabel = priorityLabels[priority] || "1.5x";
+  const priorityLabels: Record<string, string> = { 
+    "1": `+${lowCost}`, 
+    "2": `+${mediumCost}`, 
+    "3": `+${highCost}` 
+  };
+  const priorityLabel = priorityLabels[priority] || `+${mediumCost}`;
   
   let buttonText = "Create Request (1 Credit)";
   if (createRequest.isPending) {
@@ -253,13 +262,13 @@ export default function NewRequestPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Low (1x cost)</SelectItem>
-                  <SelectItem value="2">Medium (1.5x cost)</SelectItem>
-                  <SelectItem value="3">High (2x cost)</SelectItem>
+                  <SelectItem value="1">Low (+{lowCost} credits)</SelectItem>
+                  <SelectItem value="2">Medium (+{mediumCost} credit{mediumCost === 1 ? '' : 's'})</SelectItem>
+                  <SelectItem value="3">High (+{highCost} credits)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Priority affects credit cost: Low=1×, Medium=1.5×, High=2× base cost
+                Priority adds to base cost: Low=+{lowCost}, Medium=+{mediumCost}, High=+{highCost} credits
               </p>
             </div>
 

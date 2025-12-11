@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { router, adminProcedure } from "@/server/trpc";
+import { router, adminProcedure, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
+import { getPriorityCosts, clearPriorityCostCache } from "@/lib/priority-costs";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -72,7 +73,7 @@ export const adminRouter = router({
       const name = sub.package.name;
       acc[name] = (acc[name] || 0) + 1;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
     // Get requests by service type
     const requestsByService = await ctx.db.request.groupBy({
@@ -84,7 +85,7 @@ export const adminRouter = router({
     const serviceMap = serviceTypes.reduce((acc: Record<string, string>, s: { id: string; name: string }) => {
       acc[s.id] = s.name;
       return acc;
-    }, {});
+    }, {} as Record<string, string>);
 
     // Get recent users (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -337,10 +338,10 @@ export const adminRouter = router({
       ]);
 
       // Calculate average rating for each provider
-      const usersWithRating = users.map((user) => {
+      const usersWithRating = users.map((user: any) => {
         const ratings = user.receivedRatings;
         const avgRating = ratings.length > 0
-          ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+          ? ratings.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / ratings.length
           : null;
         
         return {
@@ -389,11 +390,13 @@ export const adminRouter = router({
       ]);
 
       // Calculate credit cost for each request
+      const costs = await getPriorityCosts();
+      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      
       const requestsWithCredits = requests.map((req: any) => {
         const baseCreditCost = req.serviceType.creditCost || 1;
-        const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
-        const priorityMultiplier = priorityMultipliers[req.priority] || 1.5;
-        const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+        const priorityCost = priorityCosts[req.priority] || costs.medium;
+        const creditCost = baseCreditCost + priorityCost;
         return { ...req, creditCost };
       });
 
@@ -564,7 +567,7 @@ export const adminRouter = router({
         data: {
           ...packageData,
           services: {
-            create: serviceIds.map((serviceId) => ({
+            create: serviceIds.map((serviceId: string) => ({
               serviceId,
             })),
           },
@@ -621,7 +624,7 @@ export const adminRouter = router({
           ...(serviceIds !== undefined && {
             services: {
               deleteMany: {},
-              create: serviceIds.map((serviceId) => ({
+              create: serviceIds.map((serviceId: string) => ({
                 serviceId,
               })),
             },
@@ -980,7 +983,7 @@ export const adminRouter = router({
             userId: user.id,
             skillsTags: [],
             supportedServices: input.supportedServiceIds?.length
-              ? { connect: input.supportedServiceIds.map((id) => ({ id })) }
+              ? { connect: input.supportedServiceIds.map((id: string) => ({ id })) }
               : undefined,
           },
         });
@@ -1020,7 +1023,7 @@ export const adminRouter = router({
           userId: user.id,
           skillsTags: [],
           supportedServices: {
-            connect: input.serviceIds.map((id) => ({ id })),
+            connect: input.serviceIds.map((id: string) => ({ id })),
           },
         },
         update: {
@@ -1183,6 +1186,57 @@ export const adminRouter = router({
       return {
         success: true,
         message: `Request "${request.title}" has been restored`,
+      };
+    }),
+
+  // Get priority cost settings (accessible to all authenticated users)
+  getPriorityCosts: protectedProcedure.query(async ({ ctx }) => {
+    const setting = await ctx.db.systemSettings.findUnique({
+      where: { key: "priority_costs" },
+    });
+
+    if (!setting) {
+      // Return default values if not set
+      return {
+        low: 0,
+        medium: 1,
+        high: 2,
+      };
+    }
+
+    return setting.value as { low: number; medium: number; high: number };
+  }),
+
+  // Update priority cost settings
+  updatePriorityCosts: adminProcedure
+    .input(
+      z.object({
+        low: z.number().int().min(0),
+        medium: z.number().int().min(0),
+        high: z.number().int().min(0),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.systemSettings.upsert({
+        where: { key: "priority_costs" },
+        update: {
+          value: input,
+          description: "Credit cost added to base cost for each priority level",
+        },
+        create: {
+          key: "priority_costs",
+          value: input,
+          description: "Credit cost added to base cost for each priority level",
+        },
+      });
+
+      // Clear cache so new values are fetched immediately
+      clearPriorityCostCache();
+
+      return {
+        success: true,
+        message: "Priority costs updated successfully",
+        values: input,
       };
     }),
 });

@@ -13,6 +13,7 @@ import {
   CreditCard,
   Bell,
   Settings,
+  Settings2,
   LogOut,
   Menu,
   X,
@@ -44,6 +45,7 @@ const adminNavItems = [
   { href: "/admin/payments", label: "Payments", icon: CheckCircle },
   { href: "/admin/packages", label: "Packages", icon: CreditCard },
   { href: "/admin/services", label: "Services", icon: Settings },
+  { href: "/admin/settings", label: "Settings", icon: Settings2 },
 ];
 
 export default function DashboardLayout({
@@ -56,19 +58,19 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const role = session?.user?.role;
-  
+
   const getNavItems = () => {
     if (role === "SUPER_ADMIN") return adminNavItems;
     if (role === "PROVIDER") return providerNavItems;
     return clientNavItems;
   };
-  
+
   const getBasePath = () => {
     if (role === "SUPER_ADMIN") return "/admin";
     if (role === "PROVIDER") return "/provider";
     return "/client";
   };
-  
+
   const navItems = getNavItems();
   const basePath = getBasePath();
 
@@ -81,10 +83,20 @@ export default function DashboardLayout({
           size="icon"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {sidebarOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </Button>
         <Link href={basePath} className="flex items-center gap-2">
-          <Image src="/images/logo.svg" alt="Nabra" width={32} height={32} className="w-auto h-8" />
+          <Image
+            src="/images/logo.svg"
+            alt="Nabra"
+            width={32}
+            height={32}
+            className="w-auto h-8"
+          />
         </Link>
       </div>
 
@@ -98,7 +110,13 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="flex h-16 items-center gap-2 border-b px-6">
             <Link href={basePath} className="flex items-center gap-2">
-              <Image src="/images/logo.svg" alt="Nabra" width={32} height={32} className="w-auto h-8" />
+              <Image
+                src="/images/logo.svg"
+                alt="Nabra"
+                width={32}
+                height={32}
+                className="w-auto h-8"
+              />
             </Link>
           </div>
 

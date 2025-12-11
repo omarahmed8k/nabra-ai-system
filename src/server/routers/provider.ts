@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, providerProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import { getPriorityCosts } from "@/lib/priority-costs";
 
 export const providerRouter = router({
   // Get provider profile
@@ -200,11 +201,13 @@ export const providerRouter = router({
       });
 
       // Calculate credit cost for each request
+      const costs = await getPriorityCosts();
+      const priorityCosts: Record<number, number> = { 1: costs.low, 2: costs.medium, 3: costs.high };
+      
       const requestsWithCredits = requests.map((req: any) => {
         const baseCreditCost = req.serviceType.creditCost || 1;
-        const priorityMultipliers: Record<number, number> = { 1: 1, 2: 1.5, 3: 2 };
-        const priorityMultiplier = priorityMultipliers[req.priority] || 1.5;
-        const creditCost = Math.ceil(baseCreditCost * priorityMultiplier);
+        const priorityCost = priorityCosts[req.priority] || costs.medium;
+        const creditCost = baseCreditCost + priorityCost;
         return { ...req, creditCost };
       });
 
