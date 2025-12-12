@@ -4,6 +4,8 @@ import {
   getNewMessageEmailTemplate,
   getStatusChangeEmailTemplate,
   getAssignmentEmailTemplate,
+  getSubscriptionExpiringEmailTemplate,
+  getSubscriptionExpiredEmailTemplate,
 } from "./email";
 
 // Store for SSE notification sender (will be set by SSE route)
@@ -216,6 +218,45 @@ export async function notifyProviderAssignment(params: {
     message: `You have been assigned to: ${request.title}`,
     type: "assignment",
     link: `/provider/my-requests`,
+    emailTemplate,
+  });
+}
+
+export async function notifySubscriptionExpiring(params: {
+  userId: string;
+  packageName: string;
+  daysRemaining: number;
+  remainingCredits: number;
+}) {
+  const { userId, packageName, daysRemaining, remainingCredits } = params;
+
+  const emailTemplate = getSubscriptionExpiringEmailTemplate(
+    packageName,
+    daysRemaining,
+    remainingCredits
+  );
+
+  return createNotification({
+    userId,
+    title: "⚠️ Subscription Expiring Soon",
+    message: `Your ${packageName} subscription expires in ${daysRemaining} days. Renew now to continue service.`,
+    type: "general",
+    link: `/client/subscription`,
+    emailTemplate,
+  });
+}
+
+export async function notifySubscriptionExpired(params: { userId: string; packageName: string }) {
+  const { userId, packageName } = params;
+
+  const emailTemplate = getSubscriptionExpiredEmailTemplate(packageName);
+
+  return createNotification({
+    userId,
+    title: "❌ Subscription Expired",
+    message: `Your ${packageName} subscription has expired. Renew now to continue using our services.`,
+    type: "general",
+    link: `/client/subscription`,
     emailTemplate,
   });
 }

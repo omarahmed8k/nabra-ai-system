@@ -107,3 +107,42 @@ export function getAssignmentEmailTemplate(requestTitle: string, providerName: s
     `,
   };
 }
+
+export function getSubscriptionExpiringEmailTemplate(
+  packageName: string,
+  daysRemaining: number,
+  remainingCredits: number
+) {
+  return {
+    subject: `⚠️ Your subscription expires in ${daysRemaining} days`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #ff9800;">⚠️ Subscription Expiring Soon</h2>
+        <p>Your <strong>${packageName}</strong> subscription will expire in <strong>${daysRemaining} days</strong>.</p>
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+          <p style="margin: 0;"><strong>Remaining Credits:</strong> ${remainingCredits}</p>
+          <p style="margin: 10px 0 0;"><strong>Expiry Date:</strong> ${daysRemaining} days from now</p>
+        </div>
+        <p>Don't let your subscription expire! Renew now to continue enjoying uninterrupted service.</p>
+        <p><a href="${process.env.NEXTAUTH_URL}/client/subscription" style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Renew Subscription</a></p>
+      </div>
+    `,
+  };
+}
+
+export function getSubscriptionExpiredEmailTemplate(packageName: string) {
+  return {
+    subject: `❌ Your subscription has expired`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc3545;">❌ Subscription Expired</h2>
+        <p>Your <strong>${packageName}</strong> subscription has expired.</p>
+        <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;">
+          <p style="margin: 0;">You no longer have access to create new requests or use services.</p>
+          <p style="margin: 10px 0 0;">Renew your subscription to continue using our platform.</p>
+        </div>
+        <p><a href="${process.env.NEXTAUTH_URL}/client/subscription" style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Renew Now</a></p>
+      </div>
+    `,
+  };
+}
