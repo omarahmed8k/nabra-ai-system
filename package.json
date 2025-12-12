@@ -46,7 +46,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.468.0",
-    "next": "^16.0.8",
+    "next": "16.0.10",
     "next-auth": "^4.24.11",
     "nodemailer": "^7.0.11",
     "react": "^18.3.1",
