@@ -106,7 +106,6 @@ export default function DashboardLayout({
             height={32}
             className="w-auto h-6 sm:h-8"
           />
-          <span className="font-semibold text-sm sm:text-base">Nabra</span>
         </Link>
         {unreadCount > 0 && (
           <Badge variant="destructive" className="h-5 min-w-5 px-1 text-xs">
