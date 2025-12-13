@@ -5,10 +5,16 @@ import { authOptions } from "@/lib/auth";
 // Import the SSE sender directly
 let sseSender: any = null;
 
-// This will be called when SSE route loads
-export function registerSseSender(sender: any) {
+// Helper function to register SSE sender (called from SSE route)
+// Not exported as it's not a Next.js route handler
+function registerSseSender(sender: any) {
   sseSender = sender;
   console.log("🔧 Debug: SSE sender registered in debug route");
+}
+
+// Make it available globally for SSE route to call
+if (typeof globalThis !== "undefined") {
+  (globalThis as any).__registerDebugSseSender = registerSseSender;
 }
 
 export async function GET() {

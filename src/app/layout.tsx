@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
@@ -6,6 +6,7 @@ import { TRPCProvider } from "@/components/providers/trpc-provider";
 import { NotificationProvider } from "@/components/providers/notification-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ChunkReloadOnError } from "@/components/system/chunk-reloader";
+import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 
 // Initialize notification system on server
 import "@/lib/notifications/init";
@@ -16,11 +17,27 @@ export const metadata: Metadata = {
   title: "Nabra AI System - Service Marketplace",
   description:
     "Connect with service providers through a credit-based subscription model. Web development, design, video production, and more.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Nabra AI System",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: "/images/favicon.svg",
     shortcut: "/images/favicon.svg",
     apple: "/images/favicon.svg",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -36,6 +53,7 @@ export default function RootLayout({
             <NotificationProvider>
               <ChunkReloadOnError />
               {children}
+              <PWAInstallPrompt />
               <Toaster position="top-right" richColors closeButton />
             </NotificationProvider>
           </TRPCProvider>

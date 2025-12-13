@@ -1,46 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { setSseNotificationSender } from "@/lib/notifications";
-
-// Use global storage to persist across HMR reloads
-const getClientsMap = () => {
-  if (!(globalThis as any).__sseClients) {
-    (globalThis as any).__sseClients = new Map<string, ReadableStreamDefaultController>();
-  }
-  return (globalThis as any).__sseClients as Map<string, ReadableStreamDefaultController>;
-};
-
-const clients = getClientsMap();
-
-// Debug function to check connected clients
-export function getConnectedClients() {
-  return Array.from(clients.keys());
-}
+import { getSseClients, sendNotificationToUser } from "@/lib/notifications/sse-utils";
 
 export const dynamic = "force-dynamic";
-
-// Export function to send notifications
-export function sendNotificationToUser(userId: string, notification: any) {
-  const controller = clients.get(userId);
-  console.log(`� SSE: Attempting to send notification to user ${userId}`);
-  console.log(`📡 SSE: Controller exists: ${!!controller}`);
-  console.log(`📡 SSE: Total connected clients: ${clients.size}`);
-  console.log(`📡 SSE: Notification payload:`, JSON.stringify(notification));
-
-  if (controller) {
-    try {
-      const data = `data: ${JSON.stringify(notification)}\n\n`;
-      controller.enqueue(new TextEncoder().encode(data));
-      console.log(`✅ SSE: Notification sent successfully to user ${userId}`);
-    } catch (error) {
-      console.error(`❌ SSE: Error sending notification to user ${userId}:`, error);
-      clients.delete(userId);
-    }
-  } else {
-    console.warn(`⚠️ SSE: No active connection for user ${userId}`);
-    console.warn(`⚠️ SSE: Connected users:`, Array.from(clients.keys()));
-  }
-}
 
 // Set the SSE sender in the notification module immediately
 console.log("🔧 SSE Route: Module loaded, registering notification sender...");
@@ -64,6 +27,7 @@ export async function GET(request: Request) {
   }
 
   const userId = session.user.id;
+  const clients = getSseClients();
   console.log(`🟢 SSE: New connection from user ${userId}`);
 
   const stream = new ReadableStream({
@@ -111,9 +75,4 @@ export async function GET(request: Request) {
       "X-Accel-Buffering": "no",
     },
   });
-}
-
-// Helper to broadcast to multiple users
-export function broadcastNotification(userIds: string[], notification: any) {
-  userIds.forEach((userId) => sendNotificationToUser(userId, notification));
 }
