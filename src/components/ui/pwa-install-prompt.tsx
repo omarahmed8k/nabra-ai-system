@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Share } from "lucide-react";
+import { X, Share, DotSquareIcon } from "lucide-react";
 import { Button } from "./button";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -101,17 +101,12 @@ export function PWAInstallPrompt() {
               </p>
               <ol className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
                 <li>
-                  Open this site in <strong>Safari</strong> (not Chrome)
-                </li>
-                <li>
-                  Tap the <Share className="inline h-3 w-3 mx-1" /> Share button (bottom)
+                  Tap the <Share className="inline h-3 w-3 mx-1" /> Share button (bottom) or Options
+                  button <DotSquareIcon className="inline h-3 w-3 mx-1" /> (top right)
                 </li>
                 <li>Scroll and tap "Add to Home Screen"</li>
                 <li>Tap "Add" to install</li>
               </ol>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                Note: Chrome on iOS cannot install apps. Please use Safari.
-              </p>
             </div>
             <button
               onClick={handleDismiss}
