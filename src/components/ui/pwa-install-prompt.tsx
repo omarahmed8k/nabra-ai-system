@@ -15,7 +15,7 @@ export function PWAInstallPrompt() {
 
   useEffect(() => {
     // Only run in browser environment
-    if (typeof window === "undefined") return;
+    if (globalThis.window === undefined) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -29,14 +29,14 @@ export function PWAInstallPrompt() {
       }, 3000);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    globalThis.addEventListener("beforeinstallprompt", handler);
 
     // Check if already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    if (globalThis.matchMedia("(display-mode: standalone)").matches) {
       setShowPrompt(false);
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => globalThis.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const handleInstall = async () => {

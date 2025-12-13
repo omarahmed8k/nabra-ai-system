@@ -25,6 +25,22 @@ export default function RegisterPage() {
   const { data: session, status } = useSession();
   const [error, setError] = useState("");
 
+  // All hooks must be called before any conditional returns
+  const registerMutation = trpc.auth.register.useMutation({
+    onSuccess: () => {
+      toast.success("Account created!", {
+        description: "You can now sign in with your credentials.",
+      });
+      router.push("/auth/login?registered=true");
+    },
+    onError: (err) => {
+      setError(err.message);
+      toast.error("Registration Failed", {
+        description: err.message,
+      });
+    },
+  });
+
   // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -52,21 +68,6 @@ export default function RegisterPage() {
   if (status === "authenticated") {
     return null;
   }
-
-  const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: () => {
-      toast.success("Account created!", {
-        description: "You can now sign in with your credentials.",
-      });
-      router.push("/auth/login?registered=true");
-    },
-    onError: (err) => {
-      setError(err.message);
-      toast.error("Registration Failed", {
-        description: err.message,
-      });
-    },
-  });
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
