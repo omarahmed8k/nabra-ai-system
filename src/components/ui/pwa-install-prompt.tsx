@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Share, DotSquareIcon } from "lucide-react";
+import { X, Share, MoreVertical } from "lucide-react";
 import { Button } from "./button";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -101,8 +101,8 @@ export function PWAInstallPrompt() {
               </p>
               <ol className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
                 <li>
-                  Tap the <Share className="inline h-3 w-3 mx-1" /> Share button (bottom) or Options
-                  button <DotSquareIcon className="inline h-3 w-3 mx-1" /> (top right)
+                  Tap the <Share className="inline h-3 w-3 mx-1" /> Share button or the{" "}
+                  <MoreVertical className="inline h-3 w-3 mx-1" /> Options button
                 </li>
                 <li>Scroll and tap "Add to Home Screen"</li>
                 <li>Tap "Add" to install</li>
