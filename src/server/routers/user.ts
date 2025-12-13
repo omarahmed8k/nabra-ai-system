@@ -1,0 +1,252 @@
+import { z } from "zod";
+import bcrypt from "bcryptjs";
+import { router, protectedProcedure } from "@/server/trpc";
+import { TRPCError } from "@trpc/server";
+
+export const userRouter = router({
+  // Get current user profile
+  getProfile: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        createdAt: true,
+        providerProfile: {
+          select: {
+            bio: true,
+            portfolio: true,
+            skillsTags: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+
+    return user;
+  }),
+
+  // Update user profile
+  updateProfile: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2, "Name must be at least 2 characters").optional(),
+        email: z.string().email("Invalid email address").optional(),
+        image: z.string().nullable().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // If email is being changed, check if it's already taken
+      if (input.email) {
+        const existingUser = await ctx.db.user.findFirst({
+          where: {
+            email: input.email,
+            id: { not: userId },
+          },
+        });
+
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email already in use by another account",
+          });
+        }
+      }
+
+      const updatedUser = await ctx.db.user.update({
+        where: { id: userId },
+        data: {
+          ...(input.name && { name: input.name }),
+          ...(input.email && { email: input.email }),
+          ...(input.image !== undefined && { image: input.image }),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          role: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Profile updated successfully",
+        user: updatedUser,
+      };
+    }),
+
+  // Update provider profile (bio, portfolio, skills)
+  updateProviderProfile: protectedProcedure
+    .input(
+      z.object({
+        bio: z.string().max(1000, "Bio must be less than 1000 characters").optional(),
+        portfolio: z.string().url("Invalid portfolio URL").nullable().optional(),
+        skillsTags: z.array(z.string()).optional(),
+        isActive: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Check if user is a provider
+      const user = await ctx.db.user.findUnique({
+        where: { id: userId },
+        select: { role: true, providerProfile: true },
+      });
+
+      if (user?.role !== "PROVIDER") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only providers can update provider profiles",
+        });
+      }
+
+      if (!user.providerProfile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider profile not found",
+        });
+      }
+
+      const updatedProfile = await ctx.db.providerProfile.update({
+        where: { userId },
+        data: {
+          ...(input.bio !== undefined && { bio: input.bio }),
+          ...(input.portfolio !== undefined && { portfolio: input.portfolio }),
+          ...(input.skillsTags && { skillsTags: input.skillsTags }),
+          ...(input.isActive !== undefined && { isActive: input.isActive }),
+        },
+      });
+
+      return {
+        success: true,
+        message: "Provider profile updated successfully",
+        profile: updatedProfile,
+      };
+    }),
+
+  // Change password
+  changePassword: protectedProcedure
+    .input(
+      z.object({
+        currentPassword: z.string().min(1, "Current password is required"),
+        newPassword: z
+          .string()
+          .min(8, "New password must be at least 8 characters")
+          .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+            "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+          ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Get current user with password
+      const user = await ctx.db.user.findUnique({
+        where: { id: userId },
+        select: { password: true },
+      });
+
+      if (!user?.password) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found or account uses OAuth authentication",
+        });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(input.currentPassword, user.password);
+
+      if (!isValidPassword) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Current password is incorrect",
+        });
+      }
+
+      // Check if new password is same as current
+      const isSamePassword = await bcrypt.compare(input.newPassword, user.password);
+      if (isSamePassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "New password must be different from current password",
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(input.newPassword, 12);
+
+      // Update password
+      await ctx.db.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+
+      return {
+        success: true,
+        message: "Password changed successfully",
+      };
+    }),
+
+  // Delete account
+  deleteAccount: protectedProcedure
+    .input(
+      z.object({
+        password: z.string().min(1, "Password is required"),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Get current user with password
+      const user = await ctx.db.user.findUnique({
+        where: { id: userId },
+        select: { password: true },
+      });
+
+      if (!user?.password) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found or account uses OAuth authentication",
+        });
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(input.password, user.password);
+
+      if (!isValidPassword) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Password is incorrect",
+        });
+      }
+
+      // Soft delete user
+      await ctx.db.user.update({
+        where: { id: userId },
+        data: {
+          deletedAt: new Date(),
+          email: `deleted_${userId}@deleted.com`, // Prevent email conflicts
+        },
+      });
+
+      return {
+        success: true,
+        message: "Account deleted successfully",
+      };
+    }),
+});

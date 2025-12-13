@@ -2,6 +2,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { router, publicProcedure, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import { sendWelcomeEmail } from "@/lib/notifications";
 
 export const authRouter = router({
   // Register a new user
@@ -42,7 +43,8 @@ export const authRouter = router({
         if (ipAlreadyRegistered) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "An account has already been registered from this network. Please contact support if you need assistance.",
+            message:
+              "An account has already been registered from this network. Please contact support if you need assistance.",
           });
         }
       }
@@ -83,6 +85,17 @@ export const authRouter = router({
           },
         });
       }
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail({
+        userId: user.id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        userRole: user.role,
+      }).catch((error) => {
+        console.error("Failed to send welcome email:", error);
+        // Don't throw - email failure shouldn't break registration
+      });
 
       return {
         success: true,

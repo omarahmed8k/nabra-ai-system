@@ -5,21 +5,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, X } from "lucide-react";
 import { useRealtimeNotifications } from "@/components/providers/notification-provider";
+import { isMobileDevice, supportsDesktopNotifications } from "@/lib/device-detection";
 
 export function NotificationPermissionBanner() {
   const { hasPermission, requestPermission, isConnected } = useRealtimeNotifications();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [supportsNotifications, setSupportsNotifications] = useState(false);
 
   useEffect(() => {
+    // Detect device type on client-side only
+    setIsMobile(isMobileDevice());
+    setSupportsNotifications(supportsDesktopNotifications());
+
     // Check if banner was dismissed before
     const dismissed = localStorage.getItem("notificationBannerDismissed");
     if (dismissed) {
       setIsDismissed(true);
     }
 
-    // Show banner if not dismissed and no permission
-    if (!dismissed && !hasPermission && isConnected) {
+    // Show banner only if:
+    // 1. Not dismissed
+    // 2. No permission yet
+    // 3. Connected to SSE
+    // 4. Device supports desktop notifications (not mobile)
+    if (!dismissed && !hasPermission && isConnected && supportsDesktopNotifications()) {
       setShowBanner(true);
     }
   }, [hasPermission, isConnected]);
@@ -36,6 +47,11 @@ export function NotificationPermissionBanner() {
     setShowBanner(false);
     localStorage.setItem("notificationBannerDismissed", "true");
   };
+
+  // Don't show on mobile devices
+  if (isMobile || !supportsNotifications) {
+    return null;
+  }
 
   if (!showBanner || isDismissed || hasPermission) {
     return null;

@@ -93,10 +93,15 @@ export function NotificationProvider({ children }: { readonly children: React.Re
     }
 
     if (Notification.permission !== "denied") {
-      const permission = await Notification.requestPermission();
-      const granted = permission === "granted";
-      setHasPermission(granted);
-      return granted;
+      try {
+        const permission = await Notification.requestPermission();
+        const granted = permission === "granted";
+        setHasPermission(granted);
+        return granted;
+      } catch (error) {
+        console.error("Error requesting notification permission:", error);
+        return false;
+      }
     }
 
     return false;

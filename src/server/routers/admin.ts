@@ -1270,4 +1270,66 @@ export const adminRouter = router({
         message: `Request "${request.title}" has been restored`,
       };
     }),
+
+  // Update user profile (admin only - name and email)
+  updateUser: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        name: z.string().min(2, "Name must be at least 2 characters").optional(),
+        email: z.string().email("Invalid email address").optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId, name, email } = input;
+
+      // Check if user exists
+      const user = await ctx.db.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      // If email is being changed, check if it's already taken
+      if (email && email !== user.email) {
+        const existingUser = await ctx.db.user.findFirst({
+          where: {
+            email,
+            id: { not: userId },
+          },
+        });
+
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email already in use by another account",
+          });
+        }
+      }
+
+      const updatedUser = await ctx.db.user.update({
+        where: { id: userId },
+        data: {
+          ...(name && { name }),
+          ...(email && { email }),
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      });
+
+      return {
+        success: true,
+        message: "User updated successfully",
+        user: updatedUser,
+      };
+    }),
 });

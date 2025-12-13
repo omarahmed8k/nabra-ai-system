@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -30,12 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EditUserDialog } from "@/components/admin/edit-user-dialog";
 import { trpc } from "@/lib/trpc/client";
 import { formatDate, getInitials } from "@/lib/utils";
 import { toast } from "sonner";
@@ -51,6 +41,7 @@ import {
   Eye,
   EyeOff,
   Trash,
+  Edit,
 } from "lucide-react";
 
 type UserRole = "CLIENT" | "PROVIDER" | "SUPER_ADMIN";
@@ -96,10 +87,7 @@ function ServiceCheckboxItem({
         checked={checked}
         onCheckedChange={(c) => onChange(c === true)}
       />
-      <label
-        htmlFor={`${idPrefix}-${service.id}`}
-        className="text-sm cursor-pointer flex-1"
-      >
+      <label htmlFor={`${idPrefix}-${service.id}`} className="text-sm cursor-pointer flex-1">
         {service.name}
       </label>
     </div>
@@ -108,11 +96,7 @@ function ServiceCheckboxItem({
 
 function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.Element {
   if (services.length === 0) {
-    return (
-      <span className="text-xs text-muted-foreground italic">
-        No services assigned
-      </span>
-    );
+    return <span className="text-xs text-muted-foreground italic">No services assigned</span>;
   }
   return (
     <>
@@ -170,7 +154,7 @@ function UserStatsProvider({
           <div>
             <p className="font-medium">{averageRating.toFixed(1)}</p>
             <p className="text-xs text-muted-foreground">
-              {count.receivedRatings} {count.receivedRatings === 1 ? 'rating' : 'ratings'}
+              {count.receivedRatings} {count.receivedRatings === 1 ? "rating" : "ratings"}
             </p>
           </div>
         </div>
@@ -187,6 +171,7 @@ function UserListItem({
   user,
   getRoleColor,
   onEditServices,
+  onEdit,
   onDelete,
   onRestore,
   isDeleted,
@@ -194,6 +179,7 @@ function UserListItem({
   user: UserData;
   getRoleColor: (role: string) => string;
   onEditServices: () => void;
+  onEdit: (user: { id: string; name: string | null; email: string }) => void;
   onDelete: (userId: string) => void;
   onRestore?: (userId: string) => void;
   isDeleted?: boolean;
@@ -229,43 +215,48 @@ function UserListItem({
       <div className="flex flex-wrap items-center gap-4">
         {user.role === "CLIENT" && <UserStatsClient count={user._count} />}
         {user.role === "PROVIDER" && (
-          <UserStatsProvider 
-            count={user._count} 
+          <UserStatsProvider
+            count={user._count}
             averageRating={user.averageRating}
-            onEditServices={onEditServices} 
+            onEditServices={onEditServices}
           />
         )}
-        {isDeleted ? (
-          user.role !== "SUPER_ADMIN" && onRestore && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (confirm(`Restore user ${user.email}?`)) {
-                  onRestore(user.id);
-                }
-              }}
-            >
-              <CheckCircle className="mr-1 h-4 w-4" />
-              Restore
-            </Button>
-          )
-        ) : (
-          user.role !== "SUPER_ADMIN" && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                if (confirm(`Delete user ${user.email}? This action cannot be undone.`)) {
-                  onDelete(user.id);
-                }
-              }}
-            >
-              <Trash className="mr-1 h-4 w-4" />
-              Delete
-            </Button>
-          )
-        )}
+        {isDeleted
+          ? user.role !== "SUPER_ADMIN" &&
+            onRestore && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (confirm(`Restore user ${user.email}?`)) {
+                    onRestore(user.id);
+                  }
+                }}
+              >
+                <CheckCircle className="mr-1 h-4 w-4" />
+                Restore
+              </Button>
+            )
+          : user.role !== "SUPER_ADMIN" && (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
+                  <Edit className="mr-1 h-4 w-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm(`Delete user ${user.email}? This action cannot be undone.`)) {
+                      onDelete(user.id);
+                    }
+                  }}
+                >
+                  <Trash className="mr-1 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            )}
       </div>
     </div>
   );
@@ -277,7 +268,13 @@ export default function AdminUsersPage() {
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<{
+    id: string;
+    name: string | null;
+    email: string;
+  } | null>(null);
   const [selectedProviderServices, setSelectedProviderServices] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -432,9 +429,7 @@ export default function AdminUsersPage() {
                   id="name"
                   placeholder="Full name"
                   value={newUser.name}
-                  onChange={(e) =>
-                    setNewUser((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  onChange={(e) => setNewUser((prev) => ({ ...prev, name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
@@ -444,9 +439,7 @@ export default function AdminUsersPage() {
                   type="email"
                   placeholder="email@example.com"
                   value={newUser.email}
-                  onChange={(e) =>
-                    setNewUser((prev) => ({ ...prev, email: e.target.value }))
-                  }
+                  onChange={(e) => setNewUser((prev) => ({ ...prev, email: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
@@ -457,9 +450,7 @@ export default function AdminUsersPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Min 6 characters"
                     value={newUser.password}
-                    onChange={(e) =>
-                      setNewUser((prev) => ({ ...prev, password: e.target.value }))
-                    }
+                    onChange={(e) => setNewUser((prev) => ({ ...prev, password: e.target.value }))}
                   />
                   <Button
                     type="button"
@@ -468,11 +459,7 @@ export default function AdminUsersPage() {
                     className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -518,11 +505,7 @@ export default function AdminUsersPage() {
                 </div>
               )}
 
-              <Button
-                className="w-full"
-                onClick={handleCreateUser}
-                disabled={createUser.isPending}
-              >
+              <Button className="w-full" onClick={handleCreateUser} disabled={createUser.isPending}>
                 {createUser.isPending ? "Creating..." : "Create User"}
               </Button>
             </div>
@@ -602,12 +585,13 @@ export default function AdminUsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>Manage Users</CardTitle>
-          <CardDescription>
-            {users?.total || 0} users found
-          </CardDescription>
+          <CardDescription>{users?.total || 0} users found</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "deleted")}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as "active" | "deleted")}
+          >
             <TabsList className="mb-4">
               <TabsTrigger value="active">Active Users</TabsTrigger>
               <TabsTrigger value="deleted">Deleted Users</TabsTrigger>
@@ -622,9 +606,7 @@ export default function AdminUsersPage() {
                 </div>
               )}
               {!isLoading && users?.users.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No active users found
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No active users found</div>
               )}
               {!isLoading && (users?.users.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -635,9 +617,14 @@ export default function AdminUsersPage() {
                       getRoleColor={getRoleColor}
                       onEditServices={() => {
                         setSelectedUserId(user.id);
-                        const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
+                        const serviceIds =
+                          user.providerProfile?.supportedServices?.map((s) => s.id) || [];
                         setSelectedProviderServices(serviceIds);
                         setIsServicesOpen(true);
+                      }}
+                      onEdit={(user) => {
+                        setEditingUser(user);
+                        setIsEditOpen(true);
                       }}
                       onDelete={(userId) => {
                         deleteUser.mutate({ userId });
@@ -658,9 +645,7 @@ export default function AdminUsersPage() {
                 </div>
               )}
               {!isLoading && users?.users.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No deleted users found
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No deleted users found</div>
               )}
               {!isLoading && (users?.users.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -671,9 +656,14 @@ export default function AdminUsersPage() {
                       getRoleColor={getRoleColor}
                       onEditServices={() => {
                         setSelectedUserId(user.id);
-                        const serviceIds = user.providerProfile?.supportedServices?.map((s) => s.id) || [];
+                        const serviceIds =
+                          user.providerProfile?.supportedServices?.map((s) => s.id) || [];
                         setSelectedProviderServices(serviceIds);
                         setIsServicesOpen(true);
+                      }}
+                      onEdit={(user) => {
+                        setEditingUser(user);
+                        setIsEditOpen(true);
                       }}
                       onDelete={(userId) => {
                         deleteUser.mutate({ userId });
@@ -697,7 +687,8 @@ export default function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle>Edit Supported Services</DialogTitle>
             <DialogDescription>
-              Select the services this provider can handle. Only requests matching these services will be assignable to this provider.
+              Select the services this provider can handle. Only requests matching these services
+              will be assignable to this provider.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -716,11 +707,7 @@ export default function AdminUsersPage() {
               )}
             </div>
             <div className="flex gap-2 mt-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setIsServicesOpen(false)}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => setIsServicesOpen(false)}>
                 Cancel
               </Button>
               <Button
@@ -734,6 +721,16 @@ export default function AdminUsersPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit User Dialog */}
+      <EditUserDialog
+        user={editingUser}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSuccess={() => {
+          utils.admin.getUsers.invalidate();
+        }}
+      />
     </div>
   );
 }

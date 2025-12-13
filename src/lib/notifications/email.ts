@@ -146,3 +146,114 @@ export function getSubscriptionExpiredEmailTemplate(packageName: string) {
     `,
   };
 }
+
+export function getWelcomeEmailTemplate(userName: string, userRole: string) {
+  let dashboardLink: string;
+  if (userRole === "CLIENT") {
+    dashboardLink = `${process.env.NEXTAUTH_URL}/client`;
+  } else if (userRole === "PROVIDER") {
+    dashboardLink = `${process.env.NEXTAUTH_URL}/provider`;
+  } else {
+    dashboardLink = `${process.env.NEXTAUTH_URL}/admin`;
+  }
+
+  let quickStartGuide: string;
+  if (userRole === "CLIENT") {
+    quickStartGuide = `
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">1. Choose a Package</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Select a subscription package that fits your needs</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">2. Create Your First Request</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Submit a service request and let our providers help you</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">3. Track Progress</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Monitor your requests and communicate with providers in real-time</p>
+          </div>
+          `;
+  } else if (userRole === "PROVIDER") {
+    quickStartGuide = `
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">1. Complete Your Profile</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Add your skills and portfolio to attract clients</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">2. Browse Available Requests</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Check out client requests matching your expertise</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">3. Start Working</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Claim requests and deliver high-quality work</p>
+          </div>
+          `;
+  } else {
+    quickStartGuide = `
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">1. Manage Users</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">View and manage all users on the platform</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">2. Review Requests</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Monitor and manage all service requests</p>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #2563eb;">3. Configure Services</strong>
+            <p style="margin: 5px 0 0 0; color: #64748b;">Set up packages, services, and platform settings</p>
+          </div>
+          `;
+  }
+
+  return {
+    subject: `Welcome to Nabra AI System! 🎉`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0;">Welcome to Nabra AI System!</h1>
+          <p style="color: #64748b; margin-top: 10px;">We're excited to have you on board</p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="margin: 0 0 10px 0;">Hi ${userName}! 👋</h2>
+          <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+            Thank you for joining Nabra AI System. Your account has been created successfully!
+          </p>
+        </div>
+
+        <div style="background: #f8fafc; padding: 25px; border-radius: 10px; margin-bottom: 25px;">
+          <h3 style="color: #1e293b; margin-top: 0;">🚀 Quick Start Guide</h3>
+          
+          ${quickStartGuide}
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${dashboardLink}" style="background: #2563eb; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">Go to Dashboard</a>
+        </div>
+
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 25px 0; border-radius: 5px;">
+          <p style="margin: 0; color: #92400e;"><strong>💡 Pro Tip:</strong> Enable desktop notifications to stay updated on your requests in real-time!</p>
+        </div>
+
+        <div style="border-top: 2px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">Need help getting started?</p>
+          <p style="color: #64748b; font-size: 14px; margin: 5px 0;">
+            📧 Email us at: <a href="mailto:${process.env.EMAIL_FROM}" style="color: #2563eb;">${process.env.EMAIL_FROM}</a>
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin: 5px 0;">
+            💬 Visit our help center or contact support
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="color: #94a3b8; font-size: 12px; margin: 5px 0;">
+            © ${new Date().getFullYear()} Nabra AI System. All rights reserved.
+          </p>
+          <p style="color: #94a3b8; font-size: 12px; margin: 5px 0;">
+            You received this email because you signed up for Nabra AI System.
+          </p>
+        </div>
+      </div>
+    `,
+  };
+}

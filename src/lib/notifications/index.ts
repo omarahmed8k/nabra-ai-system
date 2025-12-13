@@ -6,6 +6,7 @@ import {
   getAssignmentEmailTemplate,
   getSubscriptionExpiringEmailTemplate,
   getSubscriptionExpiredEmailTemplate,
+  getWelcomeEmailTemplate,
 } from "./email";
 
 // Store for SSE notification sender (will be set by SSE route)
@@ -259,4 +260,49 @@ export async function notifySubscriptionExpired(params: { userId: string; packag
     link: `/client/subscription`,
     emailTemplate,
   });
+}
+
+export async function sendWelcomeEmail(params: {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userRole: string;
+}) {
+  const { userId, userName, userEmail, userRole } = params;
+
+  const emailTemplate = getWelcomeEmailTemplate(userName, userRole);
+
+  try {
+    await sendEmail({
+      to: userEmail,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
+    });
+
+    // Also create a notification in the database
+    let notificationLink: string;
+    if (userRole === "CLIENT") {
+      notificationLink = "/client";
+    } else if (userRole === "PROVIDER") {
+      notificationLink = "/provider";
+    } else {
+      notificationLink = "/admin";
+    }
+
+    await db.notification.create({
+      data: {
+        userId,
+        title: "Welcome to Nabra AI System! 🎉",
+        message: `Hi ${userName}! Your account has been created successfully. Start exploring the platform now.`,
+        type: "general",
+        link: notificationLink,
+        isRead: false,
+      },
+    });
+
+    console.log(`✅ Welcome email sent to ${userEmail}`);
+  } catch (error) {
+    console.error(`❌ Failed to send welcome email to ${userEmail}:`, error);
+    // Don't throw - welcome email failure shouldn't break registration
+  }
 }

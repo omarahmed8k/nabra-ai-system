@@ -56,15 +56,18 @@ export function RequestCard({
   const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
 
   const content = (
-    <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg border hover:bg-muted/50 transition-colors gap-3 sm:gap-4">
       <div className="flex-1 min-w-0 space-y-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-medium truncate">{title}</h3>
-          <Badge variant={null} className={getStatusColor(status)}>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <h3 className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{title}</h3>
+          <Badge variant={null} className={`${getStatusColor(status)} text-xs`}>
             {status.replace("_", " ")}
           </Badge>
+        </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {priority && (
-            <Badge variant={null} className={getPriorityColor(priority)}>
+            <Badge variant={null} className={`${getPriorityColor(priority)} text-xs`}>
               {getPriorityLabel(priority)}
             </Badge>
           )}
@@ -72,7 +75,7 @@ export function RequestCard({
             <Badge variant="outline" className="font-semibold text-xs">
               💳 {creditCost}
               {hasCreditBreakdown && (
-                <span className="ml-1 text-muted-foreground">
+                <span className="ml-1 text-muted-foreground text-[10px] sm:text-xs">
                   ({baseCreditCost}+{priorityCreditCost})
                 </span>
               )}
@@ -80,36 +83,36 @@ export function RequestCard({
           )}
           {isRevision && revisionType && (
             <Badge variant={revisionType === "free" ? "secondary" : "default"} className="text-xs">
-              {revisionType === "free" ? "🔄" : "💰"}
+              {revisionType === "free" ? "🔄 Free" : "💰 Paid"}
             </Badge>
           )}
           {provider === null && (
-            <Badge variant="outline" className="text-orange-600 border-orange-300">
+            <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">
               Unassigned
             </Badge>
           )}
         </div>
 
         {variant === "detailed" && description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{description}</p>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             {serviceType.icon && `${serviceType.icon} `}
-            {serviceType.name}
+            <span className="truncate">{serviceType.name}</span>
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             {formatDate(createdAt)}
           </span>
           {client && (
-            <span>
+            <span className="truncate">
               <strong>Client:</strong> {client.name || client.email}
             </span>
           )}
           {provider && (
-            <span>
+            <span className="truncate">
               <strong>Provider:</strong> {provider.name || provider.email}
             </span>
           )}
@@ -117,7 +120,9 @@ export function RequestCard({
         </div>
       </div>
 
-      {actions && <div className="flex items-center gap-2 ml-4">{actions}</div>}
+      {actions && (
+        <div className="flex items-center gap-2 sm:ml-4 self-start sm:self-center">{actions}</div>
+      )}
     </div>
   );
 
