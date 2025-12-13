@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link"
+import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,7 @@ const features = [
   {
     icon: Zap,
     title: "Credit-Based System",
-    description:
-      "Purchase credits and use them for any service. No per-project negotiations.",
+    description: "Purchase credits and use them for any service. No per-project negotiations.",
   },
   {
     icon: Shield,
@@ -31,20 +30,17 @@ const features = [
   {
     icon: Clock,
     title: "Fast Turnaround",
-    description:
-      "Most requests completed within 48-72 hours. Rush options available.",
+    description: "Most requests completed within 48-72 hours. Rush options available.",
   },
   {
     icon: Star,
     title: "Smart Revisions",
-    description:
-      "Free revisions included with every package. Additional revisions at a fair rate.",
+    description: "Free revisions included with every package. Additional revisions at a fair rate.",
   },
   {
     icon: Users,
     title: "Expert Team",
-    description:
-      "Access designers, developers, and content creators all in one platform.",
+    description: "Access designers, developers, and content creators all in one platform.",
   },
 ];
 
@@ -113,10 +109,10 @@ const staggerContainer = {
 
 const scaleIn = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
-    transition: { duration: 0.5 }
+    transition: { duration: 0.5 },
   },
 };
 
@@ -124,7 +120,7 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Navigation */}
-      <motion.header 
+      <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
@@ -132,9 +128,7 @@ export default function LandingPage() {
       >
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <motion.div 
-              whileHover={{ scale: 1.1, rotate: 5 }}
-            >
+            <motion.div whileHover={{ scale: 1.1, rotate: 5 }}>
               <Image
                 src="/images/logo.svg"
                 alt="Nabra Logo"
@@ -145,13 +139,22 @@ export default function LandingPage() {
             </motion.div>
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              href="#features"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              href="#pricing"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Pricing
             </Link>
-            <Link href="#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              href="#how-it-works"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               How It Works
             </Link>
           </nav>
@@ -170,21 +173,21 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="container py-24 md:py-32">
-        <motion.div 
+        <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
           className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center"
         >
-          <motion.h1 
+          <motion.h1
             variants={fadeInUp}
             transition={{ duration: 0.6 }}
             className="text-4xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]"
           >
             Digital Services,{" "}
-            <motion.span 
+            <motion.span
               className="bg-gradient-to-r from-white to-[#f900fe] bg-clip-text text-transparent"
-              animate={{ 
+              animate={{
                 backgroundPosition: ["0%", "100%", "0%"],
               }}
               transition={{ duration: 5, repeat: Infinity }}
@@ -192,42 +195,35 @@ export default function LandingPage() {
               Simplified
             </motion.span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             variants={fadeInUp}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="max-w-[750px] text-lg text-muted-foreground sm:text-xl"
           >
-            Connect with expert designers, developers, and content creators through our
-            credit-based platform. No negotiations, no surprises – just quality work delivered
-            fast.
+            Connect with expert designers, developers, and content creators through our credit-based
+            platform. No negotiations, no surprises – just quality work delivered fast.
           </motion.p>
-          <motion.div 
+          <motion.div
             variants={fadeInUp}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex flex-wrap items-center justify-center gap-4 pt-4"
           >
             <Link href="/auth/register">
-              <motion.div 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button size="lg" className="h-12 px-8">
                   Start Free Trial
                 </Button>
               </motion.div>
             </Link>
             <Link href="#how-it-works">
-              <motion.div 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button size="lg" variant="outline" className="h-12 px-8">
                   Learn More
                 </Button>
               </motion.div>
             </Link>
           </motion.div>
-          <motion.p 
+          <motion.p
             variants={fadeInUp}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-sm text-muted-foreground"
@@ -240,7 +236,7 @@ export default function LandingPage() {
       {/* Features Section */}
       <section id="features" className="container py-24 bg-muted/50">
         <div className="mx-auto max-w-[980px]">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -255,7 +251,7 @@ export default function LandingPage() {
               One platform for all your digital service needs
             </p>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
@@ -271,7 +267,7 @@ export default function LandingPage() {
               >
                 <Card className="border-0 bg-background h-full">
                   <CardHeader>
-                    <motion.div 
+                    <motion.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10"
                     >
@@ -292,7 +288,7 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="container py-24">
         <div className="mx-auto max-w-[1200px]">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -307,7 +303,7 @@ export default function LandingPage() {
               Choose the plan that fits your needs. Upgrade or downgrade anytime.
             </p>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
@@ -318,10 +314,10 @@ export default function LandingPage() {
               <motion.div
                 key={pkg.name}
                 variants={scaleIn}
-                whileHover={{ 
-                  y: -10, 
+                whileHover={{
+                  y: -10,
                   boxShadow: "0 20px 40px -20px rgba(0,0,0,0.2)",
-                  transition: { duration: 0.3 }
+                  transition: { duration: 0.3 },
                 }}
               >
                 <Card
@@ -330,7 +326,7 @@ export default function LandingPage() {
                   }`}
                 >
                   {pkg.popular && (
-                    <motion.div 
+                    <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.5, type: "spring" }}
@@ -342,17 +338,15 @@ export default function LandingPage() {
                   <CardHeader className="text-center">
                     <CardTitle className="text-2xl">{pkg.name}</CardTitle>
                     <CardDescription>
-                      <span className="text-4xl font-bold text-foreground">
-                        ${pkg.price}
-                      </span>
+                      <span className="text-4xl font-bold text-foreground">${pkg.price}</span>
                       <span className="text-muted-foreground">/month</span>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
                       {pkg.features.map((feature, featureIndex) => (
-                        <motion.li 
-                          key={feature} 
+                        <motion.li
+                          key={feature}
                           className="flex items-center gap-2"
                           initial={{ opacity: 0, x: -10 }}
                           whileInView={{ opacity: 1, x: 0 }}
@@ -368,10 +362,7 @@ export default function LandingPage() {
                   <CardFooter>
                     <Link href="/auth/register" className="w-full">
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          className="w-full"
-                          variant={pkg.popular ? "default" : "outline"}
-                        >
+                        <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
                           Get Started
                         </Button>
                       </motion.div>
@@ -387,7 +378,7 @@ export default function LandingPage() {
       {/* How It Works Section */}
       <section id="how-it-works" className="container py-24 bg-muted/50">
         <div className="mx-auto max-w-[980px]">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -395,14 +386,10 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
             className="mb-12 text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              How It Works
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Get started in just 3 simple steps
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
+            <p className="mt-4 text-lg text-muted-foreground">Get started in just 3 simple steps</p>
           </motion.div>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
@@ -423,7 +410,8 @@ export default function LandingPage() {
               {
                 step: 3,
                 title: "Get Results",
-                description: "Review deliverables, request revisions if needed, and approve when satisfied.",
+                description:
+                  "Review deliverables, request revisions if needed, and approve when satisfied.",
               },
             ].map((item) => (
               <motion.div
@@ -432,7 +420,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.5 }}
                 className="text-center"
               >
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.5 }}
                   className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground"
@@ -449,25 +437,18 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="container py-24">
-        <motion.div 
+        <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={scaleIn}
           className="mx-auto max-w-[600px] text-center"
         >
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to get started?
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to get started?</h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Join thousands of businesses already using Nabra to streamline their digital
-            services.
+            Join thousands of businesses already using Nabra to streamline their digital services.
           </p>
-          <motion.div 
-            className="mt-8"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div className="mt-8" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link href="/auth/register">
               <Button size="lg" className="h-12 px-8">
                 Start Your Free Trial
@@ -478,7 +459,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <motion.footer 
+      <motion.footer
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
@@ -499,13 +480,22 @@ export default function LandingPage() {
             © 2024 Nabra AI System. All rights reserved.
           </p>
           <div className="flex items-center space-x-4">
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               Privacy
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               Terms
             </Link>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               Contact
             </Link>
           </div>

@@ -131,7 +131,6 @@ export default function DashboardLayout({
                 height={32}
                 className="w-auto h-6 sm:h-8"
               />
-              <span className="font-semibold text-base sm:text-lg">Nabra</span>
             </Link>
           </div>
 
