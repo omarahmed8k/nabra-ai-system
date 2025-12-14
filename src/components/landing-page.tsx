@@ -171,292 +171,297 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
-      {/* Hero Section */}
-      <section className="container py-24 md:py-32">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center"
-        >
-          <motion.h1
-            variants={fadeInUp}
-            transition={{ duration: 0.6 }}
-            className="text-4xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]"
+      <main>
+        {/* Hero Section */}
+        <section className="container py-24 md:py-32">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center"
           >
-            Digital Services,{" "}
-            <motion.span
-              className="bg-gradient-to-r from-white to-[#f900fe] bg-clip-text text-transparent"
-              animate={{
-                backgroundPosition: ["0%", "100%", "0%"],
-              }}
-              transition={{ duration: 5, repeat: Infinity }}
+            <motion.h1
+              variants={fadeInUp}
+              transition={{ duration: 0.6 }}
+              className="text-4xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]"
             >
-              Simplified
-            </motion.span>
-          </motion.h1>
-          <motion.p
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="max-w-[750px] text-lg text-muted-foreground sm:text-xl"
-          >
-            Connect with expert designers, developers, and content creators through our credit-based
-            platform. No negotiations, no surprises – just quality work delivered fast.
-          </motion.p>
-          <motion.div
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-4 pt-4"
-          >
-            <Link href="/auth/register">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" className="h-12 px-8">
-                  Start Free Trial
-                </Button>
-              </motion.div>
-            </Link>
-            <Link href="#how-it-works">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" variant="outline" className="h-12 px-8">
-                  Learn More
-                </Button>
-              </motion.div>
-            </Link>
-          </motion.div>
-          <motion.p
-            variants={fadeInUp}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-sm text-muted-foreground"
-          >
-            No credit card required • Cancel anytime
-          </motion.p>
-        </motion.div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="container py-24 bg-muted/50">
-        <div className="mx-auto max-w-[980px]">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.6 }}
-            className="mb-12 text-center"
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Everything you need to get work done
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              One platform for all your digital service needs
-            </p>
-          </motion.div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {features.map((feature) => (
-              <motion.div
-                key={feature.title}
-                variants={fadeInUp}
-                transition={{ duration: 0.5 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <Card className="border-0 bg-background h-full">
-                  <CardHeader>
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10"
-                    >
-                      <feature.icon className="h-6 w-6 text-primary" />
-                    </motion.div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="container py-24">
-        <div className="mx-auto max-w-[1200px]">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.6 }}
-            className="mb-12 text-center"
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Simple, transparent pricing
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Choose the plan that fits your needs. Upgrade or downgrade anytime.
-            </p>
-          </motion.div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-            className="grid gap-8 md:grid-cols-3"
-          >
-            {packages.map((pkg) => (
-              <motion.div
-                key={pkg.name}
-                variants={scaleIn}
-                whileHover={{
-                  y: -10,
-                  boxShadow: "0 20px 40px -20px rgba(0,0,0,0.2)",
-                  transition: { duration: 0.3 },
+              Digital Services,{" "}
+              <motion.span
+                className="bg-gradient-to-r from-white to-[#f900fe] bg-clip-text text-transparent"
+                animate={{
+                  backgroundPosition: ["0%", "100%", "0%"],
                 }}
+                transition={{ duration: 5, repeat: Infinity }}
               >
-                <Card
-                  className={`relative h-full ${
-                    pkg.popular ? "border-primary shadow-lg scale-105" : ""
-                  }`}
-                >
-                  {pkg.popular && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.5, type: "spring" }}
-                      className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                    >
-                      Most Popular
-                    </motion.div>
-                  )}
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                    <CardDescription>
-                      <span className="text-4xl font-bold text-foreground">${pkg.price}</span>
-                      <span className="text-muted-foreground">/month</span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {pkg.features.map((feature, featureIndex) => (
-                        <motion.li
-                          key={feature}
-                          className="flex items-center gap-2"
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: featureIndex * 0.1 }}
-                        >
-                          <Check className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">{feature}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Link href="/auth/register" className="w-full">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
-                          Get Started
-                        </Button>
-                      </motion.div>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="container py-24 bg-muted/50">
-        <div className="mx-auto max-w-[980px]">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={fadeInUp}
-            transition={{ duration: 0.6 }}
-            className="mb-12 text-center"
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
-            <p className="mt-4 text-lg text-muted-foreground">Get started in just 3 simple steps</p>
-          </motion.div>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={staggerContainer}
-            className="grid gap-8 md:grid-cols-3"
-          >
-            {[
-              {
-                step: 1,
-                title: "Subscribe",
-                description: "Choose a plan that fits your needs and get your credits instantly.",
-              },
-              {
-                step: 2,
-                title: "Create Request",
-                description: "Describe what you need. Our providers will pick up your request.",
-              },
-              {
-                step: 3,
-                title: "Get Results",
-                description:
-                  "Review deliverables, request revisions if needed, and approve when satisfied.",
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.step}
-                variants={fadeInUp}
-                transition={{ duration: 0.5 }}
-                className="text-center"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                  className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground"
-                >
-                  {item.step}
+                Simplified
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              variants={fadeInUp}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="max-w-[750px] text-lg text-muted-foreground sm:text-xl"
+            >
+              Connect with expert designers, developers, and content creators through our
+              credit-based platform. No negotiations, no surprises – just quality work delivered
+              fast.
+            </motion.p>
+            <motion.div
+              variants={fadeInUp}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex flex-wrap items-center justify-center gap-4 pt-4"
+            >
+              <Link href="/auth/register">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button size="lg" className="h-12 px-8">
+                    Start Free Trial
+                  </Button>
                 </motion.div>
-                <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
-              </motion.div>
-            ))}
+              </Link>
+              <Link href="#how-it-works">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button size="lg" variant="outline" className="h-12 px-8">
+                    Learn More
+                  </Button>
+                </motion.div>
+              </Link>
+            </motion.div>
+            <motion.p
+              variants={fadeInUp}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-sm text-muted-foreground"
+            >
+              No credit card required • Cancel anytime
+            </motion.p>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="container py-24">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={scaleIn}
-          className="mx-auto max-w-[600px] text-center"
-        >
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to get started?</h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Join thousands of businesses already using Nabra to streamline their digital services.
-          </p>
-          <motion.div className="mt-8" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Link href="/auth/register">
-              <Button size="lg" className="h-12 px-8">
-                Start Your Free Trial
-              </Button>
-            </Link>
+        {/* Features Section */}
+        <section id="features" className="container py-24 bg-muted/50">
+          <div className="mx-auto max-w-[980px]">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Everything you need to get work done
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                One platform for all your digital service needs
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+              className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+            >
+              {features.map((feature) => (
+                <motion.div
+                  key={feature.title}
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5 }}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                >
+                  <Card className="border-0 bg-background h-full">
+                    <CardHeader>
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10"
+                      >
+                        <feature.icon className="h-6 w-6 text-primary" />
+                      </motion.div>
+                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="container py-24">
+          <div className="mx-auto max-w-[1200px]">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Simple, transparent pricing
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Choose the plan that fits your needs. Upgrade or downgrade anytime.
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+              className="grid gap-8 md:grid-cols-3"
+            >
+              {packages.map((pkg) => (
+                <motion.div
+                  key={pkg.name}
+                  variants={scaleIn}
+                  whileHover={{
+                    y: -10,
+                    boxShadow: "0 20px 40px -20px rgba(0,0,0,0.2)",
+                    transition: { duration: 0.3 },
+                  }}
+                >
+                  <Card
+                    className={`relative h-full ${
+                      pkg.popular ? "border-primary shadow-lg scale-105" : ""
+                    }`}
+                  >
+                    {pkg.popular && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.5, type: "spring" }}
+                        className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                      >
+                        Most Popular
+                      </motion.div>
+                    )}
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+                      <CardDescription>
+                        <span className="text-4xl font-bold text-foreground">${pkg.price}</span>
+                        <span className="text-muted-foreground">/month</span>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {pkg.features.map((feature, featureIndex) => (
+                          <motion.li
+                            key={feature}
+                            className="flex items-center gap-2"
+                            initial={{ opacity: 0, x: -10 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: featureIndex * 0.1 }}
+                          >
+                            <Check className="h-4 w-4 text-green-500" />
+                            <span className="text-sm">{feature}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      <Link href="/auth/register" className="w-full">
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
+                            Get Started
+                          </Button>
+                        </motion.div>
+                      </Link>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="container py-24 bg-muted/50">
+          <div className="mx-auto max-w-[980px]">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={fadeInUp}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Get started in just 3 simple steps
+              </p>
+            </motion.div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={staggerContainer}
+              className="grid gap-8 md:grid-cols-3"
+            >
+              {[
+                {
+                  step: 1,
+                  title: "Subscribe",
+                  description: "Choose a plan that fits your needs and get your credits instantly.",
+                },
+                {
+                  step: 2,
+                  title: "Create Request",
+                  description: "Describe what you need. Our providers will pick up your request.",
+                },
+                {
+                  step: 3,
+                  title: "Get Results",
+                  description:
+                    "Review deliverables, request revisions if needed, and approve when satisfied.",
+                },
+              ].map((item) => (
+                <motion.div
+                  key={item.step}
+                  variants={fadeInUp}
+                  transition={{ duration: 0.5 }}
+                  className="text-center"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground"
+                  >
+                    {item.step}
+                  </motion.div>
+                  <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="container py-24">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scaleIn}
+            className="mx-auto max-w-[600px] text-center"
+          >
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to get started?</h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Join thousands of businesses already using Nabra to streamline their digital services.
+            </p>
+            <motion.div className="mt-8" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link href="/auth/register">
+                <Button size="lg" className="h-12 px-8">
+                  Start Your Free Trial
+                </Button>
+              </Link>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
       <motion.footer

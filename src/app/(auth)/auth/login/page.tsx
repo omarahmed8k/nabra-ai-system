@@ -120,7 +120,7 @@ export default function LoginPage() {
               </motion.div>
             </Link>
           </div>
-          <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to sign in to your account
           </CardDescription>

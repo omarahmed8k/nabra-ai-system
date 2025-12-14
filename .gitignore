@@ -5,6 +5,8 @@ node_modules
 
 # Testing
 coverage
+test-results
+playwright-report
 
 # Next.js
 .next/
@@ -16,6 +18,12 @@ build
 # Misc
 .DS_Store
 *.pem
+
+# PWA - Auto-generated files
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
 
 # Debug
 npm-debug.log*
