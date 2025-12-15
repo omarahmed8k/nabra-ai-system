@@ -321,7 +321,15 @@ export const providerRouter = router({
 
   // Start working on a request
   startWork: providerProcedure
-    .input(z.object({ requestId: z.string() }))
+    .input(
+      z.object({
+        requestId: z.string(),
+        estimatedDeliveryHours: z
+          .number()
+          .min(1, "Estimated delivery time must be at least 1 hour")
+          .max(720, "Estimated delivery time cannot exceed 720 hours (30 days)"),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -350,18 +358,30 @@ export const providerRouter = router({
         });
       }
 
+      // Calculate estimated delivery date
+      const estimatedDelivery = new Date();
+      estimatedDelivery.setHours(estimatedDelivery.getHours() + input.estimatedDeliveryHours);
+
       const updatedRequest = await ctx.db.request.update({
         where: { id: input.requestId },
-        data: { status: "IN_PROGRESS" },
+        data: {
+          status: "IN_PROGRESS",
+          estimatedDelivery,
+        },
       });
 
-      // Add system comment
+      // Add system comment with estimated delivery time
+      const deliveryHoursText =
+        input.estimatedDeliveryHours < 24
+          ? `${input.estimatedDeliveryHours} hour${input.estimatedDeliveryHours !== 1 ? "s" : ""}`
+          : `${Math.round(input.estimatedDeliveryHours / 24)} day${Math.round(input.estimatedDeliveryHours / 24) !== 1 ? "s" : ""}`;
+
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
           type: "SYSTEM",
-          content: "Provider has started working on this request.",
+          content: `Provider has started working on this request. Estimated delivery: ${deliveryHoursText}.`,
         },
       });
 

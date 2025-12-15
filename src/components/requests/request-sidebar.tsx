@@ -53,9 +53,7 @@ export function RequestSidebar({
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage src={client.image || ""} />
-                <AvatarFallback>
-                  {getInitials(client.name || client.email || "")}
-                </AvatarFallback>
+                <AvatarFallback>{getInitials(client.name || client.email || "")}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-medium">{client.name || "No name"}</p>
@@ -83,9 +81,7 @@ export function RequestSidebar({
                 </Avatar>
                 <div>
                   <p className="font-medium">{provider.name || "No name"}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {provider.email}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{provider.email}</p>
                 </div>
               </div>
             ) : (
@@ -124,7 +120,29 @@ export function RequestSidebar({
           {estimatedDelivery && (
             <div>
               <p className="text-sm text-muted-foreground">Est. Delivery</p>
-              <p className="font-medium">{formatDate(estimatedDelivery)}</p>
+              <p className="font-medium">{formatDateTime(estimatedDelivery)}</p>
+              {new Date(estimatedDelivery) > new Date() && (
+                <p className="text-xs text-blue-600 mt-1">
+                  {(() => {
+                    const hoursRemaining = Math.max(
+                      0,
+                      Math.round(
+                        (new Date(estimatedDelivery).getTime() - new Date().getTime()) /
+                          (1000 * 60 * 60)
+                      )
+                    );
+                    if (hoursRemaining < 24) {
+                      return `~${hoursRemaining} hour${hoursRemaining !== 1 ? "s" : ""} remaining`;
+                    } else {
+                      const daysRemaining = Math.round(hoursRemaining / 24);
+                      return `~${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} remaining`;
+                    }
+                  })()}
+                </p>
+              )}
+              {new Date(estimatedDelivery) <= new Date() && (
+                <p className="text-xs text-amber-600 mt-1">Delivery time passed</p>
+              )}
             </div>
           )}
           {completedAt && (
@@ -133,8 +151,7 @@ export function RequestSidebar({
               <p className="font-medium">{formatDateTime(completedAt)}</p>
             </div>
           )}
-          {(currentRevisionCount !== undefined ||
-            totalRevisions !== undefined) && (
+          {(currentRevisionCount !== undefined || totalRevisions !== undefined) && (
             <>
               <Separator />
               <div>
@@ -145,9 +162,13 @@ export function RequestSidebar({
                     <>
                       <br />
                       <span className="text-sm text-muted-foreground">
-                        Free: {revisionInfo.maxFree - revisionInfo.freeRevisionsRemaining}/{revisionInfo.maxFree} used
+                        Free: {revisionInfo.maxFree - revisionInfo.freeRevisionsRemaining}/
+                        {revisionInfo.maxFree} used
                         {revisionInfo.freeRevisionsRemaining > 0 && (
-                          <span className="text-green-600"> ({revisionInfo.freeRevisionsRemaining} remaining)</span>
+                          <span className="text-green-600">
+                            {" "}
+                            ({revisionInfo.freeRevisionsRemaining} remaining)
+                          </span>
                         )}
                       </span>
                     </>

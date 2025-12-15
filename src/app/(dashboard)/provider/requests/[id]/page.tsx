@@ -26,6 +26,7 @@ export default function ProviderRequestDetailPage() {
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
   const [deliverable, setDeliverable] = useState("");
   const [deliverableFiles, setDeliverableFiles] = useState<UploadedFile[]>([]);
+  const [estimatedHours, setEstimatedHours] = useState<string>("24");
 
   const utils = trpc.useUtils();
 
@@ -82,7 +83,17 @@ export default function ProviderRequestDetailPage() {
   };
 
   const handleStartWork = () => {
-    startWork.mutate({ requestId });
+    const hours = parseInt(estimatedHours, 10);
+    if (isNaN(hours) || hours < 1 || hours > 720) {
+      toast.error("Invalid Input", {
+        description: "Please enter a valid estimated time between 1 and 720 hours (30 days).",
+      });
+      return;
+    }
+    startWork.mutate({
+      requestId,
+      estimatedDeliveryHours: hours,
+    });
   };
 
   const handleDeliver = () => {
@@ -206,10 +217,40 @@ export default function ProviderRequestDetailPage() {
               <CardHeader>
                 <CardTitle className="text-blue-800">Start Working</CardTitle>
                 <CardDescription className="text-blue-700">
-                  Click below to start working on this request
+                  Provide an estimated delivery time and start working on this request
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="estimatedHours" className="text-sm font-medium text-blue-800">
+                    Estimated Delivery Time
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      id="estimatedHours"
+                      type="number"
+                      min="1"
+                      max="720"
+                      value={estimatedHours}
+                      onChange={(e) => setEstimatedHours(e.target.value)}
+                      className="flex h-10 w-24 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="24"
+                    />
+                    <span className="text-sm text-blue-700">hours</span>
+                    <span className="text-xs text-blue-600 ml-2">
+                      (
+                      {parseInt(estimatedHours) > 0 && !isNaN(parseInt(estimatedHours))
+                        ? parseInt(estimatedHours) < 24
+                          ? `${estimatedHours} hour${parseInt(estimatedHours) !== 1 ? "s" : ""}`
+                          : `~${Math.round(parseInt(estimatedHours) / 24)} day${Math.round(parseInt(estimatedHours) / 24) !== 1 ? "s" : ""}`
+                        : "Enter hours"}
+                      )
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600">
+                    Estimate between 1-720 hours (up to 30 days)
+                  </p>
+                </div>
                 <Button onClick={handleStartWork} disabled={startWork.isPending}>
                   <Play className="mr-2 h-4 w-4" />
                   {startWork.isPending ? "Starting..." : "Start Work"}
