@@ -941,12 +941,12 @@ export const adminRouter = router({
         });
       }
 
-      // Update the request with the provider
+      // Update the request with the provider (keep as PENDING so provider can add estimated delivery time)
       const updatedRequest = await ctx.db.request.update({
         where: { id: input.requestId },
         data: {
           providerId: input.providerId,
-          status: request.status === "PENDING" ? "IN_PROGRESS" : request.status,
+          // Keep status unchanged to allow provider to start work and add estimated delivery
         },
         include: {
           client: { select: { id: true, name: true, email: true } },
@@ -961,16 +961,6 @@ export const adminRouter = router({
         providerId: input.providerId,
         providerName: provider.name || provider.email,
       });
-
-      // Notify client if status changed
-      if (request.status === "PENDING") {
-        await notifyStatusChange({
-          requestId: input.requestId,
-          userId: request.clientId,
-          oldStatus: "PENDING",
-          newStatus: "IN_PROGRESS",
-        });
-      }
 
       return {
         success: true,

@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FileUpload, InlineFileUpload, type UploadedFile } from "@/components/ui/file-upload";
 import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
 import { RequestHeader } from "@/components/requests/request-header";
+import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { formatDateTime, getInitials } from "@/lib/utils";
@@ -233,7 +234,7 @@ export default function ProviderRequestDetailPage() {
                       max="720"
                       value={estimatedHours}
                       onChange={(e) => setEstimatedHours(e.target.value)}
-                      className="flex h-10 w-24 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex text-black h-10 w-24 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="24"
                     />
                     <span className="text-sm text-blue-700">hours</span>
@@ -442,54 +443,18 @@ export default function ProviderRequestDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Client Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Client</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={request.client.image || ""} />
-                  <AvatarFallback>{getInitials(request.client.name || "")}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{request.client.name}</p>
-                  <p className="text-sm text-muted-foreground">{request.client.email}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Request Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Service Type</p>
-                <p className="font-medium">
-                  {request.serviceType.icon} {request.serviceType.name}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Created</p>
-                <p className="font-medium">{formatDateTime(request.createdAt)}</p>
-              </div>
-              {request.completedAt && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="font-medium">{formatDateTime(request.completedAt)}</p>
-                </div>
-              )}
-              <Separator />
-              <div>
-                <p className="text-sm text-muted-foreground">Revisions</p>
-                <p className="font-medium">{request.totalRevisions} total</p>
-              </div>
-            </CardContent>
-          </Card>
+          <RequestSidebar
+            client={request.client}
+            provider={null}
+            serviceTypeName={request.serviceType.name}
+            serviceTypeIcon={request.serviceType.icon || undefined}
+            createdAt={request.createdAt}
+            updatedAt={request.updatedAt}
+            estimatedDelivery={request.estimatedDelivery}
+            completedAt={request.completedAt}
+            currentRevisionCount={request.currentRevisionCount}
+            totalRevisions={request.totalRevisions}
+          />
 
           {/* Rating */}
           {(request as any).rating && (
