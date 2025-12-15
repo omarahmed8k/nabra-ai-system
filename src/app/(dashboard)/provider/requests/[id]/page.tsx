@@ -83,8 +83,8 @@ export default function ProviderRequestDetailPage() {
   };
 
   const handleStartWork = () => {
-    const hours = parseInt(estimatedHours, 10);
-    if (isNaN(hours) || hours < 1 || hours > 720) {
+    const hours = Number.parseInt(estimatedHours, 10);
+    if (Number.isNaN(hours) || hours < 1 || hours > 720) {
       toast.error("Invalid Input", {
         description: "Please enter a valid estimated time between 1 and 720 hours (30 days).",
       });
@@ -239,11 +239,17 @@ export default function ProviderRequestDetailPage() {
                     <span className="text-sm text-blue-700">hours</span>
                     <span className="text-xs text-blue-600 ml-2">
                       (
-                      {parseInt(estimatedHours) > 0 && !isNaN(parseInt(estimatedHours))
-                        ? parseInt(estimatedHours) < 24
-                          ? `${estimatedHours} hour${parseInt(estimatedHours) !== 1 ? "s" : ""}`
-                          : `~${Math.round(parseInt(estimatedHours) / 24)} day${Math.round(parseInt(estimatedHours) / 24) !== 1 ? "s" : ""}`
-                        : "Enter hours"}
+                      {(() => {
+                        const hours = Number.parseInt(estimatedHours, 10);
+                        if (Number.isNaN(hours) || hours <= 0) {
+                          return "Enter hours";
+                        }
+                        if (hours < 24) {
+                          return `${hours} hour${hours === 1 ? "" : "s"}`;
+                        }
+                        const days = Math.round(hours / 24);
+                        return `~${days} day${days === 1 ? "" : "s"}`;
+                      })()}
                       )
                     </span>
                   </div>

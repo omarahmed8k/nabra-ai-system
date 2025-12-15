@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
-import { formatDate, formatDateTime, getInitials } from "@/lib/utils";
+import { formatDateTime, getInitials } from "@/lib/utils";
 
 interface UserInfo {
   name: string | null;
