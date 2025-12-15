@@ -85,7 +85,8 @@ export const subscriptionRouter = router({
       if (pkg.isFreePackage) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "The free package is only available during registration. It cannot be resubscribed.",
+          message:
+            "The free package is only available during registration. It cannot be resubscribed.",
         });
       }
 
@@ -101,7 +102,8 @@ export const subscriptionRouter = router({
       if (existingSubscription) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "You already have an active subscription. Please cancel it first or wait for it to expire.",
+          message:
+            "You already have an active subscription. Please cancel it first or wait for it to expire.",
         });
       }
 
@@ -123,13 +125,14 @@ export const subscriptionRouter = router({
       if (pendingSubscription) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "You have a pending subscription awaiting payment verification. Please wait for it to be processed.",
+          message:
+            "You have a pending subscription awaiting payment verification. Please wait for it to be processed.",
         });
       }
 
       // Create subscription as INACTIVE (pending payment verification)
       const now = new Date();
-      const endDate = new Date(now.getTime() + pkg.durationDays * 24 * 60 * 60 * 1000);
+      const endDate = new Date(Date.now() + pkg.durationDays * 24 * 60 * 60 * 1000);
 
       const subscription = await ctx.db.clientSubscription.create({
         data: {
@@ -194,7 +197,7 @@ export const subscriptionRouter = router({
         data: {
           userId,
           title: "Subscription Cancelled",
-          message: subscription.isActive 
+          message: subscription.isActive
             ? "Your subscription has been cancelled. You can still use remaining credits until the end date."
             : "Your pending subscription has been cancelled.",
           type: "subscription",

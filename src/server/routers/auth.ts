@@ -71,7 +71,7 @@ export const authRouter = router({
 
       if (freePackage) {
         const now = new Date();
-        const endDate = new Date(now.getTime() + freePackage.durationDays * 24 * 60 * 60 * 1000);
+        const endDate = new Date(Date.now() + freePackage.durationDays * 24 * 60 * 60 * 1000);
 
         await ctx.db.clientSubscription.create({
           data: {

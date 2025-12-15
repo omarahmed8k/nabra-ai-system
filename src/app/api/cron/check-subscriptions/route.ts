@@ -37,8 +37,9 @@ async function processExpiringSubscriptions(
 
   for (const subscription of subscriptions) {
     try {
+      const nowTime = now.getTime();
       const daysRemaining = Math.ceil(
-        (subscription.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        (subscription.endDate.getTime() - nowTime) / (1000 * 60 * 60 * 24)
       );
 
       if (daysRemaining !== 7) continue;

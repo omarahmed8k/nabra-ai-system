@@ -289,7 +289,9 @@ export const providerRouter = router({
         });
       }
 
-      if (request.providerId) {
+      if (request.providerId === userId) {
+        // Request already claimed by this provider, allow to proceed
+      } else if (request.providerId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "This request has already been claimed",
@@ -371,10 +373,15 @@ export const providerRouter = router({
       });
 
       // Add system comment with estimated delivery time
-      const deliveryHoursText =
-        input.estimatedDeliveryHours < 24
-          ? `${input.estimatedDeliveryHours} hour${input.estimatedDeliveryHours !== 1 ? "s" : ""}`
-          : `${Math.round(input.estimatedDeliveryHours / 24)} day${Math.round(input.estimatedDeliveryHours / 24) !== 1 ? "s" : ""}`;
+      let deliveryHoursText: string;
+      if (input.estimatedDeliveryHours < 24) {
+        const hourSuffix = input.estimatedDeliveryHours === 1 ? "" : "s";
+        deliveryHoursText = `${input.estimatedDeliveryHours} hour${hourSuffix}`;
+      } else {
+        const days = Math.round(input.estimatedDeliveryHours / 24);
+        const daySuffix = days === 1 ? "" : "s";
+        deliveryHoursText = `${days} day${daySuffix}`;
+      }
 
       await ctx.db.requestComment.create({
         data: {

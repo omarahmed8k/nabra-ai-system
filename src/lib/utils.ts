@@ -75,9 +75,9 @@ export function getPriorityColor(priority: number): string {
 }
 
 export function calculateDaysRemaining(endDate: Date): number {
-  const now = new Date();
-  const end = new Date(endDate);
-  const diffTime = end.getTime() - now.getTime();
+  const now = Date.now();
+  const end = new Date(endDate).getTime();
+  const diffTime = end - now;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);
 }

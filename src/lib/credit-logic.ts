@@ -198,9 +198,9 @@ export async function checkSubscriptionExpiry(userId: string): Promise<{
     return { isExpiring: true, daysRemaining: 0 };
   }
 
-  const now = new Date();
-  const endDate = new Date(subscription.endDate);
-  const diffTime = endDate.getTime() - now.getTime();
+  const now = Date.now();
+  const endDate = new Date(subscription.endDate).getTime();
+  const diffTime = endDate - now;
   const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   return {

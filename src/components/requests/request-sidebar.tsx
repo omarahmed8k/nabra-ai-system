@@ -127,15 +127,14 @@ export function RequestSidebar({
                     const hoursRemaining = Math.max(
                       0,
                       Math.round(
-                        (new Date(estimatedDelivery).getTime() - new Date().getTime()) /
-                          (1000 * 60 * 60)
+                        (new Date(estimatedDelivery).getTime() - Date.now()) / (1000 * 60 * 60)
                       )
                     );
                     if (hoursRemaining < 24) {
-                      return `~${hoursRemaining} hour${hoursRemaining !== 1 ? "s" : ""} remaining`;
+                      return `~${hoursRemaining} hour${hoursRemaining === 1 ? "" : "s"} remaining`;
                     } else {
                       const daysRemaining = Math.round(hoursRemaining / 24);
-                      return `~${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} remaining`;
+                      return `~${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining`;
                     }
                   })()}
                 </p>
