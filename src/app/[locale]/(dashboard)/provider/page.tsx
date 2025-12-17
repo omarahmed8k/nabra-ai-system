@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import { FileText, CheckCircle, Star, TrendingUp } from "lucide-react";
 
 export default function ProviderDashboard() {
   const { data: session } = useSession();
+  const t = useTranslations("provider.dashboard");
 
   const { data: myRequests, isLoading: myReqLoading } = trpc.provider.getMyRequests.useQuery({
     limit: 5,
@@ -26,15 +28,17 @@ export default function ProviderDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Welcome back, {session?.user?.name?.split(" ")[0]}!</h1>
-        <p className="text-muted-foreground">Here&apos;s your provider dashboard overview</p>
+        <h1 className="text-3xl font-bold">
+          {t("welcome", { name: session?.user?.name?.split(" ")[0] || "Guest" })}
+        </h1>
+        <p className="text-muted-foreground">{t("overview")}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.activeJobs")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -43,7 +47,7 @@ export default function ProviderDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats?.activeRequests || 0}</div>
-                <p className="text-xs text-muted-foreground">In progress</p>
+                <p className="text-xs text-muted-foreground">{t("stats.inProgress")}</p>
               </>
             )}
           </CardContent>
@@ -51,7 +55,7 @@ export default function ProviderDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.completed")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -60,7 +64,7 @@ export default function ProviderDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{stats?.completedRequests || 0}</div>
-                <p className="text-xs text-muted-foreground">All time</p>
+                <p className="text-xs text-muted-foreground">{t("stats.allTime")}</p>
               </>
             )}
           </CardContent>
@@ -68,7 +72,7 @@ export default function ProviderDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.averageRating")}</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -77,7 +81,9 @@ export default function ProviderDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{(stats?.averageRating ?? 0).toFixed(1)}</div>
-                <p className="text-xs text-muted-foreground">{stats?.totalRatings || 0} reviews</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("stats.reviews", { count: stats?.totalRatings || 0 })}
+                </p>
               </>
             )}
           </CardContent>
@@ -85,7 +91,7 @@ export default function ProviderDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Available Jobs</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.availableJobs")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -94,7 +100,7 @@ export default function ProviderDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{availableRequests?.requests.length || 0}</div>
-                <p className="text-xs text-muted-foreground">Waiting for provider</p>
+                <p className="text-xs text-muted-foreground">{t("stats.waitingForProvider")}</p>
               </>
             )}
           </CardContent>
@@ -106,12 +112,12 @@ export default function ProviderDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>My Active Jobs</CardTitle>
-              <CardDescription>Requests you&apos;re working on</CardDescription>
+              <CardTitle>{t("myActiveJobs.title")}</CardTitle>
+              <CardDescription>{t("myActiveJobs.description")}</CardDescription>
             </div>
             <Link href="/provider/my-requests">
               <Button variant="outline" size="sm">
-                View All
+                {t("myActiveJobs.viewAll")}
               </Button>
             </Link>
           </CardHeader>
@@ -126,7 +132,7 @@ export default function ProviderDashboard() {
             {!isLoading && myRequests?.requests.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No active jobs</p>
+                <p>{t("myActiveJobs.noActiveJobs")}</p>
               </div>
             )}
             {!isLoading && (myRequests?.requests.length ?? 0) > 0 && (
@@ -167,12 +173,12 @@ export default function ProviderDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Available Jobs</CardTitle>
-              <CardDescription>Pick up new work</CardDescription>
+              <CardTitle>{t("availableJobs.title")}</CardTitle>
+              <CardDescription>{t("availableJobs.description")}</CardDescription>
             </div>
             <Link href="/provider/available">
               <Button variant="outline" size="sm">
-                View All
+                {t("availableJobs.viewAll")}
               </Button>
             </Link>
           </CardHeader>
@@ -187,7 +193,7 @@ export default function ProviderDashboard() {
             {!isLoading && availableRequests?.requests.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p>No available jobs</p>
+                <p>{t("availableJobs.noAvailableJobs")}</p>
               </div>
             )}
             {!isLoading && (availableRequests?.requests.length ?? 0) > 0 && (
@@ -212,7 +218,7 @@ export default function ProviderDashboard() {
                             {request.serviceType.name} • {formatDate(request.createdAt)}
                           </p>
                         </div>
-                        <Badge variant="secondary">New</Badge>
+                        <Badge variant="secondary">{t("availableJobs.new")}</Badge>
                       </div>
                     </Link>
                   )

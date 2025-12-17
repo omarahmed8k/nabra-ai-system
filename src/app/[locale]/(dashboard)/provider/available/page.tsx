@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { trpc } from "@/lib/trpc/client";
 import { ArrowRight } from "lucide-react";
 
 export default function AvailableJobsPage() {
+  const t = useTranslations("provider.available");
   const { data: requestsData, isLoading } = trpc.provider.getAvailableRequests.useQuery({
     limit: 50,
   });
@@ -17,14 +19,16 @@ export default function AvailableJobsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Available Jobs</h1>
-        <p className="text-muted-foreground">Browse and claim new service requests</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Open Requests</CardTitle>
-          <CardDescription>{requestsData?.requests.length || 0} jobs available</CardDescription>
+          <CardTitle>{t("openRequests")}</CardTitle>
+          <CardDescription>
+            {t("jobsAvailable", { count: requestsData?.requests.length || 0 })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -58,7 +62,7 @@ export default function AvailableJobsPage() {
                   actions={
                     <Link href={`/provider/available/${request.id}`}>
                       <Button size="sm">
-                        View Details
+                        {t("viewDetails")}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>

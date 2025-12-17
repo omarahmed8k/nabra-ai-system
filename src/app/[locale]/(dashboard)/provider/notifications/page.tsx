@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { Bell, Check } from "lucide-react";
 
 export default function ProviderNotificationsPage() {
   const router = useRouter();
+  const t = useTranslations("provider.notifications");
   const utils = trpc.useUtils();
   const { refreshUnreadCount } = useRealtimeNotifications();
   const { data: notifications, isLoading } = trpc.notification.getAll.useQuery();
@@ -43,8 +45,8 @@ export default function ProviderNotificationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">Stay updated on your jobs and activity</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         {unreadCount > 0 && (
           <Button
@@ -53,16 +55,18 @@ export default function ProviderNotificationsPage() {
             disabled={markAllAsRead.isPending}
           >
             <Check className="mr-2 h-4 w-4" />
-            Mark All as Read
+            {t("markAllAsRead")}
           </Button>
         )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Notifications</CardTitle>
+          <CardTitle>{t("allNotifications")}</CardTitle>
           <CardDescription>
-            {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
+            {unreadCount === 1
+              ? t("unreadCount", { count: unreadCount })
+              : t("unreadCountPlural", { count: unreadCount })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -76,8 +80,8 @@ export default function ProviderNotificationsPage() {
           {!isLoading && notifications?.notifications.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No notifications</p>
-              <p className="text-sm">You&apos;ll see updates about your jobs here</p>
+              <p className="text-lg font-medium">{t("noNotifications")}</p>
+              <p className="text-sm">{t("noNotificationsDesc")}</p>
             </div>
           )}
           {!isLoading && (notifications?.notifications.length ?? 0) > 0 && (
@@ -121,7 +125,7 @@ export default function ProviderNotificationsPage() {
                         <p className="font-medium">{notification.title}</p>
                         {!notification.isRead && (
                           <Badge variant="default" className="text-xs">
-                            New
+                            {t("new")}
                           </Badge>
                         )}
                       </div>

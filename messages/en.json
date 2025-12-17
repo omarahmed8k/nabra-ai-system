@@ -1062,5 +1062,169 @@
         "cancelled": "Subscription cancelled successfully."
       }
     }
+  },
+  "provider": {
+    "dashboard": {
+      "welcome": "Welcome back, {name}!",
+      "overview": "Here's your provider dashboard overview",
+      "stats": {
+        "activeJobs": "Active Jobs",
+        "inProgress": "In progress",
+        "completed": "Completed",
+        "allTime": "All time",
+        "averageRating": "Average Rating",
+        "reviews": "{count} reviews",
+        "availableJobs": "Available Jobs",
+        "waitingForProvider": "Waiting for provider"
+      },
+      "myActiveJobs": {
+        "title": "My Active Jobs",
+        "description": "Requests you're working on",
+        "viewAll": "View All",
+        "noActiveJobs": "No active jobs"
+      },
+      "availableJobs": {
+        "title": "Available Jobs",
+        "description": "Pick up new work",
+        "viewAll": "View All",
+        "noAvailableJobs": "No available jobs",
+        "new": "New"
+      }
+    },
+    "available": {
+      "title": "Available Jobs",
+      "subtitle": "Browse and claim new service requests",
+      "openRequests": "Open Requests",
+      "jobsAvailable": "{count} jobs available",
+      "viewDetails": "View Details"
+    },
+    "availableDetail": {
+      "notFound": "Request not found",
+      "backToAvailable": "Back to Available Jobs",
+      "alreadyClaimed": {
+        "title": "This job has already been claimed",
+        "browseJobs": "Browse Available Jobs"
+      },
+      "claimJob": "Claim This Job",
+      "claiming": "Claiming...",
+      "confirmClaim": "Are you sure you want to claim this request?",
+      "messagesTitle": "Messages",
+      "messagesDescription": "Ask questions about this job before claiming",
+      "messagesPlaceholder": "Ask the client a question..."
+    },
+    "myRequests": {
+      "title": "My Requests",
+      "subtitle": "Manage requests you're working on",
+      "allMyRequests": "All My Requests",
+      "totalRequests": "{count} total requests",
+      "noRequests": {
+        "title": "No requests yet",
+        "description": "Claim available jobs to get started",
+        "actionLabel": "Browse Available Jobs"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Stay updated on your jobs and activity",
+      "markAllAsRead": "Mark All as Read",
+      "allNotifications": "All Notifications",
+      "unreadCount": "{count} unread notification",
+      "unreadCountPlural": "{count} unread notifications",
+      "noNotifications": "No notifications",
+      "noNotificationsDesc": "You'll see updates about your jobs here",
+      "new": "New"
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "subtitle": "Manage your account and provider profile settings",
+      "tabs": {
+        "profile": "Profile",
+        "provider": "Provider",
+        "security": "Security"
+      },
+      "providerInfo": {
+        "title": "Provider Information",
+        "description": "Update your professional details visible to clients",
+        "bio": "Professional Bio",
+        "bioPlaceholder": "Tell clients about yourself and your experience...",
+        "bioCharacters": "{count}/500 characters",
+        "portfolio": "Portfolio URL (optional)",
+        "portfolioPlaceholder": "https://yourportfolio.com",
+        "portfolioHint": "Link to your portfolio or previous work examples",
+        "skills": "Skills (optional)",
+        "skillsPlaceholder": "e.g., UI/UX Design, React, Node.js, Python...",
+        "skillsHint": "List your key skills separated by commas ({count}/300 characters)",
+        "reset": "Reset",
+        "saveChanges": "Save Changes",
+        "saving": "Saving...",
+        "notAvailable": "Provider profile not available"
+      }
+    },
+    "requestDetail": {
+      "notFound": "Request not found",
+      "backToMyRequests": "Back to My Requests",
+      "description": "Description",
+      "attachments": "Attachments ({count})",
+      "attachmentFallback": "Attachment {number}",
+      "startWork": {
+        "title": "Start Working",
+        "description": "Provide an estimated delivery time and start working on this request",
+        "estimatedDeliveryTime": "Estimated Delivery Time",
+        "hours": "hours",
+        "enterHours": "Enter hours",
+        "hour": "hour",
+        "hoursPlural": "hours",
+        "day": "day",
+        "daysPlural": "days",
+        "estimateRange": "Estimate between 1-720 hours (up to 30 days)",
+        "button": "Start Work",
+        "starting": "Starting...",
+        "invalidInput": "Invalid Input",
+        "invalidInputDesc": "Please enter a valid estimated time between 1 and 720 hours (30 days)."
+      },
+      "submitDeliverable": {
+        "title": "Submit Deliverable",
+        "description": "Ready to deliver? Submit your work for client review.",
+        "placeholder": "Describe what you've completed and include any relevant links or notes...",
+        "minCharactersWarning": "Please enter at least 5 characters ({remaining} more needed)",
+        "attachFiles": "Attach Deliverable Files",
+        "button": "Submit Deliverable",
+        "submitting": "Submitting..."
+      },
+      "awaitingReview": {
+        "title": "Awaiting Client Review",
+        "description": "The client is reviewing your deliverable. They may approve or request revisions."
+      },
+      "completed": {
+        "title": "Completed",
+        "description": "Great work! The client has approved your deliverable."
+      },
+      "messages": {
+        "title": "Messages",
+        "description": "Communicate with the client",
+        "noMessages": "No messages yet",
+        "system": "System",
+        "deliverable": "Deliverable",
+        "attachment": "📎 Attachment {number}",
+        "placeholder": "Type your message...",
+        "requestCompleted": "This request has been completed. Comments are no longer available."
+      },
+      "rating": {
+        "title": "Client Rating",
+        "review": "Review",
+        "ratedOn": "Rated on {date}"
+      },
+      "toast": {
+        "workStarted": "Work Started",
+        "workStartedDesc": "You've started working on this request.",
+        "deliverableSubmitted": "Deliverable Submitted",
+        "deliverableSubmittedDesc": "Your deliverable has been submitted for client review.",
+        "messageSent": "Message Sent",
+        "messageSuccess": "Your message has been sent to the client.",
+        "startWorkFailed": "Failed to start work",
+        "deliverFailed": "Failed to submit deliverable",
+        "messageFailed": "Failed to send message"
+      }
+    }
   }
 }

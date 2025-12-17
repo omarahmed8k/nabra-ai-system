@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { Send, Upload, Play, CheckCircle } from "lucide-react";
 
 export default function ProviderRequestDetailPage() {
   const params = useParams();
+  const t = useTranslations("provider.requestDetail");
   const requestId = params.id as string;
   const [comment, setComment] = useState("");
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
@@ -39,24 +41,24 @@ export default function ProviderRequestDetailPage() {
     onSuccess: () => {
       setComment("");
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Message Sent", {
-        description: "Your message has been sent to the client.",
+      toast.success(t("toast.messageSent"), {
+        description: t("toast.messageSuccess"),
       });
     },
     onError: (error) => {
-      showError(error, "Failed to send message");
+      showError(error, t("toast.messageFailed"));
     },
   });
 
   const startWork = trpc.provider.startWork.useMutation({
     onSuccess: () => {
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Work Started", {
-        description: "You've started working on this request.",
+      toast.success(t("toast.workStarted"), {
+        description: t("toast.workStartedDesc"),
       });
     },
     onError: (error) => {
-      showError(error, "Failed to start work");
+      showError(error, t("toast.startWorkFailed"));
     },
   });
 
@@ -64,12 +66,12 @@ export default function ProviderRequestDetailPage() {
     onSuccess: () => {
       setDeliverable("");
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Deliverable Submitted", {
-        description: "Your deliverable has been submitted for client review.",
+      toast.success(t("toast.deliverableSubmitted"), {
+        description: t("toast.deliverableSubmittedDesc"),
       });
     },
     onError: (error) => {
-      showError(error, "Failed to submit deliverable");
+      showError(error, t("toast.deliverFailed"));
     },
   });
 
@@ -86,8 +88,8 @@ export default function ProviderRequestDetailPage() {
   const handleStartWork = () => {
     const hours = Number.parseInt(estimatedHours, 10);
     if (Number.isNaN(hours) || hours < 1 || hours > 720) {
-      toast.error("Invalid Input", {
-        description: "Please enter a valid estimated time between 1 and 720 hours (30 days).",
+      toast.error(t("startWork.invalidInput"), {
+        description: t("startWork.invalidInputDesc"),
       });
       return;
     }
@@ -120,9 +122,9 @@ export default function ProviderRequestDetailPage() {
   if (!request) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold">Request not found</h2>
+        <h2 className="text-2xl font-bold">{t("notFound")}</h2>
         <Link href="/provider/my-requests">
-          <Button className="mt-4">Back to My Requests</Button>
+          <Button className="mt-4">{t("backToMyRequests")}</Button>
         </Link>
       </div>
     );
@@ -148,7 +150,7 @@ export default function ProviderRequestDetailPage() {
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/provider/my-requests"
-        backLabel="Back to My Requests"
+        backLabel={t("backToMyRequests")}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -157,7 +159,7 @@ export default function ProviderRequestDetailPage() {
           {/* Description */}
           <Card>
             <CardHeader>
-              <CardTitle>Description</CardTitle>
+              <CardTitle>{t("description")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="whitespace-pre-wrap">{request.description}</p>
@@ -166,7 +168,7 @@ export default function ProviderRequestDetailPage() {
               {request.attachments && request.attachments.length > 0 && (
                 <div className="pt-4 border-t">
                   <p className="text-sm font-medium mb-2">
-                    Attachments ({request.attachments.length})
+                    {t("attachments", { count: request.attachments.length })}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {request.attachments.map((file: string, index: number) => {
@@ -216,9 +218,9 @@ export default function ProviderRequestDetailPage() {
           {canStart && (
             <Card className="border-blue-200 bg-blue-50">
               <CardHeader>
-                <CardTitle className="text-blue-800">Start Working</CardTitle>
+                <CardTitle className="text-blue-800">{t("startWork.title")}</CardTitle>
                 <CardDescription className="text-blue-700">
-                  Provide an estimated delivery time and start working on this request
+                  {t("startWork.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -269,27 +271,31 @@ export default function ProviderRequestDetailPage() {
           {canDeliver && (
             <Card className="border-green-200 bg-green-50">
               <CardHeader>
-                <CardTitle className="text-green-800">Submit Deliverable</CardTitle>
+                <CardTitle className="text-green-800">{t("submitDeliverable.title")}</CardTitle>
                 <CardDescription className="text-green-700">
-                  Ready to deliver? Submit your work for client review.
+                  {t("submitDeliverable.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Textarea
-                    placeholder="Describe what you've completed and include any relevant links or notes..."
+                    placeholder={t("submitDeliverable.placeholder")}
                     value={deliverable}
                     onChange={(e) => setDeliverable(e.target.value)}
                     rows={4}
                   />
                   {deliverable.length > 0 && deliverable.length < 5 && (
                     <p className="text-sm text-amber-600">
-                      Please enter at least 5 characters ({5 - deliverable.length} more needed)
+                      {t("submitDeliverable.minCharactersWarning", {
+                        remaining: 5 - deliverable.length,
+                      })}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-green-800">Attach Deliverable Files</p>
+                  <p className="text-sm font-medium text-green-800">
+                    {t("submitDeliverable.attachFiles")}
+                  </p>
                   <FileUpload
                     onFilesChange={setDeliverableFiles}
                     maxFiles={10}
@@ -303,7 +309,9 @@ export default function ProviderRequestDetailPage() {
                   disabled={deliverable.trim().length < 5 || deliverWork.isPending}
                 >
                   <Upload className="mr-2 h-4 w-4" />
-                  {deliverWork.isPending ? "Submitting..." : "Submit Deliverable"}
+                  {deliverWork.isPending
+                    ? t("submitDeliverable.submitting")
+                    : t("submitDeliverable.button")}
                 </Button>
               </CardContent>
             </Card>
@@ -312,9 +320,9 @@ export default function ProviderRequestDetailPage() {
           {request.status === "DELIVERED" && (
             <Card className="border-yellow-200 bg-yellow-50">
               <CardHeader>
-                <CardTitle className="text-yellow-800">Awaiting Client Review</CardTitle>
+                <CardTitle className="text-yellow-800">{t("awaitingReview.title")}</CardTitle>
                 <CardDescription className="text-yellow-700">
-                  The client is reviewing your deliverable. They may approve or request revisions.
+                  {t("awaitingReview.description")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -325,10 +333,10 @@ export default function ProviderRequestDetailPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <CardTitle className="text-green-800">Completed</CardTitle>
+                  <CardTitle className="text-green-800">{t("completed.title")}</CardTitle>
                 </div>
                 <CardDescription className="text-green-700">
-                  Great work! The client has approved your deliverable.
+                  {t("completed.description")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -337,12 +345,12 @@ export default function ProviderRequestDetailPage() {
           {/* Chat */}
           <Card>
             <CardHeader>
-              <CardTitle>Messages</CardTitle>
-              <CardDescription>Communicate with the client</CardDescription>
+              <CardTitle>{t("messages.title")}</CardTitle>
+              <CardDescription>{t("messages.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {request.comments.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No messages yet</p>
+                <p className="text-center text-muted-foreground py-8">{t("messages.noMessages")}</p>
               ) : (
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {request.comments.map(
@@ -369,13 +377,13 @@ export default function ProviderRequestDetailPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">
-                              {comment.type === "SYSTEM" ? "System" : comment.user.name}
+                              {comment.type === "SYSTEM" ? t("messages.system") : comment.user.name}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {formatDateTime(comment.createdAt)}
                             </span>
                             {comment.type === "DELIVERABLE" && (
-                              <Badge variant="secondary">Deliverable</Badge>
+                              <Badge variant="secondary">{t("messages.deliverable")}</Badge>
                             )}
                           </div>
                           <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
@@ -389,7 +397,7 @@ export default function ProviderRequestDetailPage() {
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 hover:underline block"
                                 >
-                                  📎 Attachment {i + 1}
+                                  {t("messages.attachment", { number: i + 1 })}
                                 </a>
                               ))}
                             </div>
@@ -412,7 +420,7 @@ export default function ProviderRequestDetailPage() {
                   />
                   <div className="flex gap-2">
                     <Textarea
-                      placeholder="Type your message..."
+                      placeholder={t("messages.placeholder")}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={2}
@@ -432,9 +440,7 @@ export default function ProviderRequestDetailPage() {
 
               {request.status === "COMPLETED" && (
                 <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm">
-                    This request has been completed. Comments are no longer available.
-                  </p>
+                  <p className="text-sm">{t("messages.requestCompleted")}</p>
                 </div>
               )}
             </CardContent>
@@ -460,7 +466,7 @@ export default function ProviderRequestDetailPage() {
           {(request as any).rating && (
             <Card className="border-amber-200 bg-amber-50">
               <CardHeader>
-                <CardTitle className="text-amber-800">Client Rating</CardTitle>
+                <CardTitle className="text-amber-800">{t("rating.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -482,7 +488,7 @@ export default function ProviderRequestDetailPage() {
                 </div>
                 {(request as any).rating.reviewText && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Review</p>
+                    <p className="text-sm text-muted-foreground mb-1">{t("rating.review")}</p>
                     <p className="text-sm text-black whitespace-pre-wrap">
                       {(request as any).rating.reviewText}
                     </p>
@@ -490,7 +496,9 @@ export default function ProviderRequestDetailPage() {
                 )}
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    Rated on {formatDateTime((request as any).rating.createdAt)}
+                    {t("rating.ratedOn", {
+                      date: formatDateTime((request as any).rating.createdAt),
+                    })}
                   </p>
                 </div>
               </CardContent>

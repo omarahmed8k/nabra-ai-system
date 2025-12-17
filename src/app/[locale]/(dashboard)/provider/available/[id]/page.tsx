@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +15,7 @@ import { trpc } from "@/lib/trpc/client";
 export default function AvailableJobDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const t = useTranslations("provider.availableDetail");
   const requestId = params.id as string;
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({
@@ -27,7 +29,7 @@ export default function AvailableJobDetailPage() {
   });
 
   const handleClaim = () => {
-    if (confirm("Are you sure you want to claim this request?")) {
+    if (confirm(t("confirmClaim"))) {
       claimRequest.mutate({ requestId });
     }
   };
@@ -44,9 +46,9 @@ export default function AvailableJobDetailPage() {
   if (!request) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold">Request not found</h2>
+        <h2 className="text-2xl font-bold">{t("notFound")}</h2>
         <Link href="/provider/available">
-          <Button className="mt-4">Back to Available Jobs</Button>
+          <Button className="mt-4">{t("backToAvailable")}</Button>
         </Link>
       </div>
     );
@@ -56,9 +58,9 @@ export default function AvailableJobDetailPage() {
   if (request.provider) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold">This job has already been claimed</h2>
+        <h2 className="text-2xl font-bold">{t("alreadyClaimed.title")}</h2>
         <Link href="/provider/available">
-          <Button className="mt-4">Browse Available Jobs</Button>
+          <Button className="mt-4">{t("alreadyClaimed.browseJobs")}</Button>
         </Link>
       </div>
     );
@@ -83,7 +85,7 @@ export default function AvailableJobDetailPage() {
         backUrl="/provider/available"
         actions={
           <Button size="lg" onClick={handleClaim} disabled={claimRequest.isPending}>
-            {claimRequest.isPending ? "Claiming..." : "Claim This Job"}
+            {claimRequest.isPending ? t("claiming") : t("claimJob")}
           </Button>
         }
       />
@@ -104,9 +106,9 @@ export default function AvailableJobDetailPage() {
           <MessagesCard
             requestId={requestId}
             comments={request.comments as any}
-            title="Messages"
-            description="Ask questions about this job before claiming"
-            placeholder="Ask the client a question..."
+            title={t("messagesTitle")}
+            description={t("messagesDescription")}
+            placeholder={t("messagesPlaceholder")}
           />
         </div>
 

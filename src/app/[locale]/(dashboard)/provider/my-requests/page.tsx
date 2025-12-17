@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestCard } from "@/components/requests/request-card";
@@ -7,6 +8,7 @@ import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
 import { trpc } from "@/lib/trpc/client";
 
 export default function MyRequestsPage() {
+  const t = useTranslations("provider.myRequests");
   const { data: requestsData, isLoading } = trpc.provider.getMyRequests.useQuery({
     limit: 50,
   });
@@ -14,14 +16,16 @@ export default function MyRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">My Requests</h1>
-        <p className="text-muted-foreground">Manage requests you&apos;re working on</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All My Requests</CardTitle>
-          <CardDescription>{requestsData?.requests.length || 0} total requests</CardDescription>
+          <CardTitle>{t("allMyRequests")}</CardTitle>
+          <CardDescription>
+            {t("totalRequests", { count: requestsData?.requests.length || 0 })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -33,9 +37,9 @@ export default function MyRequestsPage() {
           )}
           {!isLoading && requestsData?.requests.length === 0 && (
             <EmptyRequestsState
-              title="No requests yet"
-              description="Claim available jobs to get started"
-              actionLabel="Browse Available Jobs"
+              title={t("noRequests.title")}
+              description={t("noRequests.description")}
+              actionLabel={t("noRequests.actionLabel")}
               actionHref="/provider/available"
             />
           )}

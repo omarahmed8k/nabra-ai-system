@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Briefcase, Link as LinkIcon, Award } from "lucide-react";
 
 export function EditProviderProfileForm() {
+  const t = useTranslations("provider.profile.providerInfo");
   const { data: profile, isLoading, refetch } = trpc.user.getProfile.useQuery();
   const updateProviderProfile = trpc.user.updateProviderProfile.useMutation();
 
@@ -57,7 +59,9 @@ export function EditProviderProfileForm() {
   if (isLoading) {
     return (
       <Card>
-        Profile
+        <CardHeader>
+          <CardTitle>{t("title")}</CardTitle>
+        </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
@@ -69,7 +73,7 @@ export function EditProviderProfileForm() {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          Provider profile not available
+          {t("notAvailable")}
         </CardContent>
       </Card>
     );
@@ -78,59 +82,59 @@ export function EditProviderProfileForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Provider Information</CardTitle>
-        <CardDescription>Update your professional details visible to clients</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="bio">
               <Briefcase className="inline h-4 w-4 mr-1" />
-              Professional Bio
+              {t("bio")}
             </Label>
             <Textarea
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell clients about yourself and your experience..."
+              placeholder={t("bioPlaceholder")}
               rows={4}
               maxLength={500}
             />
-            <p className="text-xs text-muted-foreground text-right">{bio.length}/500 characters</p>
+            <p className="text-xs text-muted-foreground text-right">
+              {t("bioCharacters", { count: bio.length })}
+            </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="portfolio">
               <LinkIcon className="inline h-4 w-4 mr-1" />
-              Portfolio URL (optional)
+              {t("portfolio")}
             </Label>
             <Input
               id="portfolio"
               type="url"
               value={portfolio}
               onChange={(e) => setPortfolio(e.target.value)}
-              placeholder="https://yourportfolio.com"
+              placeholder={t("portfolioPlaceholder")}
             />
-            <p className="text-xs text-muted-foreground">
-              Link to your portfolio or previous work examples
-            </p>
+            <p className="text-xs text-muted-foreground">{t("portfolioHint")}</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="skills">
               <Award className="inline h-4 w-4 mr-1" />
-              Skills (optional)
+              {t("skills")}
             </Label>
             <Textarea
               id="skills"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
-              placeholder="e.g., UI/UX Design, React, Node.js, Python..."
+              placeholder={t("skillsPlaceholder")}
               rows={3}
               maxLength={300}
             />
             <p className="text-xs text-muted-foreground">
-              List your key skills separated by commas ({skills.length}/300 characters)
+              {t("skillsHint", { count: skills.length })}
             </p>
           </div>
 
@@ -144,11 +148,11 @@ export function EditProviderProfileForm() {
                 setSkills(profile?.providerProfile?.skillsTags?.join(", ") || "");
               }}
             >
-              Reset
+              {t("reset")}
             </Button>
             <Button type="submit" disabled={updateProviderProfile.isPending}>
               {updateProviderProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t("saveChanges")}
             </Button>
           </div>
         </form>
