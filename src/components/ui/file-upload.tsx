@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { X, Upload, FileIcon, Image, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export interface UploadedFile {
   url: string;
@@ -40,6 +41,7 @@ export function FileUpload({
   className,
   disabled = false,
 }: FileUploadProps) {
+  const t = useTranslations("ui.fileUpload");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -48,8 +50,8 @@ export function FileUpload({
   const uploadFile = async (file: File): Promise<UploadedFile | null> => {
     // Validate file type
     if (!ALLOWED_TYPES.has(file.type)) {
-      toast.error("Invalid file type", {
-        description: `${file.name} is not a supported file type.`,
+      toast.error(t("invalidFileType"), {
+        description: t("invalidFileTypeDesc", { filename: file.name }),
       });
       return null;
     }
@@ -57,8 +59,8 @@ export function FileUpload({
     // Validate file size
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      toast.error("File too large", {
-        description: `${file.name} exceeds the ${maxSizeMB}MB limit.`,
+      toast.error(t("fileTooLarge"), {
+        description: t("fileTooLargeDesc", { filename: file.name, maxSize: maxSizeMB }),
       });
       return null;
     }
@@ -86,8 +88,8 @@ export function FileUpload({
       };
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Upload failed", {
-        description: error instanceof Error ? error.message : "Failed to upload file",
+      toast.error(t("uploadFailed"), {
+        description: error instanceof Error ? error.message : t("uploadFailedDesc"),
       });
       return null;
     }
@@ -99,8 +101,8 @@ export function FileUpload({
 
       const remainingSlots = maxFiles - uploadedFiles.length;
       if (remainingSlots <= 0) {
-        toast.error("Maximum files reached", {
-          description: `You can only upload up to ${maxFiles} files.`,
+        toast.error(t("maximumFilesReached"), {
+          description: t("maximumFilesDesc", { maxFiles }),
         });
         return;
       }
@@ -115,8 +117,8 @@ export function FileUpload({
         const newFiles = [...uploadedFiles, ...successfulUploads];
         setUploadedFiles(newFiles);
         onFilesChange(newFiles);
-        toast.success("Upload complete", {
-          description: `${successfulUploads.length} file(s) uploaded successfully.`,
+        toast.success(t("uploadComplete"), {
+          description: t("uploadCompleteDesc", { count: successfulUploads.length }),
         });
       }
 
@@ -196,7 +198,7 @@ export function FileUpload({
           {isUploading ? (
             <>
               <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-              <p className="text-sm text-muted-foreground">Uploading...</p>
+              <p className="text-sm text-muted-foreground">{t("uploading")}</p>
             </>
           ) : (
             <>
@@ -209,12 +211,12 @@ export function FileUpload({
                   onClick={() => inputRef.current?.click()}
                   disabled={disabled || uploadedFiles.length >= maxFiles}
                 >
-                  Click to upload
+                  {t("clickToUpload")}
                 </Button>
-                <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                <span className="text-sm text-muted-foreground"> {t("dragAndDrop")}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Images, PDFs, or ZIP files (max {maxSizeMB}MB each, up to {maxFiles} files)
+                {t("fileTypesInfo", { maxSize: maxSizeMB, maxFiles })}
               </p>
             </>
           )}
@@ -225,7 +227,7 @@ export function FileUpload({
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">
-            Attached Files ({uploadedFiles.length}/{maxFiles})
+            {t("attachedCount", { count: uploadedFiles.length, maxFiles })}
           </p>
           <div className="space-y-1">
             {uploadedFiles.map((file, index) => (
@@ -278,25 +280,21 @@ export function InlineFileUpload({
   readonly onFilesChange: (files: UploadedFile[]) => void;
   readonly maxFiles?: number;
   readonly disabled?: boolean;
-  readonly uploadingLabel?: string;
-  readonly attachFilesLabel?: string;
-  readonly maxFilesLabel?: string;
-  readonly attachedFilesLabel?: string;
-  readonly clearAllLabel?: string;
 }) {
+  const t = useTranslations("ui.fileUpload");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = async (file: File): Promise<UploadedFile | null> => {
     if (!ALLOWED_TYPES.has(file.type)) {
-      toast.error("Invalid file type");
+      toast.error(t("invalidFileType"));
       return null;
     }
 
     const maxSizeBytes = 10 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      toast.error("File too large (max 10MB)");
+      toast.error(t("fileTooLargeShort"));
       return null;
     }
 
@@ -321,7 +319,7 @@ export function InlineFileUpload({
         type: data.type,
       };
     } catch {
-      toast.error("Upload failed");
+      toast.error(t("uploadFailed"));
       return null;
     }
   };
@@ -331,7 +329,7 @@ export function InlineFileUpload({
 
     const remainingSlots = maxFiles - uploadedFiles.length;
     if (remainingSlots <= 0) {
-      toast.error(`Max ${maxFiles} files`);
+      toast.error(t("maxFilesShort", { maxFiles }));
       return;
     }
 
@@ -383,12 +381,12 @@ export function InlineFileUpload({
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          <span>{isUploading ? "Uploading..." : "Attach Files"}</span>
+          <span>{isUploading ? t("uploading") : t("attachFiles")}</span>
         </Button>
 
         {uploadedFiles.length > 0 && (
           <span className="text-sm text-muted-foreground">
-            {uploadedFiles.length} file(s) attached
+            {t("filesAttached", { count: uploadedFiles.length })}
           </span>
         )}
       </div>
@@ -413,7 +411,7 @@ export function InlineFileUpload({
             </div>
           ))}
           <Button type="button" variant="ghost" size="sm" onClick={clearFiles} className="text-xs">
-            Clear all
+            {t("clearAll")}
           </Button>
         </div>
       )}

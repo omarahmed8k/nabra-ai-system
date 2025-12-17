@@ -674,7 +674,19 @@
       "maximumFilesReached": "Maximum files reached",
       "invalidFileType": "Invalid file type",
       "fileTooLarge": "File too large",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "invalidFileTypeDesc": "{filename} is not a supported file type.",
+      "fileTooLargeDesc": "{filename} exceeds the {maxSize}MB limit.",
+      "maximumFilesDesc": "You can only upload up to {maxFiles} files.",
+      "uploadCompleteDesc": "{count, plural, one {# file uploaded successfully.} other {# files uploaded successfully.}}",
+      "uploadFailedDesc": "Failed to upload file",
+      "fileTypesInfo": "Images, PDFs, or ZIP files (max {maxSize}MB each, up to {maxFiles} files)",
+      "attachedCount": "Attached Files ({count}/{maxFiles})",
+      "attachFiles": "Attach Files",
+      "filesAttached": "{count, plural, one {# file attached} other {# files attached}}",
+      "clearAll": "Clear all",
+      "maxFilesShort": "Max {maxFiles} files",
+      "fileTooLargeShort": "File too large (max 10MB)"
     }
   },
   "requests": {
