@@ -136,13 +136,11 @@ export function RequestSidebar({
                     if (hoursRemaining < 24) {
                       return t("hoursRemaining", {
                         hours: hoursRemaining,
-                        plural: hoursRemaining === 1 ? "" : "s",
                       });
                     } else {
                       const daysRemaining = Math.round(hoursRemaining / 24);
                       return t("daysRemaining", {
                         days: daysRemaining,
-                        plural: daysRemaining === 1 ? "" : "s",
                       });
                     }
                   })()}

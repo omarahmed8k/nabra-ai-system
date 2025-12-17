@@ -160,8 +160,7 @@ function UserStatsProvider({
           <div>
             <p className="font-medium">{averageRating.toFixed(1)}</p>
             <p className="text-xs text-muted-foreground">
-              {count.receivedRatings}{" "}
-              {count.receivedRatings === 1 ? t("table.rating") : t("table.rating") + "s"}
+              {t("table.rating", { count: count.receivedRatings })}
             </p>
           </div>
         </div>
