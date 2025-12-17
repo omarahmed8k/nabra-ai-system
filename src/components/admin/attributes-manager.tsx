@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ interface AttributesManagerProps {
 }
 
 export function AttributesManager({ attributes, onChange }: AttributesManagerProps) {
+  const t = useTranslations("admin.attributesManager");
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Add stable IDs to attributes if they don't have them
@@ -101,10 +103,8 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <Label className="text-base">Service Questions (Q&A)</Label>
-          <p className="text-sm text-muted-foreground">
-            Custom questions clients must answer when requesting this service
-          </p>
+          <Label className="text-base">{t("title")}</Label>
+          <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
         <Button
           type="button"
@@ -114,14 +114,14 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Question
+          {t("addQuestion")}
         </Button>
       </div>
 
       {attributes.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No questions yet. Click "Add Question" to create one.
+            {t("noQuestions")}
           </CardContent>
         </Card>
       ) : (
@@ -140,17 +140,19 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                   <div className="flex items-start gap-3">
                     <div
                       className="mt-3 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
-                      title="Drag to reorder"
+                      title={t("dragToReorder")}
                     >
                       <GripVertical className="h-5 w-5" />
                     </div>
                     <div className="flex-1 space-y-4">
                       {/* Question Text */}
                       <div className="space-y-2">
-                        <Label htmlFor={`question-${index}`}>Question {index + 1}</Label>
+                        <Label htmlFor={`question-${index}`}>
+                          {t("question", { number: index + 1 })}
+                        </Label>
                         <Input
                           id={`question-${index}`}
-                          placeholder="e.g., Do you need it as an offer post?"
+                          placeholder={t("exampleQuestion")}
                           value={attr.question}
                           onChange={(e) => updateAttribute(index, { question: e.target.value })}
                           required
@@ -160,7 +162,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       <div className="grid gap-4 md:grid-cols-2">
                         {/* Question Type */}
                         <div className="space-y-2">
-                          <Label htmlFor={`type-${index}`}>Answer Type</Label>
+                          <Label htmlFor={`type-${index}`}>{t("answerType")}</Label>
                           <Select
                             value={attr.type}
                             onValueChange={(value) =>
@@ -177,19 +179,17 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="text">Text (short answer)</SelectItem>
-                              <SelectItem value="textarea">Textarea (long answer)</SelectItem>
-                              <SelectItem value="select">Select (single choice)</SelectItem>
-                              <SelectItem value="multiselect">
-                                Multiselect (multiple choices)
-                              </SelectItem>
+                              <SelectItem value="text">{t("text")}</SelectItem>
+                              <SelectItem value="textarea">{t("textarea")}</SelectItem>
+                              <SelectItem value="select">{t("select")}</SelectItem>
+                              <SelectItem value="multiselect">{t("multiselect")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
 
                         {/* Required Checkbox */}
                         <div className="space-y-2">
-                          <Label>Settings</Label>
+                          <Label>{t("settings")}</Label>
                           <div className="flex items-center space-x-2 pt-2">
                             <Checkbox
                               id={`required-${index}`}
@@ -202,7 +202,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                               htmlFor={`required-${index}`}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Required
+                              {t("required")}
                             </label>
                           </div>
                         </div>
@@ -211,16 +211,16 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       {/* Options for Select/Multiselect */}
                       {(attr.type === "select" || attr.type === "multiselect") && (
                         <div className="space-y-2">
-                          <Label htmlFor={`options-${index}`}>Options (comma-separated)</Label>
+                          <Label htmlFor={`options-${index}`}>{t("options")}</Label>
                           <Input
                             id={`options-${index}`}
-                            placeholder="e.g., Yes, No, Maybe"
+                            placeholder={t("exampleOptions")}
                             value={(attr as any)._optionsRaw ?? attr.options?.join(", ") ?? ""}
                             onChange={(e) => updateOptions(index, e.target.value)}
                             required
                           />
                           <p className="text-xs text-muted-foreground">
-                            {attr.options?.length || 0} option(s) defined
+                            {t("optionsCount", { count: attr.options?.length || 0 })}
                           </p>
                         </div>
                       )}
@@ -228,11 +228,12 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       {/* Placeholder (optional) */}
                       <div className="space-y-2">
                         <Label htmlFor={`placeholder-${index}`}>
-                          Placeholder <span className="text-muted-foreground">(optional)</span>
+                          {t("placeholderOptional")}{" "}
+                          <span className="text-muted-foreground">(optional)</span>
                         </Label>
                         <Input
                           id={`placeholder-${index}`}
-                          placeholder="e.g., Enter dimensions like 1920x1080"
+                          placeholder={t("examplePlaceholder")}
                           value={attr.placeholder || ""}
                           onChange={(e) => updateAttribute(index, { placeholder: e.target.value })}
                         />
@@ -241,11 +242,12 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       {/* Help Text (optional) */}
                       <div className="space-y-2">
                         <Label htmlFor={`helptext-${index}`}>
-                          Help Text <span className="text-muted-foreground">(optional)</span>
+                          {t("helpTextOptional")}{" "}
+                          <span className="text-muted-foreground">(optional)</span>
                         </Label>
                         <Input
                           id={`helptext-${index}`}
-                          placeholder="Additional guidance for the client"
+                          placeholder={t("helpTextDescription")}
                           value={attr.helpText || ""}
                           onChange={(e) => updateAttribute(index, { helpText: e.target.value })}
                         />
@@ -261,7 +263,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         size="sm"
                         disabled={index === 0}
                         onClick={() => moveUp(index)}
-                        title="Move up"
+                        title={t("moveUp")}
                       >
                         <ArrowUp className="h-4 w-4" />
                       </Button>
@@ -273,7 +275,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         size="sm"
                         disabled={index === attributes.length - 1}
                         onClick={() => moveDown(index)}
-                        title="Move down"
+                        title={t("moveDown")}
                       >
                         <ArrowDown className="h-4 w-4" />
                       </Button>
@@ -285,7 +287,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         size="sm"
                         className="text-destructive hover:text-destructive"
                         onClick={() => removeAttribute(index)}
-                        title="Delete question"
+                        title={t("deleteQuestion")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
