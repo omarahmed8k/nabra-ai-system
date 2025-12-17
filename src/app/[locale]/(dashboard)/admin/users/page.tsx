@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,8 +96,11 @@ function ServiceCheckboxItem({
 }
 
 function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.Element {
+  const t = useTranslations("admin.users");
   if (services.length === 0) {
-    return <span className="text-xs text-muted-foreground italic">No services assigned</span>;
+    return (
+      <span className="text-xs text-muted-foreground italic">{t("servicesBadge.noServices")}</span>
+    );
   }
   return (
     <>
@@ -110,20 +114,21 @@ function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.E
 }
 
 function UserStatsClient({ count }: { count: UserData["_count"] }): JSX.Element {
+  const t = useTranslations("admin.users");
   return (
     <>
       <div className="flex items-center gap-2 text-sm">
         <FileText className="h-4 w-4 text-muted-foreground" />
         <div>
           <p className="font-medium">{count.clientRequests}</p>
-          <p className="text-xs text-muted-foreground">Requests</p>
+          <p className="text-xs text-muted-foreground">{t("table.requests")}</p>
         </div>
       </div>
       <div className="flex items-center gap-2 text-sm">
         <CreditCard className="h-4 w-4 text-muted-foreground" />
         <div>
           <p className="font-medium">{count.clientSubscriptions}</p>
-          <p className="text-xs text-muted-foreground">Subscriptions</p>
+          <p className="text-xs text-muted-foreground">{t("table.subscriptions")}</p>
         </div>
       </div>
     </>
@@ -139,13 +144,14 @@ function UserStatsProvider({
   averageRating?: number | null;
   onEditServices: () => void;
 }): JSX.Element {
+  const t = useTranslations("admin.users");
   return (
     <>
       <div className="flex items-center gap-2 text-sm">
         <FileText className="h-4 w-4 text-muted-foreground" />
         <div>
           <p className="font-medium">{count.providerRequests}</p>
-          <p className="text-xs text-muted-foreground">Jobs</p>
+          <p className="text-xs text-muted-foreground">{t("table.requests")}</p>
         </div>
       </div>
       {averageRating !== null && averageRating !== undefined && (
@@ -154,14 +160,15 @@ function UserStatsProvider({
           <div>
             <p className="font-medium">{averageRating.toFixed(1)}</p>
             <p className="text-xs text-muted-foreground">
-              {count.receivedRatings} {count.receivedRatings === 1 ? "rating" : "ratings"}
+              {count.receivedRatings}{" "}
+              {count.receivedRatings === 1 ? t("table.rating") : t("table.rating") + "s"}
             </p>
           </div>
         </div>
       )}
       <Button variant="outline" size="sm" onClick={onEditServices}>
         <Settings className="h-4 w-4 mr-1" />
-        Services
+        {t("table.services")}
       </Button>
     </>
   );
@@ -184,6 +191,7 @@ function UserListItem({
   onRestore?: (userId: string) => void;
   isDeleted?: boolean;
 }): JSX.Element {
+  const t = useTranslations("admin.users");
   const providerServices = user.providerProfile?.supportedServices || [];
 
   return (
@@ -201,7 +209,7 @@ function UserListItem({
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
             <span className="text-xs text-muted-foreground">
-              Joined {formatDate(user.createdAt)}
+              {t("table.joined")} {formatDate(user.createdAt)}
             </span>
           </div>
           {user.role === "PROVIDER" && (
@@ -228,20 +236,20 @@ function UserListItem({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (confirm(`Restore user ${user.email}?`)) {
+                  if (confirm(`${t("dialog.buttons.update")} ${user.email}?`)) {
                     onRestore(user.id);
                   }
                 }}
               >
                 <CheckCircle className="mr-1 h-4 w-4" />
-                Restore
+                {t("dialog.buttons.update")}
               </Button>
             )
           : user.role !== "SUPER_ADMIN" && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
                   <Edit className="mr-1 h-4 w-4" />
-                  Edit
+                  {t("dialog.edit.title")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -263,6 +271,7 @@ function UserListItem({
 }
 
 export default function AdminUsersPage() {
+  const t = useTranslations("admin.users");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
@@ -308,7 +317,7 @@ export default function AdminUsersPage() {
         role: "CLIENT",
         supportedServiceIds: [],
       });
-      toast.success("User created successfully");
+      toast.success(t("dialog.toast.created"));
     },
     onError: (error) => {
       toast.error(error.message);
@@ -320,7 +329,7 @@ export default function AdminUsersPage() {
       utils.admin.getUsers.invalidate();
       setIsServicesOpen(false);
       setSelectedUserId(null);
-      toast.success("Provider services updated");
+      toast.success(t("dialog.toast.updated"));
     },
     onError: (error) => {
       toast.error(error.message);
@@ -330,7 +339,7 @@ export default function AdminUsersPage() {
   const deleteUser = trpc.admin.deleteUser.useMutation({
     onSuccess: (data) => {
       utils.admin.getUsers.invalidate();
-      toast.success(data.message);
+      toast.success(t("dialog.toast.deleted"));
     },
     onError: (error) => {
       toast.error(error.message);
@@ -340,7 +349,7 @@ export default function AdminUsersPage() {
   const restoreUser = trpc.admin.restoreUser.useMutation({
     onSuccess: (data) => {
       utils.admin.getUsers.invalidate();
-      toast.success(data.message);
+      toast.success(t("dialog.toast.updated"));
     },
     onError: (error) => {
       toast.error(error.message);
@@ -349,7 +358,7 @@ export default function AdminUsersPage() {
 
   const handleCreateUser = () => {
     if (!newUser.name || !newUser.email || !newUser.password) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("dialog.toast.error"));
       return;
     }
     createUser.mutate(newUser);
@@ -405,35 +414,33 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Users</h1>
-          <p className="text-muted-foreground">Manage platform users</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="mr-2 h-4 w-4" />
-              Add User
+              {t("createUser")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
-              <DialogDescription>
-                Add a new user to the platform. For providers, you can assign supported services.
-              </DialogDescription>
+              <DialogTitle>{t("dialog.create.title")}</DialogTitle>
+              <DialogDescription>{t("dialog.create.description")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name">{t("dialog.fields.name")} *</Label>
                 <Input
                   id="name"
-                  placeholder="Full name"
+                  placeholder={t("dialog.fields.name")}
                   value={newUser.name}
                   onChange={(e) => setNewUser((prev) => ({ ...prev, name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email">{t("dialog.fields.email")} *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -443,12 +450,12 @@ export default function AdminUsersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="password">{t("dialog.fields.password")} *</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Min 6 characters"
+                    placeholder={t("dialog.fields.password")}
                     value={newUser.password}
                     onChange={(e) => setNewUser((prev) => ({ ...prev, password: e.target.value }))}
                   />
@@ -464,7 +471,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
+                <Label htmlFor="role">{t("dialog.fields.role")} *</Label>
                 <Select
                   value={newUser.role}
                   onValueChange={(value: UserRole) =>
@@ -475,18 +482,18 @@ export default function AdminUsersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="CLIENT">Client</SelectItem>
-                    <SelectItem value="PROVIDER">Provider</SelectItem>
-                    <SelectItem value="SUPER_ADMIN">Admin</SelectItem>
+                    <SelectItem value="CLIENT">{t("filters.client")}</SelectItem>
+                    <SelectItem value="PROVIDER">{t("filters.provider")}</SelectItem>
+                    <SelectItem value="SUPER_ADMIN">{t("filters.admin")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {newUser.role === "PROVIDER" && serviceTypes && (
                 <div className="space-y-2">
-                  <Label>Supported Services</Label>
+                  <Label>{t("dialog.fields.services")}</Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Select the services this provider can handle
+                    {t("dialog.fields.selectServices")}
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
                     {serviceTypes.map((service: ServiceType) => (
@@ -506,7 +513,7 @@ export default function AdminUsersPage() {
               )}
 
               <Button className="w-full" onClick={handleCreateUser} disabled={createUser.isPending}>
-                {createUser.isPending ? "Creating..." : "Create User"}
+                {createUser.isPending ? t("dialog.buttons.creating") : t("dialog.buttons.create")}
               </Button>
             </div>
           </DialogContent>
@@ -517,7 +524,7 @@ export default function AdminUsersPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.allRoles")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -526,7 +533,7 @@ export default function AdminUsersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.client")}</CardTitle>
             <Users className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -535,7 +542,7 @@ export default function AdminUsersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Providers</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.provider")}</CardTitle>
             <Star className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -544,7 +551,7 @@ export default function AdminUsersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admins</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.admin")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -560,7 +567,7 @@ export default function AdminUsersPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
+                placeholder={t("search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -568,13 +575,13 @@ export default function AdminUsersPage() {
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by role" />
+                <SelectValue placeholder={t("filters.role")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="CLIENT">Clients</SelectItem>
-                <SelectItem value="PROVIDER">Providers</SelectItem>
-                <SelectItem value="SUPER_ADMIN">Admins</SelectItem>
+                <SelectItem value="all">{t("filters.allRoles")}</SelectItem>
+                <SelectItem value="CLIENT">{t("filters.client")}</SelectItem>
+                <SelectItem value="PROVIDER">{t("filters.provider")}</SelectItem>
+                <SelectItem value="SUPER_ADMIN">{t("filters.admin")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -584,8 +591,10 @@ export default function AdminUsersPage() {
       {/* Users List */}
       <Card>
         <CardHeader>
-          <CardTitle>Manage Users</CardTitle>
-          <CardDescription>{users?.total || 0} users found</CardDescription>
+          <CardTitle>{t("table.user")}</CardTitle>
+          <CardDescription>
+            {users?.total || 0} {t("table.noUsers")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs
@@ -593,8 +602,8 @@ export default function AdminUsersPage() {
             onValueChange={(value) => setActiveTab(value as "active" | "deleted")}
           >
             <TabsList className="mb-4">
-              <TabsTrigger value="active">Active Users</TabsTrigger>
-              <TabsTrigger value="deleted">Deleted Users</TabsTrigger>
+              <TabsTrigger value="active">{t("tabs.allUsers")}</TabsTrigger>
+              <TabsTrigger value="deleted">{t("table.noUsers")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="active" className="space-y-4">
@@ -606,7 +615,7 @@ export default function AdminUsersPage() {
                 </div>
               )}
               {!isLoading && users?.users.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">No active users found</div>
+                <div className="text-center py-8 text-muted-foreground">{t("table.noUsers")}</div>
               )}
               {!isLoading && (users?.users.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -645,7 +654,7 @@ export default function AdminUsersPage() {
                 </div>
               )}
               {!isLoading && users?.users.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">No deleted users found</div>
+                <div className="text-center py-8 text-muted-foreground">{t("table.noUsers")}</div>
               )}
               {!isLoading && (users?.users.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -685,11 +694,8 @@ export default function AdminUsersPage() {
       <Dialog open={isServicesOpen} onOpenChange={setIsServicesOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Supported Services</DialogTitle>
-            <DialogDescription>
-              Select the services this provider can handle. Only requests matching these services
-              will be assignable to this provider.
-            </DialogDescription>
+            <DialogTitle>{t("dialog.fields.services")}</DialogTitle>
+            <DialogDescription>{t("dialog.fields.selectServices")}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="max-h-64 overflow-y-auto space-y-2 border rounded-md p-3">
@@ -708,14 +714,16 @@ export default function AdminUsersPage() {
             </div>
             <div className="flex gap-2 mt-4">
               <Button variant="outline" className="flex-1" onClick={() => setIsServicesOpen(false)}>
-                Cancel
+                {t("dialog.buttons.cancel")}
               </Button>
               <Button
                 className="flex-1"
                 onClick={handleSaveProviderServices}
                 disabled={updateProviderServices.isPending}
               >
-                {updateProviderServices.isPending ? "Saving..." : "Save Changes"}
+                {updateProviderServices.isPending
+                  ? t("dialog.buttons.updating")
+                  : t("dialog.buttons.update")}
               </Button>
             </div>
           </div>

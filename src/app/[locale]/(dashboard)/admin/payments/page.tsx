@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -87,6 +88,7 @@ function StatusIcon({ status }: { readonly status: string }) {
 }
 
 export default function AdminPaymentsPage() {
+  const t = useTranslations("admin.payments");
   const utils = trpc.useUtils();
   const [selectedPayment, setSelectedPayment] = useState<PaymentProof | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -99,7 +101,7 @@ export default function AdminPaymentsPage() {
 
   const approveMutation = trpc.payment.approvePayment.useMutation({
     onSuccess: () => {
-      showSuccess("Payment approved and subscription activated!");
+      showSuccess(t("toast.approved"));
       utils.payment.getPendingPayments.invalidate();
       utils.payment.getAllPayments.invalidate();
       utils.payment.getStats.invalidate();
@@ -112,7 +114,7 @@ export default function AdminPaymentsPage() {
 
   const rejectMutation = trpc.payment.rejectPayment.useMutation({
     onSuccess: () => {
-      showSuccess("Payment rejected and user notified.");
+      showSuccess(t("toast.rejected"));
       utils.payment.getPendingPayments.invalidate();
       utils.payment.getAllPayments.invalidate();
       utils.payment.getStats.invalidate();
@@ -126,7 +128,7 @@ export default function AdminPaymentsPage() {
   });
 
   const handleApprove = (paymentId: string) => {
-    if (confirm("Are you sure you want to approve this payment?")) {
+    if (confirm(t("confirmations.approve"))) {
       approveMutation.mutate({ paymentId });
     }
   };
@@ -134,7 +136,7 @@ export default function AdminPaymentsPage() {
   const handleReject = () => {
     if (!selectedPayment) return;
     if (rejectReason.length < 10) {
-      showError("Please provide a detailed reason (at least 10 characters)");
+      showError(t("reject.errorMinLength"));
       return;
     }
     rejectMutation.mutate({
@@ -171,7 +173,7 @@ export default function AdminPaymentsPage() {
         <TableCell>
           <Badge variant={badgeVariant}>
             <StatusIcon status={payment.status} />
-            {payment.status}
+            {t(`status.${payment.status}`)}
           </Badge>
         </TableCell>
         <TableCell>
@@ -210,8 +212,8 @@ export default function AdminPaymentsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Payment Verification</h1>
-        <p className="text-muted-foreground">Review and verify client payment proofs</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
@@ -224,7 +226,7 @@ export default function AdminPaymentsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Pending</p>
+                    <p className="text-sm text-muted-foreground">{t("stats.pending")}</p>
                     <p className="text-3xl font-bold text-orange-600">{stats?.pending || 0}</p>
                   </div>
                   <Clock className="h-8 w-8 text-orange-600" />
@@ -235,7 +237,7 @@ export default function AdminPaymentsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Approved</p>
+                    <p className="text-sm text-muted-foreground">{t("stats.approved")}</p>
                     <p className="text-3xl font-bold text-green-600">{stats?.approved || 0}</p>
                   </div>
                   <CheckCircle2 className="h-8 w-8 text-green-600" />
@@ -246,7 +248,7 @@ export default function AdminPaymentsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Rejected</p>
+                    <p className="text-sm text-muted-foreground">{t("stats.rejected")}</p>
                     <p className="text-3xl font-bold text-red-600">{stats?.rejected || 0}</p>
                   </div>
                   <XCircle className="h-8 w-8 text-red-600" />
@@ -257,7 +259,7 @@ export default function AdminPaymentsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total</p>
+                    <p className="text-sm text-muted-foreground">{t("stats.total")}</p>
                     <p className="text-3xl font-bold">{stats?.total || 0}</p>
                   </div>
                   <DollarSign className="h-8 w-8 text-muted-foreground" />
@@ -273,38 +275,38 @@ export default function AdminPaymentsPage() {
         <TabsList>
           <TabsTrigger value="pending" className="gap-2">
             <AlertTriangle className="h-4 w-4" />
-            Pending ({stats?.pending || 0})
+            {t("tabs.pendingCount", { count: stats?.pending || 0 })}
           </TabsTrigger>
           <TabsTrigger value="all" className="gap-2">
             <Users className="h-4 w-4" />
-            All Payments
+            {t("tabs.all")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
           <Card>
             <CardHeader>
-              <CardTitle>Pending Verifications</CardTitle>
-              <CardDescription>Review and approve or reject pending payment proofs</CardDescription>
+              <CardTitle>{t("cards.pendingTitle")}</CardTitle>
+              <CardDescription>{t("cards.pendingDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               {pendingLoading && <Skeleton className="h-48" />}
               {!pendingLoading && !pendingPayments?.length && (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                  <p>No pending payments to review!</p>
+                  <p>{t("empty.noPending")}</p>
                 </div>
               )}
               {!pendingLoading && pendingPayments && pendingPayments.length > 0 && (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Package</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("table.client")}</TableHead>
+                      <TableHead>{t("table.package")}</TableHead>
+                      <TableHead>{t("table.amount")}</TableHead>
+                      <TableHead>{t("table.date")}</TableHead>
+                      <TableHead>{t("table.status")}</TableHead>
+                      <TableHead>{t("table.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -319,26 +321,26 @@ export default function AdminPaymentsPage() {
         <TabsContent value="all">
           <Card>
             <CardHeader>
-              <CardTitle>All Payments</CardTitle>
-              <CardDescription>Complete history of payment verifications</CardDescription>
+              <CardTitle>{t("cards.allTitle")}</CardTitle>
+              <CardDescription>{t("cards.allDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               {allLoading && <Skeleton className="h-48" />}
               {!allLoading && !allPaymentsData?.payments?.length && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No payment records found.</p>
+                  <p>{t("empty.noPayments")}</p>
                 </div>
               )}
               {!allLoading && allPaymentsData?.payments && allPaymentsData.payments.length > 0 && (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Package</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("table.client")}</TableHead>
+                      <TableHead>{t("table.package")}</TableHead>
+                      <TableHead>{t("table.amount")}</TableHead>
+                      <TableHead>{t("table.date")}</TableHead>
+                      <TableHead>{t("table.status")}</TableHead>
+                      <TableHead>{t("table.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -360,8 +362,8 @@ export default function AdminPaymentsPage() {
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Payment Details</DialogTitle>
-            <DialogDescription>Review the payment proof submitted by the client</DialogDescription>
+            <DialogTitle>{t("details.title")}</DialogTitle>
+            <DialogDescription>{t("details.description")}</DialogDescription>
           </DialogHeader>
           {selectedPayment && (
             <div className="space-y-4">
@@ -369,7 +371,7 @@ export default function AdminPaymentsPage() {
               <div className="border rounded-lg overflow-hidden">
                 <img
                   src={selectedPayment.transferImage}
-                  alt="Transfer receipt"
+                  alt={t("details.transferReceipt")}
                   className="w-full max-h-64 object-contain bg-muted"
                 />
               </div>
@@ -377,12 +379,12 @@ export default function AdminPaymentsPage() {
               {/* Details Grid */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Client</Label>
+                  <Label className="text-muted-foreground">{t("details.client")}</Label>
                   <p className="font-medium">{selectedPayment.user.name ?? "Pending name"}</p>
                   <p className="text-sm text-muted-foreground">{selectedPayment.user.email}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Package</Label>
+                  <Label className="text-muted-foreground">{t("details.package")}</Label>
                   <p className="font-medium">{selectedPayment.subscription.package.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {formatCurrency(selectedPayment.subscription.package.price)} -{" "}
@@ -390,45 +392,45 @@ export default function AdminPaymentsPage() {
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Amount Sent</Label>
+                  <Label className="text-muted-foreground">{t("details.amountSent")}</Label>
                   <p className="font-medium text-lg">
                     {formatCurrency(selectedPayment.amount)} {selectedPayment.currency}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Transfer Date</Label>
+                  <Label className="text-muted-foreground">{t("details.transferDate")}</Label>
                   <p className="font-medium">{formatDate(selectedPayment.transferDate)}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Sender Name</Label>
+                  <Label className="text-muted-foreground">{t("details.senderName")}</Label>
                   <p className="font-medium">{selectedPayment.senderName}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Sender Bank</Label>
+                  <Label className="text-muted-foreground">{t("details.senderBank")}</Label>
                   <p className="font-medium">{selectedPayment.senderBank}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Country</Label>
+                  <Label className="text-muted-foreground">{t("details.country")}</Label>
                   <p className="font-medium">{selectedPayment.senderCountry}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Reference Number</Label>
+                  <Label className="text-muted-foreground">{t("details.referenceNumber")}</Label>
                   <p className="font-medium">
-                    {selectedPayment.referenceNumber || "Awaiting reference number"}
+                    {selectedPayment.referenceNumber || t("details.awaitingReference")}
                   </p>
                 </div>
               </div>
 
               {selectedPayment.notes && (
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Notes</Label>
+                  <Label className="text-muted-foreground">{t("details.notes")}</Label>
                   <p className="p-2 bg-muted rounded">{selectedPayment.notes}</p>
                 </div>
               )}
 
               {selectedPayment.status === "REJECTED" && selectedPayment.rejectionReason && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600 font-medium">Rejection Reason:</p>
+                  <p className="text-sm text-red-600 font-medium">{t("details.rejectionReason")}</p>
                   <p className="text-red-800">{selectedPayment.rejectionReason}</p>
                 </div>
               )}
@@ -443,7 +445,7 @@ export default function AdminPaymentsPage() {
                   className="flex-1"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Reject
+                  {t("buttons.reject")}
                 </Button>
                 <Button
                   onClick={() => handleApprove(selectedPayment.id)}
@@ -451,7 +453,7 @@ export default function AdminPaymentsPage() {
                   className="flex-1"
                 >
                   <Check className="h-4 w-4 mr-2" />
-                  Approve
+                  {t("buttons.approve")}
                 </Button>
               </div>
             )}
@@ -463,34 +465,32 @@ export default function AdminPaymentsPage() {
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Payment</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this payment. The client will be notified.
-            </DialogDescription>
+            <DialogTitle>{t("reject.title")}</DialogTitle>
+            <DialogDescription>{t("reject.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="rejectReason">Rejection Reason *</Label>
+              <Label htmlFor="rejectReason">{t("reject.reasonLabel")}</Label>
               <Textarea
                 id="rejectReason"
-                placeholder="e.g., Amount doesn't match the package price, Unable to verify transfer receipt..."
+                placeholder={t("reject.reasonPlaceholder")}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">Minimum 10 characters required</p>
+              <p className="text-xs text-muted-foreground">{t("reject.reasonHint")}</p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
-              Cancel
+              {t("buttons.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
               disabled={rejectMutation.isPending || rejectReason.length < 10}
             >
-              {rejectMutation.isPending ? "Rejecting..." : "Reject Payment"}
+              {rejectMutation.isPending ? t("reject.rejecting") : t("reject.button")}
             </Button>
           </DialogFooter>
         </DialogContent>

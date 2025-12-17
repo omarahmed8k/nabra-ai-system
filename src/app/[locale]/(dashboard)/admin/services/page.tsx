@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -69,6 +70,7 @@ const EMOJI_LIST = [
 ];
 
 export default function AdminServicesPage() {
+  const t = useTranslations("admin.services");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedIconField, setSelectedIconField] = useState<"create" | "edit" | null>(null);
@@ -102,20 +104,20 @@ export default function AdminServicesPage() {
   const deleteService = trpc.admin.deleteServiceType.useMutation({
     onSuccess: () => {
       utils.admin.getServiceTypes.invalidate();
-      toast.success("Service deleted successfully");
+      toast.success(t("toast.deleted"));
     },
     onError: () => {
-      toast.error("Failed to delete service");
+      toast.error(t("toast.deleteFailed"));
     },
   });
 
   const restoreService = trpc.admin.restoreServiceType.useMutation({
     onSuccess: () => {
       utils.admin.getServiceTypes.invalidate();
-      toast.success("Service restored successfully");
+      toast.success(t("toast.restored"));
     },
     onError: () => {
-      toast.error("Failed to restore service");
+      toast.error(t("toast.restoreFailed"));
     },
   });
 
@@ -197,12 +199,12 @@ export default function AdminServicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Service Types</h1>
-          <p className="text-muted-foreground">Manage available service categories</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Service Type
+          {t("addServiceType")}
         </Button>
       </div>
 
@@ -211,14 +213,12 @@ export default function AdminServicesPage() {
         <Card>
           <form onSubmit={handleCreate}>
             <CardHeader>
-              <CardTitle>Create Service Type</CardTitle>
+              <CardTitle>{t("createServiceType")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="create-icon">
-                    Icon (emoji) <span className="text-muted-foreground text-xs">(optional)</span>
-                  </Label>
+                  <Label htmlFor="create-icon">{t("fields.iconOptional")}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="create-icon"
@@ -234,7 +234,7 @@ export default function AdminServicesPage() {
                         setSelectedIconField(selectedIconField === "create" ? null : "create")
                       }
                     >
-                      {selectedIconField === "create" ? "Hide" : "Pick"}
+                      {selectedIconField === "create" ? t("buttons.hide") : t("buttons.pick")}
                     </Button>
                   </div>
                   {selectedIconField === "create" && (
@@ -255,12 +255,12 @@ export default function AdminServicesPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t("fields.nameRequired")}</Label>
                   <Input id="name" name="name" required minLength={2} maxLength={100} />
-                  <p className="text-xs text-muted-foreground">2-100 characters</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.nameHint")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description">{t("fields.descriptionRequired")}</Label>
                   <Input
                     id="description"
                     name="description"
@@ -268,13 +268,13 @@ export default function AdminServicesPage() {
                     minLength={10}
                     maxLength={500}
                   />
-                  <p className="text-xs text-muted-foreground">10-500 characters</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.descriptionHint")}</p>
                 </div>
               </div>
 
               {/* Credit Cost */}
               <div className="space-y-2">
-                <Label htmlFor="creditCost">Base Credit Cost *</Label>
+                <Label htmlFor="creditCost">{t("fields.creditCostRequired")}</Label>
                 <Input
                   id="creditCost"
                   name="creditCost"
@@ -283,15 +283,13 @@ export default function AdminServicesPage() {
                   defaultValue="1"
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Number of credits required to create a request for this service
-                </p>
+                <p className="text-xs text-muted-foreground">{t("fields.creditCostHint")}</p>
               </div>
 
               {/* Priority Costs */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="priorityCostLow">Low Priority Cost</Label>
+                  <Label htmlFor="priorityCostLow">{t("fields.priorityCostLow")}</Label>
                   <Input
                     id="priorityCostLow"
                     name="priorityCostLow"
@@ -300,12 +298,10 @@ export default function AdminServicesPage() {
                     defaultValue="0"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Additional credits for low priority (+0)
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t("fields.priorityCostLowHint")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priorityCostMedium">Medium Priority Cost</Label>
+                  <Label htmlFor="priorityCostMedium">{t("fields.priorityCostMedium")}</Label>
                   <Input
                     id="priorityCostMedium"
                     name="priorityCostMedium"
@@ -315,11 +311,11 @@ export default function AdminServicesPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Additional credits for medium priority (+1)
+                    {t("fields.priorityCostMediumHint")}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="priorityCostHigh">High Priority Cost</Label>
+                  <Label htmlFor="priorityCostHigh">{t("fields.priorityCostHigh")}</Label>
                   <Input
                     id="priorityCostHigh"
                     name="priorityCostHigh"
@@ -329,7 +325,7 @@ export default function AdminServicesPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Additional credits for high priority (+2)
+                    {t("fields.priorityCostHighHint")}
                   </p>
                 </div>
               </div>
@@ -337,7 +333,7 @@ export default function AdminServicesPage() {
               {/* Revision Settings */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="maxFreeRevisions">Max Free Revisions</Label>
+                  <Label htmlFor="maxFreeRevisions">{t("fields.maxFreeRevisions")}</Label>
                   <Input
                     id="maxFreeRevisions"
                     name="maxFreeRevisions"
@@ -346,10 +342,12 @@ export default function AdminServicesPage() {
                     defaultValue="3"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">Number of free revisions allowed</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("fields.maxFreeRevisionsHint")}
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="paidRevisionCost">Paid Revision Cost (credits)</Label>
+                  <Label htmlFor="paidRevisionCost">{t("fields.paidRevisionCost")}</Label>
                   <Input
                     id="paidRevisionCost"
                     name="paidRevisionCost"
@@ -359,7 +357,7 @@ export default function AdminServicesPage() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Credits charged for paid revisions
+                    {t("fields.paidRevisionCostHint")}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <input
@@ -369,10 +367,12 @@ export default function AdminServicesPage() {
                       defaultChecked={true}
                       className="h-4 w-4"
                     />
-                    <Label htmlFor="resetFreeRevisionsOnPaid">Reset free revisions on paid</Label>
+                    <Label htmlFor="resetFreeRevisionsOnPaid">
+                      {t("fields.resetFreeRevisionsOnPaid")}
+                    </Label>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Reset free revision count after a paid revision
+                    {t("fields.resetFreeRevisionsOnPaidHint")}
                   </p>
                 </div>
               </div>
@@ -390,10 +390,10 @@ export default function AdminServicesPage() {
                   setCreateAttributes([]);
                 }}
               >
-                Cancel
+                {t("buttons.cancel")}
               </Button>
               <Button type="submit" disabled={createService.isPending}>
-                {createService.isPending ? "Creating..." : "Create"}
+                {createService.isPending ? t("buttons.creating") : t("buttons.create")}
               </Button>
             </CardFooter>
           </form>
@@ -403,8 +403,10 @@ export default function AdminServicesPage() {
       {/* Services List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Service Types</CardTitle>
-          <CardDescription>{services?.length || 0} service types</CardDescription>
+          <CardTitle>{t("allServiceTypes")}</CardTitle>
+          <CardDescription>
+            {services?.length || 0} {t("info.serviceTypes")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs
@@ -413,8 +415,8 @@ export default function AdminServicesPage() {
             className="w-full"
           >
             <TabsList className="mb-4">
-              <TabsTrigger value="active">Active Services</TabsTrigger>
-              <TabsTrigger value="deleted">Deleted Services</TabsTrigger>
+              <TabsTrigger value="active">{t("activeServices")}</TabsTrigger>
+              <TabsTrigger value="deleted">{t("deletedServices")}</TabsTrigger>
             </TabsList>
             <TabsContent value={activeTab}>
               {isLoading && (
@@ -425,7 +427,7 @@ export default function AdminServicesPage() {
                 </div>
               )}
               {!isLoading && services?.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">No service types yet</div>
+                <div className="text-center py-8 text-muted-foreground">{t("noServiceTypes")}</div>
               )}
               {!isLoading && (services?.length ?? 0) > 0 && (
                 <div className="space-y-4">
@@ -438,10 +440,7 @@ export default function AdminServicesPage() {
                       >
                         <div className="grid gap-4 md:grid-cols-3">
                           <div className="space-y-2">
-                            <Label>
-                              Icon (emoji){" "}
-                              <span className="text-muted-foreground text-xs">(optional)</span>
-                            </Label>
+                            <Label>{t("fields.iconOptional")}</Label>
                             <div className="flex gap-2">
                               <Input
                                 id="edit-icon"
@@ -458,7 +457,9 @@ export default function AdminServicesPage() {
                                   setSelectedIconField(selectedIconField === "edit" ? null : "edit")
                                 }
                               >
-                                {selectedIconField === "edit" ? "Hide" : "Pick"}
+                                {selectedIconField === "edit"
+                                  ? t("buttons.hide")
+                                  : t("buttons.pick")}
                               </Button>
                             </div>
                             {selectedIconField === "edit" && (
@@ -479,16 +480,16 @@ export default function AdminServicesPage() {
                             )}
                           </div>
                           <div className="space-y-2">
-                            <Label>Name</Label>
+                            <Label>{t("fields.name")}</Label>
                             <Input name="name" defaultValue={service.name} />
                           </div>
                           <div className="space-y-2">
-                            <Label>Description</Label>
+                            <Label>{t("fields.description")}</Label>
                             <Input name="description" defaultValue={service.description || ""} />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label>Base Credit Cost</Label>
+                          <Label>{t("fields.creditCost")}</Label>
                           <Input
                             name="creditCost"
                             type="number"
@@ -497,7 +498,7 @@ export default function AdminServicesPage() {
                             required
                           />
                           <p className="text-xs text-muted-foreground">
-                            Number of credits required to create a request for this service
+                            {t("fields.creditCostHint")}
                           </p>
                         </div>
 
@@ -505,7 +506,7 @@ export default function AdminServicesPage() {
                         <div className="grid gap-4 md:grid-cols-3">
                           <div className="space-y-2">
                             <Label htmlFor={`priorityCostLow-${service.id}`}>
-                              Low Priority Cost
+                              {t("fields.priorityCostLow")}
                             </Label>
                             <Input
                               id={`priorityCostLow-${service.id}`}
@@ -516,12 +517,12 @@ export default function AdminServicesPage() {
                               required
                             />
                             <p className="text-xs text-muted-foreground">
-                              Additional credits for low priority
+                              {t("fields.priorityCostLowHint")}
                             </p>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor={`priorityCostMedium-${service.id}`}>
-                              Medium Priority Cost
+                              {t("fields.priorityCostMedium")}
                             </Label>
                             <Input
                               id={`priorityCostMedium-${service.id}`}
@@ -532,12 +533,12 @@ export default function AdminServicesPage() {
                               required
                             />
                             <p className="text-xs text-muted-foreground">
-                              Additional credits for medium priority
+                              {t("fields.priorityCostMediumHint")}
                             </p>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor={`priorityCostHigh-${service.id}`}>
-                              High Priority Cost
+                              {t("fields.priorityCostHigh")}
                             </Label>
                             <Input
                               id={`priorityCostHigh-${service.id}`}
@@ -548,7 +549,7 @@ export default function AdminServicesPage() {
                               required
                             />
                             <p className="text-xs text-muted-foreground">
-                              Additional credits for high priority
+                              {t("fields.priorityCostHighHint")}
                             </p>
                           </div>
                         </div>
@@ -557,7 +558,7 @@ export default function AdminServicesPage() {
                         <div className="grid gap-4 md:grid-cols-3">
                           <div className="space-y-2">
                             <Label htmlFor={`maxFreeRevisions-${service.id}`}>
-                              Max Free Revisions
+                              {t("fields.maxFreeRevisions")}
                             </Label>
                             <Input
                               id={`maxFreeRevisions-${service.id}`}
@@ -568,12 +569,12 @@ export default function AdminServicesPage() {
                               required
                             />
                             <p className="text-xs text-muted-foreground">
-                              Number of free revisions allowed
+                              {t("fields.maxFreeRevisionsHint")}
                             </p>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor={`paidRevisionCost-${service.id}`}>
-                              Paid Revision Cost (credits)
+                              {t("fields.paidRevisionCost")}
                             </Label>
                             <Input
                               id={`paidRevisionCost-${service.id}`}
@@ -584,7 +585,7 @@ export default function AdminServicesPage() {
                               required
                             />
                             <p className="text-xs text-muted-foreground">
-                              Credits charged for paid revisions
+                              {t("fields.paidRevisionCostHint")}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <input
@@ -595,11 +596,11 @@ export default function AdminServicesPage() {
                                 className="h-4 w-4"
                               />
                               <Label htmlFor={`resetFreeRevisionsOnPaid-${service.id}`}>
-                                Reset free revisions on paid
+                                {t("fields.resetFreeRevisionsOnPaid")}
                               </Label>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Reset free revision count after a paid revision
+                              {t("fields.resetFreeRevisionsOnPaidHint")}
                             </p>
                           </div>
                         </div>
@@ -621,10 +622,10 @@ export default function AdminServicesPage() {
                               setEditAttributes([]);
                             }}
                           >
-                            Cancel
+                            {t("buttons.cancel")}
                           </Button>
                           <Button type="submit" size="sm" disabled={updateService.isPending}>
-                            Save
+                            {t("buttons.save")}
                           </Button>
                         </div>
                       </form>
@@ -676,7 +677,7 @@ export default function AdminServicesPage() {
                               }}
                             >
                               <Edit className="mr-1 h-3 w-3" />
-                              Edit
+                              {t("buttons.edit")}
                             </Button>
                           )}
                           {activeTab === "active" ? (
@@ -684,26 +685,26 @@ export default function AdminServicesPage() {
                               variant="destructive"
                               size="sm"
                               onClick={() => {
-                                if (confirm("Delete this service type?")) {
+                                if (confirm(t("confirmations.delete"))) {
                                   deleteService.mutate({ id: service.id });
                                 }
                               }}
                             >
                               <Trash className="mr-1 h-3 w-3" />
-                              Delete
+                              {t("buttons.delete")}
                             </Button>
                           ) : (
                             <Button
                               variant="default"
                               size="sm"
                               onClick={() => {
-                                if (confirm("Restore this service type?")) {
+                                if (confirm(t("confirmations.restore"))) {
                                   restoreService.mutate({ id: service.id });
                                 }
                               }}
                             >
                               <RotateCcw className="mr-1 h-3 w-3" />
-                              Restore
+                              {t("buttons.restore")}
                             </Button>
                           )}
                         </div>

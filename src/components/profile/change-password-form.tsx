@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2, Lock, Eye, EyeOff } from "lucide-react";
 
 export function ChangePasswordForm() {
+  const t = useTranslations("profile.changePassword");
   const changePassword = trpc.user.changePassword.useMutation();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -23,12 +25,12 @@ export function ChangePasswordForm() {
     e.preventDefault();
 
     if (newPassword !== confirmPassword) {
-      toast.error("New passwords do not match");
+      toast.error(t("validationErrors.mismatch"));
       return;
     }
 
     if (newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long");
+      toast.error(t("validationErrors.tooShort"));
       return;
     }
 
@@ -45,7 +47,7 @@ export function ChangePasswordForm() {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to change password");
+      toast.error(error.message || t("errorMessage"));
     }
   };
 
@@ -60,7 +62,13 @@ export function ChangePasswordForm() {
   };
 
   const strength = passwordStrength(newPassword);
-  const strengthText = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+  const strengthText = [
+    t("strengthLabels.veryWeak"),
+    t("strengthLabels.weak"),
+    t("strengthLabels.fair"),
+    t("strengthLabels.good"),
+    t("strengthLabels.strong"),
+  ];
   const strengthColor = [
     "bg-red-500",
     "bg-orange-500",
@@ -72,17 +80,15 @@ export function ChangePasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Change Password</CardTitle>
-        <CardDescription>
-          Update your password regularly to keep your account secure
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">
               <Lock className="inline h-4 w-4 mr-1" />
-              Current Password
+              {t("labels.currentPassword")}
             </Label>
             <div className="relative">
               <Input
@@ -90,7 +96,7 @@ export function ChangePasswordForm() {
                 type={showCurrent ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
+                placeholder={t("placeholders.currentPassword")}
                 required
               />
               <Button
@@ -108,7 +114,7 @@ export function ChangePasswordForm() {
           <div className="space-y-2">
             <Label htmlFor="newPassword">
               <Lock className="inline h-4 w-4 mr-1" />
-              New Password
+              {t("labels.newPassword")}
             </Label>
             <div className="relative">
               <Input
@@ -116,7 +122,7 @@ export function ChangePasswordForm() {
                 type={showNew ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
+                placeholder={t("placeholders.newPassword")}
                 minLength={8}
                 required
               />
@@ -144,20 +150,18 @@ export function ChangePasswordForm() {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Strength: {strengthText[strength - 1] || "Very Weak"}
+                  {t("strengthText")}: {strengthText[strength - 1] || strengthText[0]}
                 </p>
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
-              Must contain at least 8 characters, including uppercase, lowercase, and numbers
-            </p>
+            <p className="text-xs text-muted-foreground">{t("helperText.requirements")}</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">
               <Lock className="inline h-4 w-4 mr-1" />
-              Confirm New Password
+              {t("labels.confirmPassword")}
             </Label>
             <div className="relative">
               <Input
@@ -165,7 +169,7 @@ export function ChangePasswordForm() {
                 type={showConfirm ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
+                placeholder={t("placeholders.confirmPassword")}
                 minLength={8}
                 required
               />
@@ -180,7 +184,7 @@ export function ChangePasswordForm() {
               </Button>
             </div>
             {confirmPassword && newPassword !== confirmPassword && (
-              <p className="text-xs text-red-500">Passwords do not match</p>
+              <p className="text-xs text-red-500">{t("helperText.mismatch")}</p>
             )}
           </div>
 
@@ -190,7 +194,7 @@ export function ChangePasswordForm() {
               disabled={changePassword.isPending || newPassword !== confirmPassword}
             >
               {changePassword.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Change Password
+              {t("buttons.changePassword")}
             </Button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ type Subscription = {
 };
 
 export default function AdminSubscriptionsPage() {
+  const t = useTranslations("admin.subscriptions");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -80,15 +82,15 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Subscriptions</h1>
-        <p className="text-muted-foreground">Manage and monitor all client subscriptions</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.total")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -97,7 +99,7 @@ export default function AdminSubscriptionsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.active")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -106,7 +108,7 @@ export default function AdminSubscriptionsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.expired")}</CardTitle>
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
@@ -115,7 +117,7 @@ export default function AdminSubscriptionsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.cancelled")}</CardTitle>
             <XCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -124,7 +126,7 @@ export default function AdminSubscriptionsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.totalRevenue")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -136,7 +138,7 @@ export default function AdminSubscriptionsPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{t("filters.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -145,7 +147,7 @@ export default function AdminSubscriptionsPage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search by user name, email, or package..."
+                  placeholder={t("filters.searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -154,13 +156,13 @@ export default function AdminSubscriptionsPage() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("filters.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
+                <SelectItem value="active">{t("filters.active")}</SelectItem>
+                <SelectItem value="expired">{t("filters.expired")}</SelectItem>
+                <SelectItem value="cancelled">{t("filters.cancelled")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -170,17 +172,17 @@ export default function AdminSubscriptionsPage() {
       {/* Subscriptions List */}
       <Card>
         <CardHeader>
-          <CardTitle>Subscriptions ({filteredSubscriptions.length})</CardTitle>
+          <CardTitle>{t("list.title", { count: filteredSubscriptions.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredSubscriptions.length === 0 ? (
             <div className="text-center py-12">
               <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No subscriptions found</h3>
+              <h3 className="text-lg font-medium">{t("empty.title")}</h3>
               <p className="text-muted-foreground">
                 {searchQuery || statusFilter !== "all"
-                  ? "Try adjusting your filters"
-                  : "No subscriptions have been created yet"}
+                  ? t("empty.withFilters")
+                  : t("empty.noFilters")}
               </p>
             </div>
           ) : (
@@ -203,13 +205,19 @@ export default function AdminSubscriptionsPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium">{sub.user.name || sub.user.email}</h3>
                           {isActive && (
-                            <Badge className="bg-green-100 text-green-800">Active</Badge>
+                            <Badge className="bg-green-100 text-green-800">
+                              {t("badges.active")}
+                            </Badge>
                           )}
                           {isExpired && (
-                            <Badge className="bg-yellow-100 text-yellow-800">Expired</Badge>
+                            <Badge className="bg-yellow-100 text-yellow-800">
+                              {t("badges.expired")}
+                            </Badge>
                           )}
                           {isCancelled && (
-                            <Badge className="bg-red-100 text-red-800">Cancelled</Badge>
+                            <Badge className="bg-red-100 text-red-800">
+                              {t("badges.cancelled")}
+                            </Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{sub.user.email}</p>
@@ -231,7 +239,7 @@ export default function AdminSubscriptionsPage() {
                           <p className="font-medium">
                             {sub.remainingCredits} / {sub.package.credits}
                           </p>
-                          <p className="text-muted-foreground">Credits left</p>
+                          <p className="text-muted-foreground">{t("list.creditsLeft")}</p>
                         </div>
                       </div>
 
@@ -242,7 +250,7 @@ export default function AdminSubscriptionsPage() {
                             {new Date(sub.startDate).toLocaleDateString()}
                           </p>
                           <p className="text-muted-foreground">
-                            to {new Date(sub.endDate).toLocaleDateString()}
+                            {t("info.to")} {new Date(sub.endDate).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

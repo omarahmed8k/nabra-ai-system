@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { UserPlus, Users, Briefcase, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { toast } from "sonner";
@@ -63,6 +64,7 @@ function ProviderSelector({
   currentProviderId,
   serviceName,
   allProvidersCount,
+  t,
 }: {
   readonly providers: Provider[] | undefined;
   readonly loadingProviders: boolean;
@@ -71,6 +73,7 @@ function ProviderSelector({
   readonly currentProviderId: string | undefined;
   readonly serviceName?: string;
   readonly allProvidersCount?: number;
+  readonly t: any;
 }) {
   if (loadingProviders) {
     return (
@@ -84,10 +87,10 @@ function ProviderSelector({
     return (
       <div className="text-center py-8 text-muted-foreground border rounded-lg">
         <Briefcase className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="font-medium">No matching providers</p>
+        <p className="font-medium">{t("assignDialog.noProviders")}</p>
         {serviceName && (
           <p className="text-xs mt-1">
-            No providers support &quot;{serviceName}&quot; service
+            {t("assignDialog.noProviders")} &quot;{serviceName}&quot;
           </p>
         )}
         {allProvidersCount !== undefined && allProvidersCount > 0 && (
@@ -103,12 +106,12 @@ function ProviderSelector({
     <div className="space-y-2">
       {serviceName && (
         <p className="text-xs text-muted-foreground">
-          Showing providers that support &quot;{serviceName}&quot;
+          {t("assignDialog.search")} &quot;{serviceName}&quot;
         </p>
       )}
       <Select value={selectedProviderId} onValueChange={onSelectProvider}>
         <SelectTrigger>
-          <SelectValue placeholder="Choose a provider..." />
+          <SelectValue placeholder={t("assignDialog.search")} />
         </SelectTrigger>
         <SelectContent>
           {providers.map((provider: Provider) => (
@@ -120,7 +123,7 @@ function ProviderSelector({
               <div className="flex items-center gap-2">
                 <span>{provider.name}</span>
                 <Badge variant="outline" className="text-xs">
-                  {provider.activeRequests} active
+                  {provider.activeRequests} {t("assignDialog.active")}
                 </Badge>
               </div>
             </SelectItem>
@@ -135,16 +138,18 @@ function ProviderSelector({
 function SelectedProviderInfo({
   providers,
   selectedProviderId,
+  t,
 }: {
   readonly providers: Provider[] | undefined;
   readonly selectedProviderId: string;
+  readonly t: any;
 }) {
   const selected = providers?.find((p: Provider) => p.id === selectedProviderId);
   if (!selected) return null;
 
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm font-medium mb-2">Selected Provider:</p>
+      <p className="text-sm font-medium mb-2">{t("assignDialog.description")}:</p>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center">
@@ -155,9 +160,7 @@ function SelectedProviderInfo({
             <p className="text-xs text-muted-foreground">{selected.email}</p>
           </div>
         </div>
-        {selected.bio && (
-          <p className="text-sm text-muted-foreground">{selected.bio}</p>
-        )}
+        {selected.bio && <p className="text-sm text-muted-foreground">{selected.bio}</p>}
         {selected.skills.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {selected.skills.slice(0, 5).map((skill: string) => (
@@ -183,16 +186,14 @@ export function AssignProviderDialog({
   onOpenChange,
   onAssigned,
 }: AssignProviderDialogProps) {
-  const [selectedProviderId, setSelectedProviderId] = useState<string>(
-    request.provider?.id || ""
-  );
+  const t = useTranslations("admin.requests");
+  const [selectedProviderId, setSelectedProviderId] = useState<string>(request.provider?.id || "");
 
   // Fetch providers filtered by the request's service type
-  const { data: providers, isLoading: loadingProviders } =
-    trpc.admin.getProviders.useQuery(
-      { serviceTypeId: request.serviceType.id },
-      { enabled: open }
-    );
+  const { data: providers, isLoading: loadingProviders } = trpc.admin.getProviders.useQuery(
+    { serviceTypeId: request.serviceType.id },
+    { enabled: open }
+  );
 
   // Also get all providers to show a message if no matching ones
   const { data: allProviders } = trpc.admin.getProviders.useQuery(undefined, {
@@ -201,29 +202,29 @@ export function AssignProviderDialog({
 
   const assignMutation = trpc.admin.assignRequest.useMutation({
     onSuccess: (data: { message: string }) => {
-      toast.success(data.message);
+      toast.success(t("assignDialog.toast.assigned"));
       onOpenChange(false);
       onAssigned();
     },
     onError: (error: { message?: string }) => {
-      toast.error(error.message || "Failed to assign request");
+      toast.error(error.message || t("assignDialog.toast.error"));
     },
   });
 
   const unassignMutation = trpc.admin.unassignRequest.useMutation({
     onSuccess: (data: { message: string }) => {
-      toast.success(data.message);
+      toast.success(t("assignDialog.toast.assigned"));
       onOpenChange(false);
       onAssigned();
     },
     onError: (error: { message?: string }) => {
-      toast.error(error.message || "Failed to unassign request");
+      toast.error(error.message || t("assignDialog.toast.error"));
     },
   });
 
   const handleAssign = () => {
     if (!selectedProviderId) {
-      toast.error("Please select a provider");
+      toast.error(t("assignDialog.search"));
       return;
     }
 
@@ -238,7 +239,9 @@ export function AssignProviderDialog({
   };
 
   const isLoading = assignMutation.isPending || unassignMutation.isPending;
-  const currentProvider = (providers as Provider[] | undefined)?.find((p: Provider) => p.id === request.provider?.id);
+  const currentProvider = (providers as Provider[] | undefined)?.find(
+    (p: Provider) => p.id === request.provider?.id
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,10 +249,10 @@ export function AssignProviderDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Assign Provider
+            {t("assignDialog.title")}
           </DialogTitle>
           <DialogDescription>
-            Assign a provider to handle the request: <strong>{request.title}</strong>
+            {t("assignDialog.description")}: <strong>{request.title}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -257,7 +260,7 @@ export function AssignProviderDialog({
           {/* Current Assignment */}
           {request.provider && (
             <div className="rounded-lg border p-4 bg-muted/50">
-              <p className="text-sm font-medium mb-2">Currently Assigned:</p>
+              <p className="text-sm font-medium mb-2">{t("assignDialog.title")}:</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -268,7 +271,7 @@ export function AssignProviderDialog({
                       {currentProvider?.name || request.provider.name || request.provider.email}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {currentProvider?.activeRequests ?? 0} active request(s)
+                      {currentProvider?.activeRequests ?? 0} {t("assignDialog.active")}
                     </p>
                   </div>
                 </div>
@@ -281,7 +284,7 @@ export function AssignProviderDialog({
                   {unassignMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Unassign"
+                    t("actions.delete")
                   )}
                 </Button>
               </div>
@@ -291,7 +294,7 @@ export function AssignProviderDialog({
           {/* Provider Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {request.provider ? "Reassign to:" : "Select Provider:"}
+              {request.provider ? t("assignDialog.title") : t("assignDialog.description")}
             </label>
             <ProviderSelector
               providers={providers as Provider[] | undefined}
@@ -301,6 +304,7 @@ export function AssignProviderDialog({
               currentProviderId={request.provider?.id}
               serviceName={request.serviceType.name}
               allProvidersCount={allProviders?.length}
+              t={t}
             />
           </div>
 
@@ -309,35 +313,30 @@ export function AssignProviderDialog({
             <SelectedProviderInfo
               providers={providers as Provider[] | undefined}
               selectedProviderId={selectedProviderId}
+              t={t}
             />
           )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            Cancel
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+            {t("assignDialog.buttons.cancel")}
           </Button>
           <Button
             onClick={handleAssign}
             disabled={
-              isLoading ||
-              !selectedProviderId ||
-              selectedProviderId === request.provider?.id
+              isLoading || !selectedProviderId || selectedProviderId === request.provider?.id
             }
           >
             {assignMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Assigning...
+                {t("assignDialog.buttons.assigning")}
               </>
             ) : (
               <>
                 <UserPlus className="h-4 w-4 mr-2" />
-                {request.provider ? "Reassign" : "Assign"} Provider
+                {t("assignDialog.buttons.assign")}
               </>
             )}
           </Button>

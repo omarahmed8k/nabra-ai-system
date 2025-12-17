@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,7 @@ export function EditUserDialog({
   onOpenChange,
   onSuccess,
 }: Readonly<EditUserDialogProps>) {
+  const t = useTranslations("admin.users");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -73,11 +75,11 @@ export function EditUserDialog({
         ...updates,
       });
 
-      toast.success("User updated successfully");
+      toast.success(t("dialog.toast.updated"));
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update user");
+      toast.error(error.message || t("dialog.toast.error"));
     }
   };
 
@@ -85,23 +87,21 @@ export function EditUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit User Profile</DialogTitle>
-          <DialogDescription>
-            Update user's name and email address. Changes will affect their login credentials.
-          </DialogDescription>
+          <DialogTitle>{t("dialog.edit.title")}</DialogTitle>
+          <DialogDescription>{t("dialog.edit.description")}</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-name">
               <User className="inline h-4 w-4 mr-1" />
-              Full Name
+              {t("dialog.fields.name")}
             </Label>
             <Input
               id="edit-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter user's name"
+              placeholder={t("dialog.fields.name")}
               minLength={2}
               required
             />
@@ -110,19 +110,17 @@ export function EditUserDialog({
           <div className="space-y-2">
             <Label htmlFor="edit-email">
               <Mail className="inline h-4 w-4 mr-1" />
-              Email Address
+              {t("dialog.fields.email")}
             </Label>
             <Input
               id="edit-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t("dialog.fields.email")}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              This will update their login credentials
-            </p>
+            <p className="text-xs text-muted-foreground">{t("dialog.edit.description")}</p>
           </div>
 
           <DialogFooter>
@@ -132,11 +130,11 @@ export function EditUserDialog({
               onClick={() => onOpenChange(false)}
               disabled={updateUser.isPending}
             >
-              Cancel
+              {t("dialog.buttons.cancel")}
             </Button>
             <Button type="submit" disabled={updateUser.isPending}>
               {updateUser.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t("dialog.buttons.update")}
             </Button>
           </DialogFooter>
         </form>

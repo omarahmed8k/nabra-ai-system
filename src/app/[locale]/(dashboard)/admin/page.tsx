@@ -4,6 +4,7 @@ import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
+import { useTranslations } from "next-intl";
 import {
   Users,
   FileText,
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
   const { data: analytics, isLoading: analyticsLoading } = trpc.admin.getAnalytics.useQuery();
   const { data: subscriptionsData, isLoading: subsLoading } =
     trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
+  const t = useTranslations("admin.dashboard");
 
   const renderTopProviders = () => {
     if (analyticsLoading) {
@@ -60,7 +62,9 @@ export default function AdminDashboard() {
       );
     }
     if ((analytics?.topProviders?.length || 0) === 0) {
-      return <p className="text-center text-muted-foreground py-8">No completed requests yet</p>;
+      return (
+        <p className="text-center text-muted-foreground py-8">{t("charts.noCompletedRequests")}</p>
+      );
     }
     return (
       <div className="space-y-4">
@@ -98,7 +102,9 @@ export default function AdminDashboard() {
       );
     }
     if ((subscriptionsData?.subscriptions?.length || 0) === 0) {
-      return <p className="text-center text-muted-foreground py-8">No subscriptions yet</p>;
+      return (
+        <p className="text-center text-muted-foreground py-8">{t("charts.noSubscriptions")}</p>
+      );
     }
     return (
       <div className="space-y-4">
@@ -116,7 +122,9 @@ export default function AdminDashboard() {
               </div>
               <div className="text-right">
                 <p className="font-bold">${sub.package.price}</p>
-                <p className="text-xs text-muted-foreground">{sub.remainingCredits} credits left</p>
+                <p className="text-xs text-muted-foreground">
+                  {sub.remainingCredits} {t("stats.creditsLeft")}
+                </p>
               </div>
             </div>
           )
@@ -128,8 +136,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Manage the platform and monitor activity</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
@@ -137,7 +145,7 @@ export default function AdminDashboard() {
         <Link href="/admin/users">
           <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("stats.totalUsers")}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -147,7 +155,7 @@ export default function AdminDashboard() {
                 <>
                   <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
                   <p className="text-xs text-muted-foreground">
-                    {stats?.clients} clients, {stats?.providers} providers
+                    {stats?.clients} {t("stats.clients")}, {stats?.providers} {t("stats.providers")}
                   </p>
                 </>
               )}
@@ -158,7 +166,7 @@ export default function AdminDashboard() {
         <Link href="/admin/requests">
           <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("stats.totalRequests")}</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -168,7 +176,8 @@ export default function AdminDashboard() {
                 <>
                   <div className="text-2xl font-bold">{stats?.totalRequests || 0}</div>
                   <p className="text-xs text-muted-foreground">
-                    {stats?.activeRequests} active, {stats?.completedRequests} completed
+                    {stats?.activeRequests} {t("stats.active")}, {stats?.completedRequests}{" "}
+                    {t("stats.completed")}
                   </p>
                 </>
               )}
@@ -178,7 +187,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.totalRevenue")}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -188,7 +197,7 @@ export default function AdminDashboard() {
               <>
                 <div className="text-2xl font-bold">${stats?.totalRevenue || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  From {stats?.activeSubscriptions} active subscriptions
+                  {stats?.activeSubscriptions} {t("stats.activeSubscriptions")}
                 </p>
               </>
             )}
@@ -197,7 +206,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.averageRating")}</CardTitle>
             <Star className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
@@ -207,7 +216,7 @@ export default function AdminDashboard() {
               <>
                 <div className="text-2xl font-bold">{(stats?.averageRating ?? 0).toFixed(1)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats?.serviceTypes ?? 0} active service types
+                  {stats?.serviceTypes ?? 0} {t("stats.activeServiceTypes")}
                 </p>
               </>
             )}
@@ -222,9 +231,9 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Revenue Trend
+              {t("charts.revenueTrend")}
             </CardTitle>
-            <CardDescription>Monthly revenue over the last 6 months</CardDescription>
+            <CardDescription>{t("charts.revenueTrendDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
@@ -254,9 +263,9 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Requests by Status
+              {t("charts.requestsByStatus")}
             </CardTitle>
-            <CardDescription>Distribution of request statuses</CardDescription>
+            <CardDescription>{t("charts.requestsByStatusDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
@@ -264,10 +273,8 @@ export default function AdminDashboard() {
               (!analytics?.requestsByStatus || analytics.requestsByStatus.length === 0) && (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <p className="text-sm">No data available yet</p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Requests will appear here once created
-                    </p>
+                    <p className="text-sm">{t("charts.noData")}</p>
+                    <p className="text-xs text-muted-foreground/70">{t("charts.noDataDesc")}</p>
                   </div>
                 </div>
               )}
@@ -311,9 +318,9 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Subscriptions by Package
+              {t("charts.subscriptionsByPackage")}
             </CardTitle>
-            <CardDescription>Active subscriptions distribution</CardDescription>
+            <CardDescription>{t("charts.subscriptionsByPackageDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
@@ -322,9 +329,9 @@ export default function AdminDashboard() {
                 analytics.subscriptionsByPackage.length === 0) && (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <p className="text-sm">No subscriptions yet</p>
+                    <p className="text-sm">{t("charts.noSubscriptions")}</p>
                     <p className="text-xs text-muted-foreground/70">
-                      Subscription data will appear once clients subscribe
+                      {t("charts.noSubscriptionsDesc")}
                     </p>
                   </div>
                 </div>
@@ -350,9 +357,9 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Requests by Service
+              {t("charts.requestsByService")}
             </CardTitle>
-            <CardDescription>Service type popularity</CardDescription>
+            <CardDescription>{t("charts.requestsByServiceDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
@@ -360,9 +367,9 @@ export default function AdminDashboard() {
               (!analytics?.requestsByService || analytics.requestsByService.length === 0) && (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
-                    <p className="text-sm">No service data available yet</p>
+                    <p className="text-sm">{t("charts.noServiceData")}</p>
                     <p className="text-xs text-muted-foreground/70">
-                      Service requests will appear here once created
+                      {t("charts.noServiceDataDesc")}
                     </p>
                   </div>
                 </div>
@@ -391,9 +398,9 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5" />
-              Top Providers
+              {t("charts.topProviders")}
             </CardTitle>
-            <CardDescription>By completed requests</CardDescription>
+            <CardDescription>{t("charts.topProvidersDesc")}</CardDescription>
           </CardHeader>
           <CardContent>{renderTopProviders()}</CardContent>
         </Card>
@@ -404,13 +411,13 @@ export default function AdminDashboard() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Recent Subscriptions
+                {t("charts.recentSubscriptions")}
               </CardTitle>
-              <CardDescription>Latest subscription activity</CardDescription>
+              <CardDescription>{t("charts.recentSubscriptionsDesc")}</CardDescription>
             </div>
             <Link href="/admin/subscriptions">
               <span className="text-sm text-primary hover:underline flex items-center gap-1">
-                View all <ArrowUpRight className="h-3 w-3" />
+                {t("charts.viewAll")} <ArrowUpRight className="h-3 w-3" />
               </span>
             </Link>
           </CardHeader>
@@ -424,7 +431,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Users className="h-4 w-4" />
-              New Users (30d)
+              {t("quickStats.newUsers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -442,7 +449,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              New Requests (30d)
+              {t("quickStats.newRequests")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -460,7 +467,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              Pending Requests
+              {t("quickStats.pendingRequests")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -478,7 +485,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <CheckCircle className="h-4 w-4" />
-              Completed Requests
+              {t("quickStats.completedRequests")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -500,13 +507,11 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Manage Users
+                {t("navigation.manageUsers")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and manage all users, change roles, and more
-              </p>
+              <p className="text-sm text-muted-foreground">{t("navigation.manageUsersDesc")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -516,11 +521,11 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Manage Requests
+                {t("navigation.manageRequests")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">View and manage all service requests</p>
+              <p className="text-sm text-muted-foreground">{t("navigation.manageRequestsDesc")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -530,13 +535,11 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Manage Packages
+                {t("navigation.managePackages")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Configure subscription packages and pricing
-              </p>
+              <p className="text-sm text-muted-foreground">{t("navigation.managePackagesDesc")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -546,13 +549,11 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                Manage Services
+                {t("navigation.manageServices")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Configure service types and form fields
-              </p>
+              <p className="text-sm text-muted-foreground">{t("navigation.manageServicesDesc")}</p>
             </CardContent>
           </Card>
         </Link>

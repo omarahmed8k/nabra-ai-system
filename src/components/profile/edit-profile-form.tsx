@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, User, Mail, Upload, X } from "lucide-react";
 
 export function EditProfileForm() {
+  const t = useTranslations("profile.editProfile");
   const { data: profile, isLoading, refetch } = trpc.user.getProfile.useQuery();
   const updateProfile = trpc.user.updateProfile.useMutation();
   const { update: updateSession } = useSession();
@@ -35,13 +37,13 @@ export function EditProfileForm() {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t("uploadMessages.invalidType"));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
+      toast.error(t("uploadMessages.tooLarge"));
       return;
     }
 
@@ -56,15 +58,15 @@ export function EditProfileForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        throw new Error(t("uploadMessages.uploadFailed"));
       }
 
       const data = await response.json();
       setImage(data.url);
-      toast.success("Image uploaded successfully");
+      toast.success(t("uploadMessages.success"));
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      toast.error(t("uploadMessages.failed"));
     } finally {
       setUploading(false);
     }
@@ -109,7 +111,7 @@ export function EditProfileForm() {
 
       refetch();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update profile");
+      toast.error(error.message || t("errorMessage"));
     }
   };
 
@@ -126,21 +128,21 @@ export function EditProfileForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your account details and personal information</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">
               <User className="inline h-4 w-4 mr-1" />
-              Full Name
+              {t("labels.name")}
             </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder={t("placeholders.name")}
               minLength={2}
               required
             />
@@ -149,25 +151,23 @@ export function EditProfileForm() {
           <div className="space-y-2">
             <Label htmlFor="email">
               <Mail className="inline h-4 w-4 mr-1" />
-              Email Address
+              {t("labels.email")}
             </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder={t("placeholders.email")}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              Changing your email will affect your login credentials
-            </p>
+            <p className="text-xs text-muted-foreground">{t("helperText.emailWarning")}</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="image">
               <Upload className="inline h-4 w-4 mr-1" />
-              Profile Photo (optional)
+              {t("labels.profileImage")}
             </Label>
             <div className="flex flex-col gap-3">
               {image ? (
@@ -178,7 +178,9 @@ export function EditProfileForm() {
                     className="h-20 w-20 rounded-full object-cover border-2 border-border"
                   />
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-2">Current photo</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {t("helperText.currentPhoto")}
+                    </p>
                     <Button
                       type="button"
                       variant="outline"
@@ -187,7 +189,7 @@ export function EditProfileForm() {
                       disabled={uploading}
                     >
                       <X className="h-4 w-4 mr-1" />
-                      Remove
+                      {t("buttons.removePhoto")}
                     </Button>
                   </div>
                 </div>
@@ -202,16 +204,16 @@ export function EditProfileForm() {
                     {uploading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Uploading...
+                        {t("buttons.uploading")}
                       </>
                     ) : (
                       <>
                         <Upload className="h-4 w-4 mr-2" />
-                        Upload Photo
+                        {t("buttons.uploadPhoto")}
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-muted-foreground">Max 5MB, JPG/PNG/GIF</p>
+                  <p className="text-xs text-muted-foreground">{t("helperText.maxFileSize")}</p>
                 </div>
               )}
               <input
@@ -234,11 +236,11 @@ export function EditProfileForm() {
                 setImage(profile?.image || "");
               }}
             >
-              Reset
+              {t("buttons.reset")}
             </Button>
             <Button type="submit" disabled={updateProfile.isPending}>
               {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t("buttons.saveChanges")}
             </Button>
           </div>
         </form>

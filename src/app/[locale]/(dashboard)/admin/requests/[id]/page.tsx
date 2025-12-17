@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileText } from "lucide-react";
@@ -12,6 +13,7 @@ import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AdminRequestDetailPage() {
+  const t = useTranslations("admin.requests");
   const params = useParams();
   const requestId = params.id as string;
 
@@ -29,14 +31,12 @@ export default function AdminRequestDetailPage() {
     return (
       <div className="text-center py-12">
         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium">Request not found</h3>
-        <p className="text-muted-foreground mb-4">
-          The request you're looking for doesn't exist or has been deleted.
-        </p>
+        <h3 className="text-lg font-medium">{t("detail.notFound")}</h3>
+        <p className="text-muted-foreground mb-4">{t("detail.notFoundDesc")}</p>
         <Link href="/admin/requests">
           <Button>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Requests
+            {t("detail.backToRequests")}
           </Button>
         </Link>
       </div>
@@ -60,7 +60,7 @@ export default function AdminRequestDetailPage() {
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/admin/requests"
-        backLabel="Back to Requests"
+        backLabel={t("title")}
       />
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -80,9 +80,9 @@ export default function AdminRequestDetailPage() {
           <MessagesCard
             requestId={requestId}
             comments={request.comments as any}
-            title="Messages"
-            description="Communicate with client and provider"
-            placeholder="Send a message to client or provider..."
+            title={t("detail.messagesTitle")}
+            description={t("detail.messagesDesc")}
+            placeholder={t("detail.messagesPlaceholder")}
             canSendMessages={request.status !== "COMPLETED"}
           />
         </div>

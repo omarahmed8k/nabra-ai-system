@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ type Request = {
 };
 
 export default function AdminRequestsPage() {
+  const t = useTranslations("admin.requests");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -87,15 +89,15 @@ export default function AdminRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">All Requests</h1>
-        <p className="text-muted-foreground">Manage and monitor all service requests</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.allStatuses")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -104,7 +106,7 @@ export default function AdminRequestsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.pending")}</CardTitle>
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
@@ -113,7 +115,7 @@ export default function AdminRequestsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.inProgress")}</CardTitle>
             <PlayCircle className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -122,7 +124,7 @@ export default function AdminRequestsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("filters.completed")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -134,7 +136,7 @@ export default function AdminRequestsPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{t("filters.status")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -143,7 +145,7 @@ export default function AdminRequestsPage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search by title, client name or email..."
+                  placeholder={t("search")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -152,16 +154,16 @@ export default function AdminRequestsPage() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("filters.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="DELIVERED">Delivered</SelectItem>
-                <SelectItem value="REVISION_REQUESTED">Revision Requested</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
+                <SelectItem value="PENDING">{t("filters.pending")}</SelectItem>
+                <SelectItem value="IN_PROGRESS">{t("filters.inProgress")}</SelectItem>
+                <SelectItem value="DELIVERED">{t("filters.delivered")}</SelectItem>
+                <SelectItem value="REVISION_REQUESTED">{t("filters.revisionRequested")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("filters.completed")}</SelectItem>
+                <SelectItem value="CANCELLED">{t("filters.cancelled")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,16 +173,18 @@ export default function AdminRequestsPage() {
       {/* Requests List */}
       <Card>
         <CardHeader>
-          <CardTitle>Requests ({filteredRequests.length})</CardTitle>
+          <CardTitle>
+            {t("title")} ({filteredRequests.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {filteredRequests.length === 0 ? (
             <EmptyRequestsState
-              title="No requests found"
+              title={t("table.noRequests")}
               description={
                 searchQuery || statusFilter !== "all"
-                  ? "Try adjusting your filters"
-                  : "No requests have been created yet"
+                  ? t("table.tryAdjusting")
+                  : t("table.noRequests")
               }
             />
           ) : (
@@ -206,12 +210,12 @@ export default function AdminRequestsPage() {
                         onClick={() => handleAssignClick(request)}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        {request.provider ? "Reassign" : "Assign"}
+                        {t("actions.assignProvider")}
                       </Button>
                       <Link href={`/admin/requests/${request.id}`}>
                         <Button variant="ghost" size="sm">
                           <Eye className="h-4 w-4 mr-1" />
-                          View
+                          {t("actions.view")}
                         </Button>
                       </Link>
                       <Button
@@ -220,7 +224,7 @@ export default function AdminRequestsPage() {
                         onClick={() => {
                           if (
                             confirm(
-                              `Delete request "${request.title}"? This action cannot be undone.`
+                              `${t("actions.delete")} "${request.title}"? This action cannot be undone.`
                             )
                           ) {
                             deleteRequest.mutate({ requestId: request.id });
@@ -229,7 +233,7 @@ export default function AdminRequestsPage() {
                         disabled={deleteRequest.isPending}
                       >
                         <Trash className="h-4 w-4 mr-1" />
-                        Delete
+                        {t("actions.delete")}
                       </Button>
                     </>
                   }

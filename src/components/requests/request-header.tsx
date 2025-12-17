@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { getStatusColor, getPriorityLabel, getPriorityColor, formatDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface RequestHeaderProps {
   readonly title: string;
@@ -109,20 +110,21 @@ function RevisionCostDisplay({
   readonly paidRevisionTotal: number;
   readonly paidUnit: number;
 }) {
+  const t = useTranslations("requests.header");
   const canShowMultiplier =
     canDeriveMultiplier && paidRevisionMultiplier >= 1 && paidRevisionTotal % paidUnit === 0;
 
   if (canShowMultiplier) {
     return (
       <>
-        +{paidUnit} {paidUnit === 1 ? "credit" : "credits"} x {paidRevisionMultiplier}
+        +{paidUnit} {paidUnit === 1 ? t("credit") : t("credits")} x {paidRevisionMultiplier}
       </>
     );
   }
 
   return (
     <>
-      +{paidRevisionTotal} {paidRevisionTotal === 1 ? "credit" : "credits"}
+      +{paidRevisionTotal} {paidRevisionTotal === 1 ? t("credit") : t("credits")}
     </>
   );
 }
@@ -144,6 +146,7 @@ export function RequestHeader({
   backLabel = "Back",
   actions,
 }: RequestHeaderProps) {
+  const t = useTranslations("requests.header");
   const breakdown = calculateCreditBreakdown(
     creditCost,
     baseCreditCost,
@@ -168,15 +171,15 @@ export function RequestHeader({
               {status.replace("_", " ")}
             </Badge>
             <Badge variant={null} className={getPriorityColor(priority)}>
-              {getPriorityLabel(priority)} Priority
+              {getPriorityLabel(priority)} {t("priority")}
             </Badge>
             <Badge variant="outline" className="font-semibold" title={breakdown.creditBreakdown}>
-              💳 {creditCost} {creditCost === 1 ? "credit" : "credits"}
+              💳 {creditCost} {creditCost === 1 ? t("credit") : t("credits")}
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
             {serviceTypeIcon && `${serviceTypeIcon} `}
-            {serviceTypeName} • Created {formatDate(createdAt)}
+            {serviceTypeName} • {t("created")} {formatDate(createdAt)}
           </p>
         </div>
         {actions && <div className="flex gap-2">{actions}</div>}
@@ -185,25 +188,25 @@ export function RequestHeader({
       {/* Credit Cost Breakdown */}
       {breakdown.hasCreditBreakdown && (
         <div className="p-4 bg-muted/50 rounded-lg border">
-          <h3 className="font-semibold mb-2 text-sm">Credit Cost Breakdown:</h3>
+          <h3 className="font-semibold mb-2 text-sm">{t("creditBreakdown")}</h3>
           <div className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Base Cost:</span>
+              <span className="text-muted-foreground">{t("baseCost")}</span>
               <span className="font-medium">
-                {baseCreditCost} {baseCreditCost === 1 ? "credit" : "credits"}
+                {baseCreditCost} {baseCreditCost === 1 ? t("credit") : t("credits")}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">
-                Priority ({getPriorityLabel(priority)}):
+                {t("priorityCost", { priority: getPriorityLabel(priority) })}
               </span>
               <span className="font-medium">
-                +{priorityCreditCost} {priorityCreditCost === 1 ? "credit" : "credits"}
+                +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}
               </span>
             </div>
             {breakdown.hasPaidRevisions && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Revision Cost:</span>
+                <span className="text-muted-foreground">{t("revisionCost")}</span>
                 <span className="font-medium">
                   <RevisionCostDisplay
                     canDeriveMultiplier={breakdown.canDeriveMultiplier}
@@ -216,14 +219,14 @@ export function RequestHeader({
             )}
             {breakdown.showFreeRevision && (
               <div className="flex justify-between text-green-600">
-                <span>Free Revision:</span>
-                <span className="font-medium">No additional cost</span>
+                <span>{t("freeRevision")}</span>
+                <span className="font-medium">{t("noAdditionalCost")}</span>
               </div>
             )}
             <div className="pt-2 mt-2 border-t flex justify-between font-semibold">
-              <span>Total:</span>
+              <span>{t("total")}</span>
               <span>
-                {creditCost} {creditCost === 1 ? "credit" : "credits"}
+                {creditCost} {creditCost === 1 ? t("credit") : t("credits")}
               </span>
             </div>
           </div>

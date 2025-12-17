@@ -11,6 +11,7 @@ import { Send } from "lucide-react";
 import { formatDateTime, getInitials } from "@/lib/utils";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
+import { useTranslations } from "next-intl";
 
 interface Comment {
   id: string;
@@ -42,6 +43,7 @@ export function MessagesCard({
   placeholder = "Type your message...",
   canSendMessages = true,
 }: MessagesCardProps) {
+  const t = useTranslations("requests.messages");
   const [comment, setComment] = useState("");
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
 
@@ -52,12 +54,12 @@ export function MessagesCard({
       setComment("");
       setCommentFiles([]);
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Message Sent", {
-        description: "Your message has been sent.",
+      toast.success(t("messageSent"), {
+        description: t("messageSuccess"),
       });
     },
     onError: (error: unknown) => {
-      showError(error, "Failed to send message");
+      showError(error, t("messageFailed"));
     },
   });
 
@@ -65,7 +67,7 @@ export function MessagesCard({
     if (!comment.trim() && commentFiles.length === 0) return;
     addComment.mutate({
       requestId,
-      content: comment || "(Attachment)",
+      content: comment || t("attachmentFallback"),
       files: commentFiles.map((f) => f.url),
     });
   };
@@ -73,12 +75,12 @@ export function MessagesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{title || t("title")}</CardTitle>
+        <CardDescription>{description || t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {comments.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No messages yet</p>
+          <p className="text-center text-muted-foreground py-8">{t("noMessages")}</p>
         ) : (
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {comments.map((comment) => (
@@ -100,14 +102,14 @@ export function MessagesCard({
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm">
                       {comment.type === "SYSTEM"
-                        ? "System"
+                        ? t("system")
                         : comment.user.name || comment.user.email}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDateTime(comment.createdAt)}
                     </span>
                     {comment.type === "DELIVERABLE" && (
-                      <Badge variant="secondary">Deliverable</Badge>
+                      <Badge variant="secondary">{t("deliverable")}</Badge>
                     )}
                   </div>
                   <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
@@ -121,7 +123,7 @@ export function MessagesCard({
                           rel="noopener noreferrer"
                           className="text-sm text-blue-600 hover:underline block"
                         >
-                          📎 Attachment {i + 1}
+                          {t("attachment", { number: i + 1 })}
                         </a>
                       ))}
                     </div>
@@ -143,7 +145,7 @@ export function MessagesCard({
               />
               <div className="flex gap-2">
                 <Textarea
-                  placeholder={placeholder}
+                  placeholder={placeholder || t("placeholder")}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={2}
@@ -164,9 +166,7 @@ export function MessagesCard({
           <>
             <Separator />
             <div className="text-center py-4 text-muted-foreground">
-              <p className="text-sm">
-                This request has been completed. Comments are no longer available.
-              </p>
+              <p className="text-sm">{t("requestCompleted")}</p>
             </div>
           </>
         )}

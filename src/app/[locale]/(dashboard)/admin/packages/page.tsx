@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +24,7 @@ import { toast } from "sonner";
 import { showError } from "@/lib/error-handler";
 
 export default function AdminPackagesPage() {
+  const t = useTranslations("admin.packages");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
@@ -39,10 +41,10 @@ export default function AdminPackagesPage() {
       utils.admin.getPackages.invalidate();
       setShowCreate(false);
       setSelectedServiceIds([]);
-      toast.success("Package created successfully");
+      toast.success(t("toast.created"));
     },
     onError: (error) => {
-      showError(error, "Failed to create package");
+      showError(error, t("toast.createFailed"));
     },
   });
 
@@ -51,30 +53,30 @@ export default function AdminPackagesPage() {
       utils.admin.getPackages.invalidate();
       setEditingId(null);
       setSelectedServiceIds([]);
-      toast.success("Package updated successfully");
+      toast.success(t("toast.updated"));
     },
     onError: (error) => {
-      showError(error, "Failed to update package");
+      showError(error, t("toast.updateFailed"));
     },
   });
 
   const deletePackage = trpc.admin.deletePackage.useMutation({
     onSuccess: () => {
       utils.admin.getPackages.invalidate();
-      toast.success("Package deleted successfully");
+      toast.success(t("toast.deleted"));
     },
     onError: (error) => {
-      showError(error, "Failed to delete package");
+      showError(error, t("toast.deleteFailed"));
     },
   });
 
   const restorePackage = trpc.admin.restorePackage.useMutation({
     onSuccess: () => {
       utils.admin.getPackages.invalidate();
-      toast.success("Package restored successfully");
+      toast.success(t("toast.restored"));
     },
     onError: (error) => {
-      showError(error, "Failed to restore package");
+      showError(error, t("toast.restoreFailed"));
     },
   });
 
@@ -129,12 +131,12 @@ export default function AdminPackagesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Packages</h1>
-          <p className="text-muted-foreground">Manage subscription packages</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Package
+          {t("addPackage")}
         </Button>
       </div>
 
@@ -143,27 +145,27 @@ export default function AdminPackagesPage() {
         <Card>
           <form onSubmit={handleCreate}>
             <CardHeader>
-              <CardTitle>Create New Package</CardTitle>
+              <CardTitle>{t("createNewPackage")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t("fields.nameRequired")}</Label>
                   <Input id="name" name="name" required minLength={2} maxLength={100} />
-                  <p className="text-xs text-muted-foreground">2-100 characters</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.nameHint")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($) *</Label>
+                  <Label htmlFor="price">{t("fields.priceRequired")}</Label>
                   <Input id="price" name="price" type="number" step="0.01" min="0" required />
-                  <p className="text-xs text-muted-foreground">Price in USD (e.g., 29.99)</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.priceHint")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="credits">Credits *</Label>
+                  <Label htmlFor="credits">{t("fields.creditsRequired")}</Label>
                   <Input id="credits" name="credits" type="number" min="1" required />
-                  <p className="text-xs text-muted-foreground">Number of credits included</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.creditsHint")}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="durationDays">Duration (days) *</Label>
+                  <Label htmlFor="durationDays">{t("fields.durationRequired")}</Label>
                   <Input
                     id="durationDays"
                     name="durationDays"
@@ -172,26 +174,24 @@ export default function AdminPackagesPage() {
                     defaultValue="30"
                     required
                   />
-                  <p className="text-xs text-muted-foreground">Package validity period</p>
+                  <p className="text-xs text-muted-foreground">{t("fields.durationHint")}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="features">Features (one per line)</Label>
+                <Label htmlFor="features">{t("fields.features")}</Label>
                 <textarea
                   id="features"
                   name="features"
                   className="w-full min-h-[100px] p-2 border rounded-md"
-                  placeholder="Feature 1\nFeature 2\nFeature 3"
+                  placeholder={t("fields.featuresPlaceholder")}
                   maxLength={2000}
                 />
-                <p className="text-xs text-muted-foreground">
-                  List key features, one per line (max 2000 characters)
-                </p>
+                <p className="text-xs text-muted-foreground">{t("fields.featuresHint")}</p>
               </div>
 
               <div className="space-y-2">
-                <Label>Included Services</Label>
+                <Label>{t("fields.includedServices")}</Label>
                 <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
                   {allServices?.map(
                     (service: { id: string; name: string; icon: string | null }) => (
@@ -215,10 +215,10 @@ export default function AdminPackagesPage() {
             </CardContent>
             <CardFooter className="gap-2">
               <Button type="button" variant="outline" onClick={handleCancelCreate}>
-                Cancel
+                {t("buttons.cancel")}
               </Button>
               <Button type="submit" disabled={createPackage.isPending}>
-                {createPackage.isPending ? "Creating..." : "Create Package"}
+                {createPackage.isPending ? t("buttons.creating") : t("buttons.create")}
               </Button>
             </CardFooter>
           </form>
@@ -228,8 +228,10 @@ export default function AdminPackagesPage() {
       {/* Packages List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Packages</CardTitle>
-          <CardDescription>{packages?.length || 0} packages</CardDescription>
+          <CardTitle>{t("allPackages")}</CardTitle>
+          <CardDescription>
+            {packages?.length || 0} {t("info.packages")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs
@@ -238,8 +240,8 @@ export default function AdminPackagesPage() {
             className="w-full"
           >
             <TabsList className="mb-4">
-              <TabsTrigger value="active">Active Packages</TabsTrigger>
-              <TabsTrigger value="deleted">Deleted Packages</TabsTrigger>
+              <TabsTrigger value="active">{t("activePackages")}</TabsTrigger>
+              <TabsTrigger value="deleted">{t("deletedPackages")}</TabsTrigger>
             </TabsList>
             <TabsContent value={activeTab}>
               <div className="grid gap-6 md:grid-cols-3">
@@ -248,12 +250,10 @@ export default function AdminPackagesPage() {
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p className="text-lg font-medium">
-                      {activeTab === "active" ? "No packages yet" : "No deleted packages"}
+                      {activeTab === "active" ? t("noPackagesYet") : t("noDeletedPackages")}
                     </p>
                     <p className="text-sm">
-                      {activeTab === "active"
-                        ? "Create your first package to get started"
-                        : "Deleted packages will appear here"}
+                      {activeTab === "active" ? t("createFirst") : t("deletedWillAppear")}
                     </p>
                   </div>
                 )}
@@ -280,7 +280,7 @@ export default function AdminPackagesPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div className="space-y-2">
-                                <Label>Price ($)</Label>
+                                <Label>{t("fields.price")}</Label>
                                 <Input
                                   name="price"
                                   type="number"
@@ -289,11 +289,11 @@ export default function AdminPackagesPage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label>Credits</Label>
+                                <Label>{t("fields.credits")}</Label>
                                 <Input name="credits" type="number" defaultValue={pkg.credits} />
                               </div>
                               <div className="space-y-2">
-                                <Label>Features</Label>
+                                <Label>{t("fields.features")}</Label>
                                 <textarea
                                   name="features"
                                   className="w-full min-h-[80px] p-2 border rounded-md text-sm"
@@ -302,7 +302,7 @@ export default function AdminPackagesPage() {
                               </div>
 
                               <div className="space-y-2">
-                                <Label>Included Services</Label>
+                                <Label>{t("fields.includedServices")}</Label>
                                 <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
                                   {allServices?.map(
                                     (service: {
@@ -335,10 +335,10 @@ export default function AdminPackagesPage() {
                                 size="sm"
                                 onClick={handleCancelEdit}
                               >
-                                Cancel
+                                {t("buttons.cancel")}
                               </Button>
                               <Button type="submit" size="sm" disabled={updatePackage.isPending}>
-                                Save
+                                {t("buttons.save")}
                               </Button>
                             </CardFooter>
                           </form>
@@ -354,13 +354,17 @@ export default function AdminPackagesPage() {
                               <span className="text-2xl font-bold text-foreground">
                                 {formatCurrency(pkg.price)}
                               </span>{" "}
-                              /month
+                              {t("info.perMonth")}
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
                             <ul className="space-y-2 text-sm">
-                              <li>{pkg.credits} credits</li>
-                              <li>{pkg.durationDays} day duration</li>
+                              <li>
+                                {pkg.credits} {t("info.credits")}
+                              </li>
+                              <li>
+                                {pkg.durationDays} {t("info.dayDuration")}
+                              </li>
                               {pkg.features.map((feature: string, i: number) => (
                                 <li
                                   key={`${pkg.id}-feature-${i}`}
@@ -373,7 +377,9 @@ export default function AdminPackagesPage() {
 
                             {pkg.services && pkg.services.length > 0 && (
                               <div className="mt-4 pt-4 border-t">
-                                <p className="text-sm font-medium mb-2">Included Services:</p>
+                                <p className="text-sm font-medium mb-2">
+                                  {t("info.includedServicesLabel")}
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                   {pkg.services.map((ps) => (
                                     <Badge
@@ -391,7 +397,7 @@ export default function AdminPackagesPage() {
                             {(!pkg.services || pkg.services.length === 0) && (
                               <div className="mt-4 pt-4 border-t">
                                 <p className="text-sm text-muted-foreground italic">
-                                  No services configured
+                                  {t("fields.noServicesConfigured")}
                                 </p>
                               </div>
                             )}
@@ -404,7 +410,7 @@ export default function AdminPackagesPage() {
                                 onClick={() => handleEditPackage(pkg)}
                               >
                                 <Edit className="mr-1 h-3 w-3" />
-                                Edit
+                                {t("buttons.edit")}
                               </Button>
                             )}
                             <Button
@@ -412,10 +418,10 @@ export default function AdminPackagesPage() {
                               size="sm"
                               onClick={() => {
                                 if (activeTab === "active") {
-                                  if (confirm("Delete this package?")) {
+                                  if (confirm(t("confirmations.delete"))) {
                                     deletePackage.mutate({ id: pkg.id });
                                   }
-                                } else if (confirm("Restore this package?")) {
+                                } else if (confirm(t("confirmations.restore"))) {
                                   restorePackage.mutate({ id: pkg.id });
                                 }
                               }}
@@ -423,12 +429,12 @@ export default function AdminPackagesPage() {
                               {activeTab === "active" ? (
                                 <>
                                   <Trash className="mr-1 h-3 w-3" />
-                                  Delete
+                                  {t("buttons.delete")}
                                 </>
                               ) : (
                                 <>
                                   <RotateCcw className="mr-1 h-3 w-3" />
-                                  Restore
+                                  {t("buttons.restore")}
                                 </>
                               )}
                             </Button>

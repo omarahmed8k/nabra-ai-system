@@ -202,5 +202,561 @@
     "common": {
       "required": "*"
     }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Manage the platform and monitor activity",
+      "stats": {
+        "totalUsers": "Total Users",
+        "totalRequests": "Total Requests",
+        "totalRevenue": "Total Revenue",
+        "averageRating": "Average Rating",
+        "clients": "clients",
+        "providers": "providers",
+        "active": "active",
+        "completed": "completed",
+        "activeSubscriptions": "active subscriptions",
+        "activeServiceTypes": "active service types",
+        "creditsLeft": "credits left"
+      },
+      "charts": {
+        "revenueTrend": "Revenue Trend",
+        "revenueTrendDesc": "Monthly revenue over the last 6 months",
+        "requestsByStatus": "Requests by Status",
+        "requestsByStatusDesc": "Distribution of request statuses",
+        "requestsByService": "Requests by Service",
+        "requestsByServiceDesc": "Service type popularity",
+        "subscriptionsByPackage": "Subscriptions by Package",
+        "subscriptionsByPackageDesc": "Active subscriptions distribution",
+        "topProviders": "Top Providers",
+        "topProvidersDesc": "By completed requests",
+        "recentSubscriptions": "Recent Subscriptions",
+        "recentSubscriptionsDesc": "Latest subscription activity",
+        "viewAll": "View all",
+        "noData": "No data available yet",
+        "noDataDesc": "Requests will appear here once created",
+        "noCompletedRequests": "No completed requests yet",
+        "noCompletedRequestsDesc": "Revenue data will appear once requests are completed",
+        "noSubscriptions": "No subscriptions yet",
+        "noSubscriptionsDesc": "Subscription data will appear once clients subscribe",
+        "noServiceData": "No service data available yet",
+        "noServiceDataDesc": "Service requests will appear here once created"
+      },
+      "quickStats": {
+        "newUsers": "New Users (30d)",
+        "newRequests": "New Requests (30d)",
+        "pendingRequests": "Pending Requests",
+        "completedRequests": "Completed Requests"
+      },
+      "navigation": {
+        "manageUsers": "Manage Users",
+        "manageUsersDesc": "View and manage all users, change roles, and more",
+        "manageRequests": "Manage Requests",
+        "manageRequestsDesc": "View and manage all service requests",
+        "managePackages": "Manage Packages",
+        "managePackagesDesc": "Configure subscription packages and pricing",
+        "manageServices": "Manage Services",
+        "manageServicesDesc": "Configure service types and form fields"
+      }
+    },
+    "users": {
+      "title": "Users Management",
+      "subtitle": "Manage all users on the platform",
+      "search": "Search users by name or email...",
+      "filters": {
+        "role": "Filter by Role",
+        "allRoles": "All Roles",
+        "client": "Clients",
+        "provider": "Providers",
+        "admin": "Admins"
+      },
+      "tabs": {
+        "allUsers": "All Users",
+        "clients": "Clients",
+        "providers": "Providers"
+      },
+      "createUser": "Create User",
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "requests": "Requests",
+        "subscriptions": "Subscriptions",
+        "rating": "Rating",
+        "services": "Services",
+        "joined": "Joined",
+        "actions": "Actions",
+        "noUsers": "No users found",
+        "tryAdjusting": "Try adjusting your search or filters"
+      },
+      "dialog": {
+        "create": {
+          "title": "Create New User",
+          "description": "Add a new user to the platform"
+        },
+        "edit": {
+          "title": "Edit User",
+          "description": "Update user information"
+        },
+        "fields": {
+          "name": "Full Name",
+          "email": "Email Address",
+          "password": "Password",
+          "role": "User Role",
+          "services": "Supported Services",
+          "selectServices": "Select the services this provider can handle"
+        },
+        "buttons": {
+          "creating": "Creating...",
+          "create": "Create User",
+          "updating": "Updating...",
+          "update": "Update User",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "created": "User created successfully",
+          "updated": "User updated successfully",
+          "deleted": "User deleted successfully",
+          "error": "An error occurred"
+        }
+      },
+      "servicesBadge": {
+        "noServices": "No services assigned",
+        "more": "more"
+      }
+    },
+    "requests": {
+      "title": "All Requests",
+      "subtitle": "Manage and monitor all service requests",
+      "search": "Search requests...",
+      "filters": {
+        "status": "Filter by Status",
+        "allStatuses": "All Statuses",
+        "pending": "Pending",
+        "inProgress": "In Progress",
+        "delivered": "Delivered",
+        "revisionRequested": "Revision Requested",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "table": {
+        "noRequests": "No requests found",
+        "tryAdjusting": "Try adjusting your search or filters"
+      },
+      "actions": {
+        "view": "View Details",
+        "assignProvider": "Assign Provider",
+        "delete": "Delete Request"
+      },
+      "assignDialog": {
+        "title": "Assign Provider",
+        "description": "Select a provider to assign to this request",
+        "search": "Search providers...",
+        "rating": "Rating",
+        "completed": "Completed",
+        "active": "Active",
+        "noProviders": "No providers available for this service type",
+        "buttons": {
+          "assigning": "Assigning...",
+          "assign": "Assign Provider",
+          "cancel": "Cancel"
+        },
+        "toast": {
+          "assigned": "Provider assigned successfully",
+          "error": "Failed to assign provider"
+        }
+      },
+      "detail": {
+        "notFound": "Request not found",
+        "notFoundDesc": "The request you're looking for doesn't exist or has been deleted.",
+        "backToRequests": "Back to All Requests",
+        "messagesTitle": "Messages",
+        "messagesDesc": "Communicate with the client and provider",
+        "messagesPlaceholder": "Type your message..."
+      }
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "subtitle": "Manage your administrator account settings",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security"
+      }
+    },
+    "packages": {
+      "title": "Packages",
+      "subtitle": "Manage subscription packages",
+      "addPackage": "Add Package",
+      "createNewPackage": "Create New Package",
+      "allPackages": "All Packages",
+      "activePackages": "Active Packages",
+      "deletedPackages": "Deleted Packages",
+      "noPackagesYet": "No packages yet",
+      "noDeletedPackages": "No deleted packages",
+      "createFirst": "Create your first package to get started",
+      "deletedWillAppear": "Deleted packages will appear here",
+      "fields": {
+        "name": "Name",
+        "nameRequired": "Name *",
+        "nameHint": "2-100 characters",
+        "price": "Price ($)",
+        "priceRequired": "Price ($) *",
+        "priceHint": "Price in USD (e.g., 29.99)",
+        "credits": "Credits",
+        "creditsRequired": "Credits *",
+        "creditsHint": "Number of credits included",
+        "duration": "Duration (days)",
+        "durationRequired": "Duration (days) *",
+        "durationHint": "Package validity period",
+        "features": "Features (one per line)",
+        "featuresHint": "List key features, one per line (max 2000 characters)",
+        "featuresPlaceholder": "Feature 1\nFeature 2\nFeature 3",
+        "includedServices": "Included Services",
+        "noServicesConfigured": "No services configured"
+      },
+      "info": {
+        "credits": "credits",
+        "dayDuration": "day duration",
+        "perMonth": "/month",
+        "includedServicesLabel": "Included Services:",
+        "packages": "packages"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create Package",
+        "edit": "Edit",
+        "save": "Save",
+        "delete": "Delete",
+        "restore": "Restore",
+        "pick": "Pick",
+        "hide": "Hide"
+      },
+      "confirmations": {
+        "delete": "Delete this package?",
+        "restore": "Restore this package?"
+      },
+      "toast": {
+        "created": "Package created successfully",
+        "updated": "Package updated successfully",
+        "deleted": "Package deleted successfully",
+        "restored": "Package restored successfully",
+        "createFailed": "Failed to create package",
+        "updateFailed": "Failed to update package",
+        "deleteFailed": "Failed to delete package",
+        "restoreFailed": "Failed to restore package"
+      }
+    },
+    "services": {
+      "title": "Service Types",
+      "subtitle": "Manage available service categories",
+      "addServiceType": "Add Service Type",
+      "createServiceType": "Create Service Type",
+      "allServiceTypes": "All Service Types",
+      "activeServices": "Active Services",
+      "deletedServices": "Deleted Services",
+      "noServiceTypes": "No service types yet",
+      "fields": {
+        "icon": "Icon (emoji)",
+        "iconOptional": "Icon (emoji) (optional)",
+        "name": "Name",
+        "nameRequired": "Name *",
+        "nameHint": "2-100 characters",
+        "description": "Description",
+        "descriptionRequired": "Description *",
+        "descriptionHint": "10-500 characters",
+        "creditCost": "Base Credit Cost",
+        "creditCostRequired": "Base Credit Cost *",
+        "creditCostHint": "Number of credits required to create a request for this service",
+        "priorityCostLow": "Low Priority Cost",
+        "priorityCostLowHint": "Additional credits for low priority (+0)",
+        "priorityCostMedium": "Medium Priority Cost",
+        "priorityCostMediumHint": "Additional credits for medium priority (+1)",
+        "priorityCostHigh": "High Priority Cost",
+        "priorityCostHighHint": "Additional credits for high priority (+2)",
+        "maxFreeRevisions": "Max Free Revisions",
+        "maxFreeRevisionsHint": "Number of free revisions allowed",
+        "paidRevisionCost": "Paid Revision Cost (credits)",
+        "paidRevisionCostHint": "Credits charged for paid revisions",
+        "resetFreeRevisionsOnPaid": "Reset free revisions on paid",
+        "resetFreeRevisionsOnPaidHint": "Reset free revision count after a paid revision"
+      },
+      "info": {
+        "questions": "question",
+        "questionsPlural": "questions",
+        "credit": "credit",
+        "creditsPlural": "credits",
+        "freeRevisions": "free, then",
+        "perRevision": "/revision",
+        "resetsOnPaid": "Resets on paid",
+        "noResetOnPaid": "No reset on paid",
+        "serviceTypes": "service types"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "create": "Create",
+        "edit": "Edit",
+        "save": "Save",
+        "delete": "Delete",
+        "restore": "Restore",
+        "pick": "Pick",
+        "hide": "Hide"
+      },
+      "confirmations": {
+        "delete": "Delete this service type?",
+        "restore": "Restore this service type?"
+      },
+      "toast": {
+        "deleted": "Service deleted successfully",
+        "restored": "Service restored successfully",
+        "deleteFailed": "Failed to delete service",
+        "restoreFailed": "Failed to restore service"
+      }
+    },
+    "payments": {
+      "title": "Payment Verification",
+      "subtitle": "Review and verify client payment proofs",
+      "stats": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "total": "Total"
+      },
+      "tabs": {
+        "pending": "Pending",
+        "pendingCount": "Pending ({count})",
+        "all": "All Payments"
+      },
+      "table": {
+        "client": "Client",
+        "package": "Package",
+        "amount": "Amount",
+        "date": "Date",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "PENDING": "PENDING",
+        "APPROVED": "APPROVED",
+        "REJECTED": "REJECTED"
+      },
+      "empty": {
+        "noPending": "No pending payments to review!",
+        "noPayments": "No payment records found."
+      },
+      "details": {
+        "title": "Payment Details",
+        "description": "Review the payment proof submitted by the client",
+        "client": "Client",
+        "package": "Package",
+        "amountSent": "Amount Sent",
+        "transferDate": "Transfer Date",
+        "senderName": "Sender Name",
+        "senderBank": "Sender Bank",
+        "country": "Country",
+        "referenceNumber": "Reference Number",
+        "awaitingReference": "Awaiting reference number",
+        "notes": "Notes",
+        "rejectionReason": "Rejection Reason:",
+        "transferReceipt": "Transfer receipt"
+      },
+      "reject": {
+        "title": "Reject Payment",
+        "description": "Please provide a reason for rejecting this payment. The client will be notified.",
+        "reasonLabel": "Rejection Reason *",
+        "reasonPlaceholder": "e.g., Amount doesn't match the package price, Unable to verify transfer receipt...",
+        "reasonHint": "Minimum 10 characters required",
+        "button": "Reject Payment",
+        "rejecting": "Rejecting...",
+        "errorMinLength": "Please provide a detailed reason (at least 10 characters)"
+      },
+      "buttons": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel"
+      },
+      "confirmations": {
+        "approve": "Are you sure you want to approve this payment?"
+      },
+      "toast": {
+        "approved": "Payment approved and subscription activated!",
+        "rejected": "Payment rejected and user notified."
+      },
+      "cards": {
+        "pendingTitle": "Pending Verifications",
+        "pendingDesc": "Review and approve or reject pending payment proofs",
+        "allTitle": "All Payments",
+        "allDesc": "Complete history of payment verifications"
+      }
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "subtitle": "Manage and monitor all client subscriptions",
+      "stats": {
+        "total": "Total",
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled",
+        "totalRevenue": "Total Revenue"
+      },
+      "filters": {
+        "title": "Filters",
+        "searchPlaceholder": "Search by user name, email, or package...",
+        "status": "Filter by status",
+        "allStatuses": "All Statuses",
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      },
+      "list": {
+        "title": "Subscriptions ({count})",
+        "creditsLeft": "Credits left"
+      },
+      "badges": {
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled"
+      },
+      "empty": {
+        "title": "No subscriptions found",
+        "noFilters": "No subscriptions have been created yet",
+        "withFilters": "Try adjusting your filters"
+      },
+      "info": {
+        "to": "to"
+      }
+    }
+  },
+  "requests": {
+    "header": {
+      "back": "Back",
+      "priority": "Priority",
+      "credit": "credit",
+      "credits": "credits",
+      "created": "Created",
+      "creditBreakdown": "Credit Cost Breakdown:",
+      "baseCost": "Base Cost:",
+      "priorityCost": "Priority ({priority}):",
+      "revisionCost": "Revision Cost:",
+      "freeRevision": "Free Revision:",
+      "noAdditionalCost": "No additional cost",
+      "total": "Total:"
+    },
+    "description": {
+      "title": "Description",
+      "attachments": "Attachments ({count})",
+      "attachmentFallback": "Attachment {number}"
+    },
+    "sidebar": {
+      "client": "Client",
+      "provider": "Provider",
+      "waitingForProvider": "Waiting for provider",
+      "details": "Details",
+      "serviceType": "Service Type",
+      "created": "Created",
+      "updated": "Updated",
+      "estimatedDelivery": "Est. Delivery",
+      "completed": "Completed",
+      "hoursRemaining": "~{hours} hour{plural} remaining",
+      "daysRemaining": "~{days} day{plural} remaining",
+      "deliveryTimePassed": "Delivery time passed",
+      "revisions": "Revisions",
+      "totalRequested": "{total} total requested",
+      "freeUsed": "Free: {used}/{max} used",
+      "freeRemaining": "({remaining} remaining)",
+      "noName": "No name"
+    },
+    "messages": {
+      "title": "Messages",
+      "description": "Communicate with other parties",
+      "placeholder": "Type your message...",
+      "noMessages": "No messages yet",
+      "system": "System",
+      "deliverable": "Deliverable",
+      "attachment": "📎 Attachment {number}",
+      "attachmentFallback": "(Attachment)",
+      "send": "Send",
+      "messageSent": "Message Sent",
+      "messageSuccess": "Your message has been sent.",
+      "messageFailed": "Failed to send message",
+      "requestCompleted": "This request has been completed. Comments are no longer available."
+    },
+    "attributes": {
+      "title": "Service-Specific Information"
+    }
+  },
+  "profile": {
+    "editProfile": {
+      "title": "Profile Information",
+      "description": "Update your account details and personal information",
+      "labels": {
+        "name": "Full Name",
+        "email": "Email Address",
+        "profileImage": "Profile Photo (optional)"
+      },
+      "placeholders": {
+        "name": "Enter your name",
+        "email": "your@email.com"
+      },
+      "buttons": {
+        "uploadPhoto": "Upload Photo",
+        "uploading": "Uploading...",
+        "removePhoto": "Remove",
+        "reset": "Reset",
+        "saveChanges": "Save Changes",
+        "saving": "Saving..."
+      },
+      "uploadMessages": {
+        "invalidType": "Please upload an image file",
+        "tooLarge": "Image size must be less than 5MB",
+        "success": "Image uploaded successfully",
+        "failed": "Failed to upload image",
+        "uploadFailed": "Upload failed"
+      },
+      "helperText": {
+        "emailWarning": "Changing your email will affect your login credentials",
+        "currentPhoto": "Current photo",
+        "maxFileSize": "Max 5MB, JPG/PNG/GIF"
+      },
+      "successMessage": "Profile updated successfully",
+      "errorMessage": "Failed to update profile"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "description": "Update your password regularly to keep your account secure",
+      "labels": {
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password"
+      },
+      "placeholders": {
+        "currentPassword": "Enter current password",
+        "newPassword": "Enter new password",
+        "confirmPassword": "Confirm new password"
+      },
+      "strengthLabels": {
+        "veryWeak": "Very Weak",
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      },
+      "strengthText": "Strength",
+      "helperText": {
+        "requirements": "Must contain at least 8 characters, including uppercase, lowercase, and numbers",
+        "mismatch": "Passwords do not match"
+      },
+      "validationErrors": {
+        "mismatch": "New passwords do not match",
+        "tooShort": "New password must be at least 8 characters long"
+      },
+      "buttons": {
+        "changing": "Changing...",
+        "changePassword": "Change Password"
+      },
+      "successMessage": "Password changed successfully",
+      "errorMessage": "Failed to change password"
+    }
   }
 }

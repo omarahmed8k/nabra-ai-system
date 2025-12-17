@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
 import { formatDateTime, getInitials } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface UserInfo {
   name: string | null;
@@ -41,13 +42,15 @@ export function RequestSidebar({
   totalRevisions,
   revisionInfo,
 }: RequestSidebarProps) {
+  const t = useTranslations("requests.sidebar");
+
   return (
     <div className="space-y-6">
       {/* Client Info */}
       {client && (
         <Card>
           <CardHeader>
-            <CardTitle>Client</CardTitle>
+            <CardTitle>{t("client")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
@@ -56,7 +59,7 @@ export function RequestSidebar({
                 <AvatarFallback>{getInitials(client.name || client.email || "")}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{client.name || "No name"}</p>
+                <p className="font-medium">{client.name || t("noName")}</p>
                 <p className="text-sm text-muted-foreground">{client.email}</p>
               </div>
             </div>
@@ -68,7 +71,7 @@ export function RequestSidebar({
       {provider !== undefined && (
         <Card>
           <CardHeader>
-            <CardTitle>Provider</CardTitle>
+            <CardTitle>{t("provider")}</CardTitle>
           </CardHeader>
           <CardContent>
             {provider ? (
@@ -80,14 +83,14 @@ export function RequestSidebar({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{provider.name || "No name"}</p>
+                  <p className="font-medium">{provider.name || t("noName")}</p>
                   <p className="text-sm text-muted-foreground">{provider.email}</p>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <AlertCircle className="h-4 w-4" />
-                <span>Waiting for provider</span>
+                <span>{t("waitingForProvider")}</span>
               </div>
             )}
           </CardContent>
@@ -97,29 +100,29 @@ export function RequestSidebar({
       {/* Request Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Details</CardTitle>
+          <CardTitle>{t("details")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">Service Type</p>
+            <p className="text-sm text-muted-foreground">{t("serviceType")}</p>
             <p className="font-medium">
               {serviceTypeIcon && `${serviceTypeIcon} `}
               {serviceTypeName}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Created</p>
+            <p className="text-sm text-muted-foreground">{t("created")}</p>
             <p className="font-medium">{formatDateTime(createdAt)}</p>
           </div>
           {updatedAt && (
             <div>
-              <p className="text-sm text-muted-foreground">Updated</p>
+              <p className="text-sm text-muted-foreground">{t("updated")}</p>
               <p className="font-medium">{formatDateTime(updatedAt)}</p>
             </div>
           )}
           {estimatedDelivery && (
             <div>
-              <p className="text-sm text-muted-foreground">Est. Delivery</p>
+              <p className="text-sm text-muted-foreground">{t("estimatedDelivery")}</p>
               <p className="font-medium">{formatDateTime(estimatedDelivery)}</p>
               {new Date(estimatedDelivery) > new Date() && (
                 <p className="text-xs text-blue-600 mt-1">
@@ -131,22 +134,28 @@ export function RequestSidebar({
                       )
                     );
                     if (hoursRemaining < 24) {
-                      return `~${hoursRemaining} hour${hoursRemaining === 1 ? "" : "s"} remaining`;
+                      return t("hoursRemaining", {
+                        hours: hoursRemaining,
+                        plural: hoursRemaining === 1 ? "" : "s",
+                      });
                     } else {
                       const daysRemaining = Math.round(hoursRemaining / 24);
-                      return `~${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining`;
+                      return t("daysRemaining", {
+                        days: daysRemaining,
+                        plural: daysRemaining === 1 ? "" : "s",
+                      });
                     }
                   })()}
                 </p>
               )}
               {new Date(estimatedDelivery) <= new Date() && (
-                <p className="text-xs text-amber-600 mt-1">Delivery time passed</p>
+                <p className="text-xs text-amber-600 mt-1">{t("deliveryTimePassed")}</p>
               )}
             </div>
           )}
           {completedAt && (
             <div>
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-sm text-muted-foreground">{t("completed")}</p>
               <p className="font-medium">{formatDateTime(completedAt)}</p>
             </div>
           )}
@@ -154,19 +163,21 @@ export function RequestSidebar({
             <>
               <Separator />
               <div>
-                <p className="text-sm text-muted-foreground">Revisions</p>
+                <p className="text-sm text-muted-foreground">{t("revisions")}</p>
                 <p className="font-medium">
-                  {totalRevisions || 0} total requested
+                  {t("totalRequested", { total: totalRevisions || 0 })}
                   {revisionInfo && (
                     <>
                       <br />
                       <span className="text-sm text-muted-foreground">
-                        Free: {revisionInfo.maxFree - revisionInfo.freeRevisionsRemaining}/
-                        {revisionInfo.maxFree} used
+                        {t("freeUsed", {
+                          used: revisionInfo.maxFree - revisionInfo.freeRevisionsRemaining,
+                          max: revisionInfo.maxFree,
+                        })}
                         {revisionInfo.freeRevisionsRemaining > 0 && (
                           <span className="text-green-600">
                             {" "}
-                            ({revisionInfo.freeRevisionsRemaining} remaining)
+                            {t("freeRemaining", { remaining: revisionInfo.freeRevisionsRemaining })}
                           </span>
                         )}
                       </span>

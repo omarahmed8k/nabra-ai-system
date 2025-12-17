@@ -1,12 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { AttributeResponse } from "@/types/service-attributes";
+import { useTranslations } from "next-intl";
 
 interface AttributeResponsesDisplayProps {
   readonly responses: AttributeResponse[];
 }
 
 export function AttributeResponsesDisplay({ responses }: AttributeResponsesDisplayProps) {
+  const t = useTranslations("requests.attributes");
+
   if (!responses || responses.length === 0) {
     return null;
   }
@@ -21,15 +24,13 @@ export function AttributeResponsesDisplay({ responses }: AttributeResponsesDispl
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Service-Specific Information</CardTitle>
+        <CardTitle className="text-base">{t("title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {responses.map((response, index) => (
             <div key={`${response.question}-${index}`} className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">
-                {response.question}
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">{response.question}</p>
               <div className="text-sm">
                 {Array.isArray(response.answer) ? (
                   <div className="flex flex-wrap gap-2">
