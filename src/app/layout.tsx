@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Lato, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
@@ -11,7 +11,17 @@ import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 // Initialize notification system on server
 import "@/lib/notifications/init";
 
-const inter = Inter({ subsets: ["latin"] });
+const lato = Lato({
+  weight: ["300", "400", "700", "900"],
+  subsets: ["latin"],
+  variable: "--font-lato",
+});
+
+const cairo = Cairo({
+  weight: ["300", "400", "600", "700", "900"],
+  subsets: ["arabic", "latin"],
+  variable: "--font-cairo",
+});
 
 export const metadata: Metadata = {
   title: "Nabra AI System - Service Marketplace",
@@ -46,8 +56,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${lato.variable} ${cairo.variable}`}>
+      <body className="font-sans">
         <AuthProvider>
           <TRPCProvider>
             <NotificationProvider>

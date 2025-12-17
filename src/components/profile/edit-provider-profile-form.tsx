@@ -88,8 +88,8 @@ export function EditProviderProfileForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="bio">
-              <Briefcase className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="bio" className="flex items-center gap-1">
+              <Briefcase className="inline h-4 w-4" />
               {t("bio")}
             </Label>
             <Textarea
@@ -100,14 +100,14 @@ export function EditProviderProfileForm() {
               rows={4}
               maxLength={500}
             />
-            <p className="text-xs text-muted-foreground text-right">
+            <p className="text-xs text-muted-foreground text-end">
               {t("bioCharacters", { count: bio.length })}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="portfolio">
-              <LinkIcon className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="portfolio" className="flex items-center gap-1">
+              <LinkIcon className="inline h-4 w-4" />
               {t("portfolio")}
             </Label>
             <Input
@@ -121,8 +121,8 @@ export function EditProviderProfileForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="skills">
-              <Award className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="skills" className="flex items-center gap-1">
+              <Award className="inline h-4 w-4" />
               {t("skills")}
             </Label>
             <Textarea
@@ -150,8 +150,12 @@ export function EditProviderProfileForm() {
             >
               {t("reset")}
             </Button>
-            <Button type="submit" disabled={updateProviderProfile.isPending}>
-              {updateProviderProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={updateProviderProfile.isPending}
+              className="flex items-center gap-2"
+            >
+              {updateProviderProfile.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("saveChanges")}
             </Button>
           </div>

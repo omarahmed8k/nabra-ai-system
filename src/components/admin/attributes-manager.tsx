@@ -106,8 +106,14 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
             Custom questions clients must answer when requesting this service
           </p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={addAttribute}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addAttribute}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
           Add Question
         </Button>
       </div>
@@ -127,7 +133,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
-              className={`cursor-move transition-opacity ${draggedIndex === index ? 'opacity-50' : ''}`}
+              className={`cursor-move transition-opacity ${draggedIndex === index ? "opacity-50" : ""}`}
             >
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -141,16 +147,12 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                     <div className="flex-1 space-y-4">
                       {/* Question Text */}
                       <div className="space-y-2">
-                        <Label htmlFor={`question-${index}`}>
-                          Question {index + 1}
-                        </Label>
+                        <Label htmlFor={`question-${index}`}>Question {index + 1}</Label>
                         <Input
                           id={`question-${index}`}
                           placeholder="e.g., Do you need it as an offer post?"
                           value={attr.question}
-                          onChange={(e) =>
-                            updateAttribute(index, { question: e.target.value })
-                          }
+                          onChange={(e) => updateAttribute(index, { question: e.target.value })}
                           required
                         />
                       </div>
@@ -209,9 +211,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       {/* Options for Select/Multiselect */}
                       {(attr.type === "select" || attr.type === "multiselect") && (
                         <div className="space-y-2">
-                          <Label htmlFor={`options-${index}`}>
-                            Options (comma-separated)
-                          </Label>
+                          <Label htmlFor={`options-${index}`}>Options (comma-separated)</Label>
                           <Input
                             id={`options-${index}`}
                             placeholder="e.g., Yes, No, Maybe"
@@ -234,9 +234,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                           id={`placeholder-${index}`}
                           placeholder="e.g., Enter dimensions like 1920x1080"
                           value={attr.placeholder || ""}
-                          onChange={(e) =>
-                            updateAttribute(index, { placeholder: e.target.value })
-                          }
+                          onChange={(e) => updateAttribute(index, { placeholder: e.target.value })}
                         />
                       </div>
 
@@ -249,9 +247,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                           id={`helptext-${index}`}
                           placeholder="Additional guidance for the client"
                           value={attr.helpText || ""}
-                          onChange={(e) =>
-                            updateAttribute(index, { helpText: e.target.value })
-                          }
+                          onChange={(e) => updateAttribute(index, { helpText: e.target.value })}
                         />
                       </div>
                     </div>
@@ -269,7 +265,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       >
                         <ArrowUp className="h-4 w-4" />
                       </Button>
-                      
+
                       {/* Move Down */}
                       <Button
                         type="button"
@@ -281,7 +277,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       >
                         <ArrowDown className="h-4 w-4" />
                       </Button>
-                      
+
                       {/* Delete */}
                       <Button
                         type="button"

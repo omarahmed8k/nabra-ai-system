@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                 <p className="font-medium">{sub.user.name || sub.user.email}</p>
                 <p className="text-sm text-muted-foreground">{sub.package.name}</p>
               </div>
-              <div className="text-right">
+              <div className="text-end">
                 <p className="font-bold">${sub.package.price}</p>
                 <p className="text-xs text-muted-foreground">
                   {sub.remainingCredits} {t("stats.creditsLeft")}

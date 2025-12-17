@@ -144,10 +144,10 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
               <CardTitle>{subscription.package.name} Plan</CardTitle>
               <CardDescription>{formatCurrency(subscription.package.price)}</CardDescription>
             </div>
-            <Badge variant={badgeVariant}>
-              {proof.status === "PENDING" && <Clock className="h-3 w-3 mr-1" />}
-              {proof.status === "APPROVED" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-              {proof.status === "REJECTED" && <XCircle className="h-3 w-3 mr-1" />}
+            <Badge variant={badgeVariant} className="flex items-center gap-1">
+              {proof.status === "PENDING" && <Clock className="h-3 w-3" />}
+              {proof.status === "APPROVED" && <CheckCircle2 className="h-3 w-3" />}
+              {proof.status === "REJECTED" && <XCircle className="h-3 w-3" />}
               {proof.status}
             </Badge>
           </div>
@@ -546,7 +546,7 @@ function PaymentProofForm({
                   calendarClassName="!bg-background !border-border"
                   wrapperClassName="w-full"
                 />
-                <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <CalendarIcon className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               </div>
               {errors.transferDate && (
                 <p className="text-sm text-destructive">{errors.transferDate}</p>

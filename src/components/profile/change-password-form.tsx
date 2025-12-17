@@ -86,8 +86,8 @@ export function ChangePasswordForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">
-              <Lock className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="currentPassword" className="flex items-center gap-1">
+              <Lock className="inline h-4 w-4" />
               {t("labels.currentPassword")}
             </Label>
             <div className="relative">
@@ -103,7 +103,7 @@ export function ChangePasswordForm() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-0 h-full px-3"
+                className="absolute end-0 top-0 h-full px-3"
                 onClick={() => setShowCurrent(!showCurrent)}
               >
                 {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -112,8 +112,8 @@ export function ChangePasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="newPassword">
-              <Lock className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="newPassword" className="flex items-center gap-1">
+              <Lock className="inline h-4 w-4" />
               {t("labels.newPassword")}
             </Label>
             <div className="relative">
@@ -130,7 +130,7 @@ export function ChangePasswordForm() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-0 h-full px-3"
+                className="absolute end-0 top-0 h-full px-3"
                 onClick={() => setShowNew(!showNew)}
               >
                 {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -159,8 +159,8 @@ export function ChangePasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">
-              <Lock className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="confirmPassword" className="flex items-center gap-1">
+              <Lock className="inline h-4 w-4" />
               {t("labels.confirmPassword")}
             </Label>
             <div className="relative">
@@ -177,7 +177,7 @@ export function ChangePasswordForm() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-0 h-full px-3"
+                className="absolute end-0 top-0 h-full px-3"
                 onClick={() => setShowConfirm(!showConfirm)}
               >
                 {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -192,8 +192,9 @@ export function ChangePasswordForm() {
             <Button
               type="submit"
               disabled={changePassword.isPending || newPassword !== confirmPassword}
+              className="flex items-center gap-2"
             >
-              {changePassword.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {changePassword.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("buttons.changePassword")}
             </Button>
           </div>

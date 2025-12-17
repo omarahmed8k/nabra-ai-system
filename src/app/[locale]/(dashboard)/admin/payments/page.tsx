@@ -82,9 +82,9 @@ function getStatusBadgeVariant(status: string) {
 }
 
 function StatusIcon({ status }: { readonly status: string }) {
-  if (status === "PENDING") return <Clock className="h-3 w-3 mr-1" />;
-  if (status === "APPROVED") return <CheckCircle2 className="h-3 w-3 mr-1" />;
-  return <XCircle className="h-3 w-3 mr-1" />;
+  if (status === "PENDING") return <Clock className="h-3 w-3" />;
+  if (status === "APPROVED") return <CheckCircle2 className="h-3 w-3" />;
+  return <XCircle className="h-3 w-3" />;
 }
 
 export default function AdminPaymentsPage() {
@@ -171,7 +171,7 @@ export default function AdminPaymentsPage() {
         </TableCell>
         <TableCell>{formatDate(payment.transferDate)}</TableCell>
         <TableCell>
-          <Badge variant={badgeVariant}>
+          <Badge variant={badgeVariant} className="flex items-center gap-1">
             <StatusIcon status={payment.status} />
             {t(`status.${payment.status}`)}
           </Badge>
@@ -442,17 +442,17 @@ export default function AdminPaymentsPage() {
                 <Button
                   variant="destructive"
                   onClick={() => setShowRejectDialog(true)}
-                  className="flex-1"
+                  className="flex-1 flex items-center gap-2"
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="h-4 w-4" />
                   {t("buttons.reject")}
                 </Button>
                 <Button
                   onClick={() => handleApprove(selectedPayment.id)}
                   disabled={approveMutation.isPending}
-                  className="flex-1"
+                  className="flex-1 flex items-center gap-2"
                 >
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="h-4 w-4" />
                   {t("buttons.approve")}
                 </Button>
               </div>

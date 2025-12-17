@@ -91,7 +91,7 @@ export function PWAInstallPrompt() {
   // iOS Installation Instructions
   if (showIOSInstructions) {
     return (
-      <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96">
+      <div className="fixed bottom-4 start-4 end-4 z-50 md:start-auto md:end-4 md:w-96">
         <div className="rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
@@ -129,7 +129,7 @@ export function PWAInstallPrompt() {
   if (!showPrompt || !deferredPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-96">
+    <div className="fixed bottom-4 start-4 end-4 z-50 md:start-auto md:end-4 md:w-96">
       <div className="rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">

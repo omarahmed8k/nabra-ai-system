@@ -53,8 +53,9 @@ export default function ProviderNotificationsPage() {
             variant="outline"
             onClick={() => markAllAsRead.mutate()}
             disabled={markAllAsRead.isPending}
+            className="flex items-center gap-2"
           >
-            <Check className="mr-2 h-4 w-4" />
+            <Check className="h-4 w-4" />
             {t("markAllAsRead")}
           </Button>
         )}
@@ -99,7 +100,7 @@ export default function ProviderNotificationsPage() {
                   // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
                   <div
                     key={notification.id}
-                    className={`relative p-4 pr-16 rounded-lg border transition-colors ${
+                    className={`relative p-4 pe-16 rounded-lg border transition-colors ${
                       notification.isRead ? "bg-background" : "bg-primary/5 border-primary/20"
                     } ${notification.link ? "cursor-pointer hover:bg-muted" : ""}`}
                     onClick={() => {
@@ -138,7 +139,7 @@ export default function ProviderNotificationsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="absolute top-4 right-4"
+                        className="absolute top-4 end-4"
                         onClick={(e) => {
                           e.stopPropagation();
                           markAsRead.mutate({ id: notification.id });

@@ -202,8 +202,8 @@ export default function AdminServicesPage() {
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={() => setShowCreate(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
           {t("addServiceType")}
         </Button>
       </div>
@@ -675,8 +675,9 @@ export default function AdminServicesPage() {
                                 setEditingId(service.id);
                                 setEditAttributes(service.attributes || []);
                               }}
+                              className="flex items-center gap-1"
                             >
-                              <Edit className="mr-1 h-3 w-3" />
+                              <Edit className="h-3 w-3" />
                               {t("buttons.edit")}
                             </Button>
                           )}
@@ -689,8 +690,9 @@ export default function AdminServicesPage() {
                                   deleteService.mutate({ id: service.id });
                                 }
                               }}
+                              className="flex items-center gap-1"
                             >
-                              <Trash className="mr-1 h-3 w-3" />
+                              <Trash className="h-3 w-3" />
                               {t("buttons.delete")}
                             </Button>
                           ) : (
@@ -702,8 +704,9 @@ export default function AdminServicesPage() {
                                   restoreService.mutate({ id: service.id });
                                 }
                               }}
+                              className="flex items-center gap-1"
                             >
-                              <RotateCcw className="mr-1 h-3 w-3" />
+                              <RotateCcw className="h-3 w-3" />
                               {t("buttons.restore")}
                             </Button>
                           )}

@@ -75,8 +75,8 @@ export function NotificationPermissionBanner() {
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
-        <Button onClick={handleRequest} size="sm">
-          <Bell className="mr-2 h-4 w-4" />
+        <Button onClick={handleRequest} size="sm" className="flex items-center gap-2">
+          <Bell className="h-4 w-4" />
           Enable Notifications
         </Button>
       </CardContent>

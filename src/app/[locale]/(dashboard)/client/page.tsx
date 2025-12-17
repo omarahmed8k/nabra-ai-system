@@ -33,8 +33,8 @@ export default function ClientDashboard() {
           <p className="text-muted-foreground">{t("overview")}</p>
         </div>
         <Link href="/client/requests/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
             {t("newRequest")}
           </Button>
         </Link>

@@ -33,6 +33,11 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-lato)", "var(--font-cairo)", "sans-serif"],
+        lato: ["var(--font-lato)", "sans-serif"],
+        cairo: ["var(--font-cairo)", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

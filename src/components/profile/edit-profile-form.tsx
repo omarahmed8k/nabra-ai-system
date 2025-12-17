@@ -134,8 +134,8 @@ export function EditProfileForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">
-              <User className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="name" className="flex items-center gap-1">
+              <User className="inline h-4 w-4" />
               {t("labels.name")}
             </Label>
             <Input
@@ -149,8 +149,8 @@ export function EditProfileForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">
-              <Mail className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="email" className="flex items-center gap-1">
+              <Mail className="inline h-4 w-4" />
               {t("labels.email")}
             </Label>
             <Input
@@ -165,8 +165,8 @@ export function EditProfileForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">
-              <Upload className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="image" className="flex items-center gap-1">
+              <Upload className="inline h-4 w-4" />
               {t("labels.profileImage")}
             </Label>
             <div className="flex flex-col gap-3">
@@ -187,8 +187,9 @@ export function EditProfileForm() {
                       size="sm"
                       onClick={() => setImage("")}
                       disabled={uploading}
+                      className="flex items-center gap-1"
                     >
-                      <X className="h-4 w-4 mr-1" />
+                      <X className="h-4 w-4" />
                       {t("buttons.removePhoto")}
                     </Button>
                   </div>
@@ -200,15 +201,16 @@ export function EditProfileForm() {
                     variant="outline"
                     onClick={() => document.getElementById("image-upload")?.click()}
                     disabled={uploading}
+                    className="flex items-center gap-2"
                   >
                     {uploading ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                         {t("buttons.uploading")}
                       </>
                     ) : (
                       <>
-                        <Upload className="h-4 w-4 mr-2" />
+                        <Upload className="h-4 w-4" />
                         {t("buttons.uploadPhoto")}
                       </>
                     )}
@@ -238,8 +240,12 @@ export function EditProfileForm() {
             >
               {t("buttons.reset")}
             </Button>
-            <Button type="submit" disabled={updateProfile.isPending}>
-              {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={updateProfile.isPending}
+              className="flex items-center gap-2"
+            >
+              {updateProfile.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("buttons.saveChanges")}
             </Button>
           </div>

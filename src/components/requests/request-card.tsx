@@ -72,10 +72,10 @@ export function RequestCard({
             </Badge>
           )}
           {creditCost !== undefined && creditCost !== null && (
-            <Badge variant="outline" className="font-semibold text-xs">
+            <Badge variant="outline" className="font-semibold text-xs flex items-center gap-1">
               💳 {creditCost}
               {hasCreditBreakdown && (
-                <span className="ml-1 text-muted-foreground text-[10px] sm:text-xs">
+                <span className="text-muted-foreground text-[10px] sm:text-xs">
                   ({baseCreditCost}+{priorityCreditCost})
                 </span>
               )}
@@ -121,7 +121,7 @@ export function RequestCard({
       </div>
 
       {actions && (
-        <div className="flex items-center gap-2 sm:ml-4 self-start sm:self-center">{actions}</div>
+        <div className="flex items-center gap-2 sm:ms-4 self-start sm:self-center">{actions}</div>
       )}
     </div>
   );

@@ -61,9 +61,9 @@ export default function AvailableJobsPage() {
                   variant="detailed"
                   actions={
                     <Link href={`/provider/available/${request.id}`}>
-                      <Button size="sm">
+                      <Button size="sm" className="flex items-center gap-2">
                         {t("viewDetails")}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
                   }

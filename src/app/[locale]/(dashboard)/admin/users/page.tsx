@@ -166,8 +166,13 @@ function UserStatsProvider({
           </div>
         </div>
       )}
-      <Button variant="outline" size="sm" onClick={onEditServices}>
-        <Settings className="h-4 w-4 mr-1" />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onEditServices}
+        className="flex items-center gap-1"
+      >
+        <Settings className="h-4 w-4" />
         {t("table.services")}
       </Button>
     </>
@@ -240,15 +245,21 @@ function UserListItem({
                     onRestore(user.id);
                   }
                 }}
+                className="flex items-center gap-1"
               >
-                <CheckCircle className="mr-1 h-4 w-4" />
+                <CheckCircle className="h-4 w-4" />
                 {t("dialog.buttons.update")}
               </Button>
             )
           : user.role !== "SUPER_ADMIN" && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
-                  <Edit className="mr-1 h-4 w-4" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(user)}
+                  className="flex items-center gap-1"
+                >
+                  <Edit className="h-4 w-4" />
                   {t("dialog.edit.title")}
                 </Button>
                 <Button
@@ -259,8 +270,9 @@ function UserListItem({
                       onDelete(user.id);
                     }
                   }}
+                  className="flex items-center gap-1"
                 >
-                  <Trash className="mr-1 h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                   Delete
                 </Button>
               </div>
@@ -419,8 +431,8 @@ export default function AdminUsersPage() {
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
+            <Button className="flex items-center gap-2">
+              <UserPlus className="h-4 w-4" />
               {t("createUser")}
             </Button>
           </DialogTrigger>
@@ -463,7 +475,7 @@ export default function AdminUsersPage() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
+                    className="absolute end-0 top-0 h-full px-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -565,12 +577,12 @@ export default function AdminUsersPage() {
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={t("search")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="ps-10"
               />
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>

@@ -123,8 +123,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 sm:w-72 lg:w-64 transform bg-background border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 start-0 z-50 w-64 sm:w-72 lg:w-64 transform bg-background border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
@@ -164,7 +164,7 @@ export default function DashboardLayout({
                   {showBadge && (
                     <Badge
                       variant="destructive"
-                      className="ml-auto h-4 sm:h-5 min-w-4 sm:min-w-5 flex items-center justify-center px-1 text-[10px] sm:text-xs"
+                      className="ms-auto h-4 sm:h-5 min-w-4 sm:min-w-5 flex items-center justify-center px-1 text-[10px] sm:text-xs"
                     >
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </Badge>
@@ -197,10 +197,10 @@ export default function DashboardLayout({
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full justify-start text-xs sm:text-sm"
+                className="w-full justify-start text-xs sm:text-sm flex items-center gap-2"
                 onClick={() => signOut({ callbackUrl: "/" })}
               >
-                <LogOut className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
                 {tNav("signOut")}
               </Button>
             </div>
@@ -219,7 +219,7 @@ export default function DashboardLayout({
       )}
 
       {/* Main content */}
-      <main className="lg:pl-64 min-h-screen">
+      <main className="lg:ps-64 min-h-screen">
         <div className="p-3 sm:p-4 md:p-6">
           <NotificationPermissionBanner />
           {children}

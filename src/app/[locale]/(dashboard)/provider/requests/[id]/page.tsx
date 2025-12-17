@@ -240,7 +240,7 @@ export default function ProviderRequestDetailPage() {
                       placeholder="24"
                     />
                     <span className="text-sm text-blue-700">hours</span>
-                    <span className="text-xs text-blue-600 ml-2">
+                    <span className="text-xs text-blue-600 flex items-center gap-2">
                       (
                       {(() => {
                         const hours = Number.parseInt(estimatedHours, 10);
@@ -260,8 +260,12 @@ export default function ProviderRequestDetailPage() {
                     Estimate between 1-720 hours (up to 30 days)
                   </p>
                 </div>
-                <Button onClick={handleStartWork} disabled={startWork.isPending}>
-                  <Play className="mr-2 h-4 w-4" />
+                <Button
+                  onClick={handleStartWork}
+                  disabled={startWork.isPending}
+                  className="flex items-center gap-2"
+                >
+                  <Play className="h-4 w-4" />
                   {startWork.isPending ? "Starting..." : "Start Work"}
                 </Button>
               </CardContent>
@@ -307,8 +311,9 @@ export default function ProviderRequestDetailPage() {
                 <Button
                   onClick={handleDeliver}
                   disabled={deliverable.trim().length < 5 || deliverWork.isPending}
+                  className="flex items-center gap-2"
                 >
-                  <Upload className="mr-2 h-4 w-4" />
+                  <Upload className="h-4 w-4" />
                   {deliverWork.isPending
                     ? t("submitDeliverable.submitting")
                     : t("submitDeliverable.button")}

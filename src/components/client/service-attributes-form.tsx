@@ -71,9 +71,9 @@ export function ServiceAttributesForm({
         <div className="space-y-6">
           {attributes.map((attr, index) => (
             <div key={`${attr.question}-${index}`} className="space-y-2">
-              <Label htmlFor={`attr-${index}`}>
+              <Label htmlFor={`attr-${index}`} className="flex items-center gap-1">
                 {attr.question}
-                {attr.required && <span className="text-destructive ml-1">*</span>}
+                {attr.required && <span className="text-destructive">*</span>}
               </Label>
 
               {attr.helpText && <p className="text-xs text-muted-foreground">{attr.helpText}</p>}

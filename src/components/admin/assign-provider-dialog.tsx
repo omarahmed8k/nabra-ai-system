@@ -327,15 +327,16 @@ export function AssignProviderDialog({
             disabled={
               isLoading || !selectedProviderId || selectedProviderId === request.provider?.id
             }
+            className="flex items-center gap-2"
           >
             {assignMutation.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 {t("assignDialog.buttons.assigning")}
               </>
             ) : (
               <>
-                <UserPlus className="h-4 w-4 mr-2" />
+                <UserPlus className="h-4 w-4" />
                 {t("assignDialog.buttons.assign")}
               </>
             )}

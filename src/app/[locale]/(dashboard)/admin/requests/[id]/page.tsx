@@ -34,8 +34,8 @@ export default function AdminRequestDetailPage() {
         <h3 className="text-lg font-medium">{t("detail.notFound")}</h3>
         <p className="text-muted-foreground mb-4">{t("detail.notFoundDesc")}</p>
         <Link href="/admin/requests">
-          <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
             {t("detail.backToRequests")}
           </Button>
         </Link>

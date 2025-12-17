@@ -161,8 +161,12 @@ export default function RequestDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
-                  <Button onClick={handleApprove} disabled={approveRequest.isPending}>
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                  <Button
+                    onClick={handleApprove}
+                    disabled={approveRequest.isPending}
+                    className="flex items-center gap-2"
+                  >
+                    <CheckCircle className="h-4 w-4" />
                     {approveRequest.isPending
                       ? t("deliverableReady.approving")
                       : t("deliverableReady.approve")}

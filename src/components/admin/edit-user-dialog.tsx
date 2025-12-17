@@ -93,8 +93,8 @@ export function EditUserDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-name">
-              <User className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="edit-name" className="flex items-center gap-1">
+              <User className="inline h-4 w-4" />
               {t("dialog.fields.name")}
             </Label>
             <Input
@@ -108,8 +108,8 @@ export function EditUserDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-email">
-              <Mail className="inline h-4 w-4 mr-1" />
+            <Label htmlFor="edit-email" className="flex items-center gap-1">
+              <Mail className="inline h-4 w-4" />
               {t("dialog.fields.email")}
             </Label>
             <Input
@@ -132,8 +132,12 @@ export function EditUserDialog({
             >
               {t("dialog.buttons.cancel")}
             </Button>
-            <Button type="submit" disabled={updateUser.isPending}>
-              {updateUser.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={updateUser.isPending}
+              className="flex items-center gap-2"
+            >
+              {updateUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t("dialog.buttons.update")}
             </Button>
           </DialogFooter>

@@ -109,9 +109,7 @@ export function FileUpload({
       setIsUploading(true);
 
       const results = await Promise.all(filesToUpload.map(uploadFile));
-      const successfulUploads = results.filter(
-        (r): r is UploadedFile => r !== null
-      );
+      const successfulUploads = results.filter((r): r is UploadedFile => r !== null);
 
       if (successfulUploads.length > 0) {
         const newFiles = [...uploadedFiles, ...successfulUploads];
@@ -213,14 +211,10 @@ export function FileUpload({
                 >
                   Click to upload
                 </Button>
-                <span className="text-sm text-muted-foreground">
-                  {" "}
-                  or drag and drop
-                </span>
+                <span className="text-sm text-muted-foreground"> or drag and drop</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Images, PDFs, or ZIP files (max {maxSizeMB}MB each, up to{" "}
-                {maxFiles} files)
+                Images, PDFs, or ZIP files (max {maxSizeMB}MB each, up to {maxFiles} files)
               </p>
             </>
           )}
@@ -242,9 +236,7 @@ export function FileUpload({
                 {getFileIcon(file.type)}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{file.filename}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatFileSize(file.size)}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                 </div>
                 <Button
                   type="button"
@@ -342,9 +334,7 @@ export function InlineFileUpload({
     setIsUploading(true);
 
     const results = await Promise.all(filesToUpload.map(uploadFile));
-    const successfulUploads = results.filter(
-      (r): r is UploadedFile => r !== null
-    );
+    const successfulUploads = results.filter((r): r is UploadedFile => r !== null);
 
     if (successfulUploads.length > 0) {
       const newFiles = [...uploadedFiles, ...successfulUploads];
@@ -381,15 +371,14 @@ export function InlineFileUpload({
           size="sm"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || isUploading || uploadedFiles.length >= maxFiles}
+          className="flex items-center gap-2"
         >
           {isUploading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          <span className="ml-2">
-            {isUploading ? "Uploading..." : "Attach Files"}
-          </span>
+          <span>{isUploading ? "Uploading..." : "Attach Files"}</span>
         </Button>
 
         {uploadedFiles.length > 0 && (
@@ -418,13 +407,7 @@ export function InlineFileUpload({
               </Button>
             </div>
           ))}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={clearFiles}
-            className="text-xs"
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={clearFiles} className="text-xs">
             Clear all
           </Button>
         </div>

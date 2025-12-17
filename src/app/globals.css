@@ -76,6 +76,15 @@
     color-scheme: dark;
   }
 
+  /* Font family based on direction */
+  [dir="ltr"] {
+    font-family: var(--font-lato), sans-serif;
+  }
+
+  [dir="rtl"] {
+    font-family: var(--font-cairo), sans-serif;
+  }
+
   /* Fix for native date/time/color picker icons in dark mode */
   input[type="date"]::-webkit-calendar-picker-indicator,
   input[type="time"]::-webkit-calendar-picker-indicator,
@@ -92,7 +101,9 @@
   }
 
   /* Ensure proper text color for all inputs */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     color: hsl(var(--foreground));
   }
 
