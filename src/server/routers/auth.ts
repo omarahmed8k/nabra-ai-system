@@ -12,6 +12,8 @@ export const authRouter = router({
         name: z.string().min(2, "Name must be at least 2 characters"),
         email: z.string().email("Invalid email address"),
         password: z.string().min(6, "Password must be at least 6 characters"),
+        phone: z.string().optional(),
+        hasWhatsapp: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -26,28 +28,10 @@ export const authRouter = router({
         });
       }
 
-      // Get IP address from request headers
+      // Capture IP for audit, but do not restrict by IP
       const forwarded = ctx.req?.headers.get("x-forwarded-for");
       const realIp = ctx.req?.headers.get("x-real-ip");
       const ip = forwarded?.split(",")[0] || realIp || null;
-
-      // Check if IP has already registered to prevent free plan abuse
-      if (ip) {
-        const ipAlreadyRegistered = await ctx.db.user.findFirst({
-          where: {
-            registrationIp: ip,
-            deletedAt: null,
-          },
-        });
-
-        if (ipAlreadyRegistered) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message:
-              "An account has already been registered from this network. Please contact support if you need assistance.",
-          });
-        }
-      }
 
       const hashedPassword = await bcrypt.hash(input.password, 12);
 
@@ -56,6 +40,8 @@ export const authRouter = router({
           name: input.name,
           email: input.email,
           password: hashedPassword,
+          phone: input.phone || null,
+          hasWhatsapp: input.hasWhatsapp ?? false,
           role: "CLIENT", // Default role
           registrationIp: ip,
         },

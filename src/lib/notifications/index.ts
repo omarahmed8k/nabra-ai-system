@@ -129,6 +129,39 @@ export async function createNotification(data: NotificationData) {
   return notification;
 }
 
+export async function notifyAdminsNewPendingPayment(params: {
+  clientNameOrEmail: string;
+  amount: number;
+  currency: string;
+}) {
+  const { clientNameOrEmail, amount, currency } = params;
+
+  const admins = await db.user.findMany({
+    where: { role: "SUPER_ADMIN" },
+    select: { id: true, email: true },
+  });
+
+  const title = "New Payment Verification Required";
+  const message = `${clientNameOrEmail} submitted a payment proof: ${amount.toFixed(2)} ${currency}.`;
+  const link = "/admin/payments";
+
+  // Notify each admin (DB + SSE). Email optional.
+  await Promise.all(
+    admins.map(async (admin) =>
+      createNotification({
+        userId: admin.id,
+        title,
+        message,
+        type: "general",
+        link,
+        sendEmail: false,
+      })
+    )
+  );
+
+  return { notifiedAdmins: admins.length };
+}
+
 export async function notifyNewMessage(params: {
   requestId: string;
   senderName: string;

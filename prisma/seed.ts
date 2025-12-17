@@ -11,6 +11,7 @@ async function main() {
   await prisma.notification.deleteMany();
   await prisma.rating.deleteMany();
   await prisma.requestComment.deleteMany();
+  await prisma.requestWatcher.deleteMany();
   await prisma.request.deleteMany();
   await prisma.paymentProof.deleteMany();
   await prisma.clientSubscription.deleteMany();

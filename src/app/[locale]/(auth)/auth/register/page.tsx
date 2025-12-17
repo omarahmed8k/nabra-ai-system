@@ -79,6 +79,8 @@ export default function RegisterPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
+    const phone = (formData.get("phone") as string) || undefined;
+    const hasWhatsapp = formData.get("hasWhatsapp") === "on";
 
     if (password !== confirmPassword) {
       setError(t("passwordsNotMatch"));
@@ -88,7 +90,7 @@ export default function RegisterPage() {
       return;
     }
 
-    registerMutation.mutate({ name, email, password });
+    registerMutation.mutate({ name, email, password, phone, hasWhatsapp });
   }
 
   return (
@@ -135,6 +137,23 @@ export default function RegisterPage() {
                 disabled={registerMutation.isPending}
               />
               <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">{t("phoneLabel")}</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder={t("phonePlaceholder")}
+                disabled={registerMutation.isPending}
+              />
+              <div className="flex items-center gap-2">
+                <input id="hasWhatsapp" name="hasWhatsapp" type="checkbox" className="h-4 w-4" />
+                <Label htmlFor="hasWhatsapp" className="text-sm">
+                  {t("hasWhatsappLabel")}
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("phoneHint")}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("emailLabel")} *</Label>

@@ -35,6 +35,7 @@ import {
   XCircle,
   Building2,
   Calendar as CalendarIcon,
+  Receipt,
 } from "lucide-react";
 
 // Explicit types for the data
@@ -102,6 +103,7 @@ function getStatusBadgeVariant(status: string) {
 function NoPendingPayment() {
   const router = useRouter();
   const t = useTranslations("client.payment");
+  const locale = useLocale();
 
   return (
     <div className="space-y-8">
@@ -119,6 +121,9 @@ function NoPendingPayment() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Transaction history */}
+      <TransactionsSection locale={locale} />
     </div>
   );
 }
@@ -217,6 +222,9 @@ function PaymentStatus({
           </Button>
         </CardFooter>
       </Card>
+
+      {/* Transaction history */}
+      <TransactionsSection locale={locale} />
     </div>
   );
 }
@@ -237,6 +245,116 @@ function CopyButton({
     <Button size="sm" variant="ghost" onClick={() => onCopy(value, field)}>
       {copied === field ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
     </Button>
+  );
+}
+
+// Transactions section embedded in payment page
+function TransactionsSection({ locale }: { locale: string }) {
+  const t = useTranslations("client.transactions");
+  const { data: transactions, isLoading } = trpc.subscription.getTransactionHistory.useQuery();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("loading")}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-2xl font-semibold">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("description")}</p>
+      </div>
+
+      {transactions && transactions.length > 0 ? (
+        <div className="space-y-4">
+          {transactions.map((tx: any) => (
+            <Card key={tx.id} className="overflow-hidden">
+              <CardHeader className="bg-muted/50">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="flex items-center gap-2">
+                      <Receipt className="h-5 w-5" />
+                      {tx.packageName}
+                    </CardTitle>
+                    <CardDescription>{formatDate(tx.createdAt, locale)}</CardDescription>
+                  </div>
+                  {(() => {
+                    let statusLabel = tx.paymentProof?.status || null;
+                    if (!statusLabel) {
+                      statusLabel = tx.isActive ? t("status.active") : t("status.expired");
+                    }
+
+                    let badgeVariant: "default" | "destructive" | "secondary" = "secondary";
+                    if (tx.paymentProof?.status === "APPROVED") badgeVariant = "default";
+                    else if (tx.paymentProof?.status === "REJECTED") badgeVariant = "destructive";
+                    else if (tx.isActive) badgeVariant = "default";
+
+                    return <Badge variant={badgeVariant}>{statusLabel}</Badge>;
+                  })()}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6 grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("subscription.credits")}</span>
+                    <span className="font-medium">{tx.credits}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("subscription.startDate")}</span>
+                    <span className="font-medium">{formatDate(tx.startDate, locale)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("subscription.endDate")}</span>
+                    <span className="font-medium">{formatDate(tx.endDate, locale)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("payment.amount")}</span>
+                    <span className="font-medium">
+                      {(() => {
+                        if (tx.paymentProof) {
+                          return (
+                            formatCurrency(tx.paymentProof.amount, locale) +
+                            " " +
+                            tx.paymentProof.currency
+                          );
+                        }
+                        if (tx.isFreePackage) {
+                          return t("payment.free");
+                        }
+                        return formatCurrency(tx.packagePrice, locale);
+                      })()}
+                    </span>
+                  </div>
+                  {tx.paymentProof?.transferDate && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{t("payment.transferDate")}</span>
+                      <span className="font-medium">
+                        {formatDate(tx.paymentProof.transferDate, locale)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Receipt className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+            <p className="font-medium">{t("empty.title")}</p>
+            <p className="text-sm text-muted-foreground">{t("empty.description")}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 
@@ -707,6 +825,9 @@ export default function PaymentPage() {
           onSuccess={() => utils.subscription.getPending.invalidate()}
         />
       </div>
+
+      {/* Transaction history */}
+      <TransactionsSection locale={locale} />
     </div>
   );
 }

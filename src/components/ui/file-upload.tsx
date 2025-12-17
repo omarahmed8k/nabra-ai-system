@@ -31,13 +31,17 @@ const ALLOWED_TYPES = new Set([
   "application/pdf",
   "application/zip",
   "application/x-zip-compressed",
+  "audio/webm",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/mp4",
 ]);
 
 export function FileUpload({
   onFilesChange,
   maxFiles = 5,
   maxSizeMB = 10,
-  accept = "image/*,.pdf,.zip",
+  accept = "image/*,.pdf,.zip,audio/*",
   className,
   disabled = false,
 }: FileUploadProps) {
@@ -361,7 +365,7 @@ export function InlineFileUpload({
         ref={inputRef}
         type="file"
         multiple
-        accept="image/*,.pdf,.zip"
+        accept="image/*,.pdf,.zip,audio/*"
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
         disabled={disabled || isUploading}

@@ -284,7 +284,6 @@ function UserListItem({
 
 export default function AdminUsersPage() {
   const t = useTranslations("admin.users");
-  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");

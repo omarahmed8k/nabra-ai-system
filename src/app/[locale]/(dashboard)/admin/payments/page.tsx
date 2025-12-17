@@ -172,10 +172,15 @@ export default function AdminPaymentsPage() {
         </TableCell>
         <TableCell>{formatDate(payment.transferDate, locale)}</TableCell>
         <TableCell>
-          <Badge variant={badgeVariant} className="flex items-center gap-1">
-            <StatusIcon status={payment.status} />
-            {t(`status.${payment.status}`)}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant={badgeVariant}
+              className="px-2 py-1 text-xs rounded flex items-center gap-1 min-w-[90px] justify-center"
+            >
+              <StatusIcon status={payment.status} />
+              <span className="capitalize">{t(`status.${payment.status}`)}</span>
+            </Badge>
+          </div>
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">

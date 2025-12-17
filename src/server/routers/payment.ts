@@ -1,12 +1,8 @@
 import { z } from "zod";
-import {
-  router,
-  protectedProcedure,
-  clientProcedure,
-  adminProcedure,
-} from "@/server/trpc";
+import { router, protectedProcedure, clientProcedure, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { PaymentStatus } from "@prisma/client";
+import { notifyAdminsNewPendingPayment } from "@/lib/notifications";
 
 export const paymentRouter = router({
   // Get IBAN info for payment (public info clients need)
@@ -84,19 +80,11 @@ export const paymentRouter = router({
         },
       });
 
-      // Notify admins
-      const admins = await ctx.db.user.findMany({
-        where: { role: "SUPER_ADMIN" },
-      });
-
-      await ctx.db.notification.createMany({
-        data: admins.map((admin) => ({
-          userId: admin.id,
-          title: "New Payment Verification Required",
-          message: `${ctx.session.user.name || ctx.session.user.email} has submitted a payment proof for verification.`,
-          type: "payment",
-          link: "/admin/payments",
-        })),
+      // Notify admins (DB + SSE)
+      await notifyAdminsNewPendingPayment({
+        clientNameOrEmail: ctx.session.user.name || ctx.session.user.email,
+        amount: input.amount,
+        currency: input.currency,
       });
 
       return paymentProof;

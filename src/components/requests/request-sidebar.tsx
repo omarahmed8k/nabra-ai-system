@@ -22,6 +22,7 @@ interface RequestSidebarProps {
   readonly completedAt?: Date | null;
   readonly currentRevisionCount?: number;
   readonly totalRevisions?: number;
+  readonly maskProviderNameForClient?: boolean;
   readonly revisionInfo?: {
     freeRevisionsRemaining: number;
     maxFree: number;
@@ -40,6 +41,7 @@ export function RequestSidebar({
   completedAt,
   currentRevisionCount,
   totalRevisions,
+  maskProviderNameForClient,
   revisionInfo,
 }: RequestSidebarProps) {
   const t = useTranslations("requests.sidebar");
@@ -61,7 +63,7 @@ export function RequestSidebar({
               </Avatar>
               <div>
                 <p className="font-medium">{client.name || t("noName")}</p>
-                <p className="text-sm text-muted-foreground">{client.email}</p>
+                {client.email && <p className="text-sm text-muted-foreground">{client.email}</p>}
               </div>
             </div>
           </CardContent>
@@ -84,8 +86,14 @@ export function RequestSidebar({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{provider.name || t("noName")}</p>
-                  <p className="text-sm text-muted-foreground">{provider.email}</p>
+                  <p className="font-medium">
+                    {maskProviderNameForClient
+                      ? t("brandProviderName")
+                      : provider.name || t("noName")}
+                  </p>
+                  {!maskProviderNameForClient && (
+                    <p className="text-sm text-muted-foreground">{provider.email}</p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -117,7 +125,7 @@ export function RequestSidebar({
           </div>
           {updatedAt && (
             <div>
-              <p className="text-muted-foreground text-sm">{t("lastUpdated")}</p>
+              <p className="text-muted-foreground text-sm">{t("updated")}</p>
               <p className="font-medium">{formatDateTime(updatedAt, locale)}</p>
             </div>
           )}

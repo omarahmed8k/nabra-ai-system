@@ -330,6 +330,7 @@ export default function RequestDetailPage() {
             description="Communicate with your provider"
             placeholder="Type your message..."
             canSendMessages={request.status !== "COMPLETED"}
+            maskProviderNames
           />
         </div>
 
@@ -344,6 +345,7 @@ export default function RequestDetailPage() {
           currentRevisionCount={request.currentRevisionCount}
           totalRevisions={request.totalRevisions}
           revisionInfo={revisionInfo || undefined}
+          maskProviderNameForClient
         />
       </div>
     </div>

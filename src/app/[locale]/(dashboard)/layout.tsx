@@ -51,6 +51,7 @@ const adminNavConfig = [
   { href: "/admin/users", labelKey: "admin.users", icon: Users },
   { href: "/admin/requests", labelKey: "admin.requests", icon: FileText },
   { href: "/admin/payments", labelKey: "admin.payments", icon: CheckCircle },
+  { href: "/admin/notifications", labelKey: "admin.notifications", icon: Bell },
   { href: "/admin/packages", labelKey: "admin.packages", icon: CreditCard },
   { href: "/admin/services", labelKey: "admin.services", icon: Settings },
   { href: "/admin/profile", labelKey: "admin.profile", icon: User },

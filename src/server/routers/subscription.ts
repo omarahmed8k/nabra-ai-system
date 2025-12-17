@@ -273,4 +273,58 @@ export const subscriptionRouter = router({
 
     return subscriptions;
   }),
+
+  // Get transaction history (subscriptions with payment proofs)
+  getTransactionHistory: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const subscriptions = await ctx.db.clientSubscription.findMany({
+      where: { userId },
+      include: {
+        package: true,
+        paymentProof: {
+          include: {
+            reviewer: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return subscriptions.map((sub) => ({
+      id: sub.id,
+      type: "subscription" as const,
+      packageName: sub.package.name,
+      packagePrice: sub.package.price,
+      credits: sub.package.credits,
+      remainingCredits: sub.remainingCredits,
+      startDate: sub.startDate,
+      endDate: sub.endDate,
+      isActive: sub.isActive,
+      isFreePackage: sub.package.isFreePackage,
+      cancelledAt: sub.cancelledAt,
+      createdAt: sub.createdAt,
+      paymentProof: sub.paymentProof
+        ? {
+            id: sub.paymentProof.id,
+            amount: sub.paymentProof.amount,
+            currency: sub.paymentProof.currency,
+            status: sub.paymentProof.status,
+            transferDate: sub.paymentProof.transferDate,
+            senderName: sub.paymentProof.senderName,
+            senderBank: sub.paymentProof.senderBank,
+            senderCountry: sub.paymentProof.senderCountry,
+            referenceNumber: sub.paymentProof.referenceNumber,
+            reviewedAt: sub.paymentProof.reviewedAt,
+            reviewedBy: sub.paymentProof.reviewer?.name,
+            rejectionReason: sub.paymentProof.rejectionReason,
+          }
+        : null,
+    }));
+  }),
 });

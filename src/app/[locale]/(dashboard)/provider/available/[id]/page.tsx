@@ -109,12 +109,12 @@ export default function AvailableJobDetailPage() {
             title={t("messagesTitle")}
             description={t("messagesDescription")}
             placeholder={t("messagesPlaceholder")}
+            maskClientNames
           />
         </div>
 
         {/* Sidebar */}
         <RequestSidebar
-          client={request.client}
           serviceTypeName={request.serviceType.name}
           serviceTypeIcon={request.serviceType.icon || undefined}
           createdAt={request.createdAt}

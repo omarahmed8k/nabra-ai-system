@@ -154,6 +154,7 @@
         "requests": "Requests",
         "subscription": "Subscription",
         "payment": "Payment",
+        "transactions": "Transactions",
         "notifications": "Notifications",
         "profile": "Profile"
       },
@@ -169,6 +170,7 @@
         "users": "Users",
         "requests": "All Requests",
         "payments": "Payments",
+        "notifications": "Notifications",
         "packages": "Packages",
         "services": "Services",
         "profile": "Profile"
@@ -200,6 +202,10 @@
       "nameLabel": "Full Name",
       "namePlaceholder": "John Doe",
       "nameHint": "2-100 characters",
+      "phoneLabel": "Phone (WhatsApp preferred)",
+      "phonePlaceholder": "+1 555 123 4567",
+      "phoneHint": "Include country code, e.g. +1...",
+      "hasWhatsappLabel": "This number has WhatsApp",
       "emailLabel": "Email",
       "emailPlaceholder": "name@example.com",
       "emailHint": "Valid email address required",
@@ -222,6 +228,17 @@
     }
   },
   "admin": {
+    "notificationsPage": {
+      "title": "Notifications",
+      "subtitle": "Stay updated on your admin activity",
+      "markAllAsRead": "Mark All as Read",
+      "allNotifications": "All Notifications",
+      "unreadCount": "{count} unread notification",
+      "unreadCountPlural": "{count} unread notifications",
+      "noNotifications": "No notifications",
+      "noNotificationsDesc": "You'll see updates about your admin actions here",
+      "new": "New"
+    },
     "dashboard": {
       "title": "Admin Dashboard",
       "subtitle": "Manage the platform and monitor activity",
@@ -741,6 +758,7 @@
     "sidebar": {
       "client": "Client",
       "provider": "Provider",
+      "brandProviderName": "Nabarawy",
       "waitingForProvider": "Waiting for provider",
       "details": "Details",
       "serviceType": "Service Type",
@@ -766,6 +784,7 @@
       "deliverable": "Deliverable",
       "attachment": "📎 Attachment {number}",
       "attachmentFallback": "(Attachment)",
+      "recordVoice": "Record voice note",
       "send": "Send",
       "messageSent": "Message Sent",
       "messageSuccess": "Your message has been sent.",
@@ -1162,6 +1181,46 @@
       "toast": {
         "subscribed": "Subscription created! Please complete the payment.",
         "cancelled": "Subscription cancelled successfully."
+      }
+    },
+    "transactions": {
+      "title": "Transaction History",
+      "description": "View your complete payment and subscription history",
+      "loading": "Loading transactions...",
+      "status": {
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled",
+        "pending": "Payment Pending",
+        "rejected": "Payment Rejected"
+      },
+      "subscription": {
+        "title": "Subscription Details",
+        "credits": "Total Credits",
+        "remaining": "Remaining Credits",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "freePackage": "Free Package"
+      },
+      "payment": {
+        "title": "Payment Information",
+        "amount": "Amount Paid",
+        "price": "Package Price",
+        "transferDate": "Transfer Date",
+        "senderName": "Sender Name",
+        "senderBank": "Bank",
+        "reference": "Reference",
+        "reviewedAt": "Reviewed On",
+        "rejectionReason": "Rejection Reason",
+        "approved": "Approved",
+        "pending": "Pending Review",
+        "rejected": "Rejected",
+        "free": "Free",
+        "noProofSubmitted": "No payment proof submitted"
+      },
+      "empty": {
+        "title": "No Transactions Yet",
+        "description": "Your payment and subscription history will appear here once you make your first subscription."
       }
     }
   },

@@ -337,7 +337,7 @@ export const requestRouter = router({
     return {
       ...request,
       revisionInfo,
-    };
+    } as any;
   }),
 
   // Provider accepts a request
@@ -643,24 +643,53 @@ export const requestRouter = router({
         },
       });
 
-      // Notify the other party
-      let recipientId: string | null = null;
-
-      if (isClient) {
-        // Client commented - notify provider if assigned
-        recipientId = request.providerId;
-      } else {
-        // Provider commented (whether assigned or not) - notify client
-        recipientId = request.clientId;
+      // Manage watchers: if provider comments on unassigned pending request, start watching
+      if (isProviderRole && request.providerId === null && request.status === "PENDING") {
+        await ctx.db.requestWatcher.upsert({
+          where: { requestId_userId: { requestId: input.requestId, userId } },
+          update: {},
+          create: { requestId: input.requestId, userId },
+        });
       }
 
-      if (recipientId) {
-        // Send realtime + email notification
-        const senderName = comment.user.name || comment.user.email || "Someone";
+      // Determine recipients for notifications
+      const senderName = comment.user.name || comment.user.email || "Someone";
+      if (isClient) {
+        if (request.providerId) {
+          // Notify assigned provider
+          await notifyNewMessage({
+            requestId: input.requestId,
+            senderName,
+            recipientId: request.providerId,
+            messagePreview: input.content.slice(0, 100),
+          });
+        } else {
+          // Notify all watchers (providers who previously commented)
+          const watchers = await ctx.db.requestWatcher.findMany({
+            where: { requestId: input.requestId },
+            select: { userId: true },
+          });
+          await Promise.all(
+            watchers
+              .filter((w) => w.userId !== userId)
+              .map((w) =>
+                notifyNewMessage({
+                  requestId: input.requestId,
+                  senderName,
+                  recipientId: w.userId,
+                  messagePreview: input.content.slice(0, 100),
+                })
+              )
+          );
+        }
+      } else {
+        // Non-client commented (provider/admin) - notify client
+        // Mask provider identity for client-facing notifications
+        const maskedSenderName = isProviderRole ? "Nabarawy" : senderName;
         await notifyNewMessage({
           requestId: input.requestId,
-          senderName,
-          recipientId,
+          senderName: maskedSenderName,
+          recipientId: request.clientId,
           messagePreview: input.content.slice(0, 100),
         });
       }

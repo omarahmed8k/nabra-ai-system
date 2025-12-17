@@ -456,8 +456,6 @@ export default function ProviderRequestDetailPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           <RequestSidebar
-            client={request.client}
-            provider={null}
             serviceTypeName={request.serviceType.name}
             serviceTypeIcon={request.serviceType.icon || undefined}
             createdAt={request.createdAt}
