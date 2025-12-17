@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +25,7 @@ import { showError } from "@/lib/error-handler";
 
 export default function AdminPackagesPage() {
   const t = useTranslations("admin.packages");
+  const locale = useLocale();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
@@ -352,7 +353,7 @@ export default function AdminPackagesPage() {
                             </div>
                             <CardDescription>
                               <span className="text-2xl font-bold text-foreground">
-                                {formatCurrency(pkg.price)}
+                                {formatCurrency(pkg.price, locale)}
                               </span>{" "}
                               {t("info.perMonth")}
                             </CardDescription>

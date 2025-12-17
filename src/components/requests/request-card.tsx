@@ -2,7 +2,7 @@ import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, getStatusColor, getPriorityColor } from "@/lib/utils";
 import { Clock } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface RequestCardProps {
   readonly id: string;
@@ -56,6 +56,7 @@ export function RequestCard({
 }: RequestCardProps) {
   const tCommon = useTranslations("common");
   const tCard = useTranslations("requests.card");
+  const locale = useLocale();
 
   const getPriorityKey = (priority: number): "LOW" | "MEDIUM" | "HIGH" => {
     if (priority === 1) return "LOW";
@@ -116,7 +117,7 @@ export function RequestCard({
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-            {formatDate(createdAt)}
+            {formatDate(createdAt, locale)}
           </span>
           {client && (
             <span className="truncate">

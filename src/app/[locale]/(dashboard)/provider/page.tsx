@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { FileText, CheckCircle, Star, TrendingUp } from "lucide-react";
 export default function ProviderDashboard() {
   const { data: session } = useSession();
   const t = useTranslations("provider.dashboard");
+  const locale = useLocale();
 
   const { data: myRequests, isLoading: myReqLoading } = trpc.provider.getMyRequests.useQuery({
     limit: 5,
@@ -154,7 +155,7 @@ export default function ProviderDashboard() {
                         <div className="space-y-1">
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {request.serviceType.name} • {formatDate(request.createdAt)}
+                            {request.serviceType.name} • {formatDate(request.createdAt, locale)}
                           </p>
                         </div>
                         <Badge variant={null} className={getStatusColor(request.status)}>
@@ -215,7 +216,7 @@ export default function ProviderDashboard() {
                         <div className="space-y-1">
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {request.serviceType.name} • {formatDate(request.createdAt)}
+                            {request.serviceType.name} • {formatDate(request.createdAt, locale)}
                           </p>
                         </div>
                         <Badge variant="secondary">{t("availableJobs.new")}</Badge>

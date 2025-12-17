@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { Plus, CreditCard, FileText, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
   const t = useTranslations("client.dashboard");
+  const locale = useLocale();
   const { data: session } = useSession();
   const { data: subscription, isLoading: subLoading } = trpc.subscription.getActive.useQuery();
   const { data: usageStats, isLoading: statsLoading } = trpc.subscription.getUsageStats.useQuery();
@@ -182,7 +183,7 @@ export default function ClientDashboard() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>{request.serviceType.name}</span>
                           <span>•</span>
-                          <span>{formatDate(request.createdAt)}</span>
+                          <span>{formatDate(request.createdAt, locale)}</span>
                         </div>
                       </div>
                       <Badge variant={null} className={getStatusColor(request.status)}>

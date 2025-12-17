@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { trpc } from "@/lib/trpc/client";
+import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,6 +45,7 @@ type Subscription = {
 
 export default function AdminSubscriptionsPage() {
   const t = useTranslations("admin.subscriptions");
+  const locale = useLocale();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -246,11 +248,9 @@ export default function AdminSubscriptionsPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">
-                            {new Date(sub.startDate).toLocaleDateString()}
-                          </p>
+                          <p className="font-medium">{formatDate(sub.startDate, locale)}</p>
                           <p className="text-muted-foreground">
-                            {t("info.to")} {new Date(sub.endDate).toLocaleDateString()}
+                            {t("info.to")} {formatDate(sub.endDate, locale)}
                           </p>
                         </div>
                       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +20,7 @@ import { showError, showSuccess } from "@/lib/error-handler";
 
 export default function SubscriptionPage() {
   const t = useTranslations("client.subscription");
+  const locale = useLocale();
   const router = useRouter();
   const utils = trpc.useUtils();
 
@@ -103,14 +104,18 @@ export default function SubscriptionPage() {
                 </p>
                 <p className="text-3xl font-bold">{subscription.daysRemaining}</p>
                 <p className="text-sm text-muted-foreground">
-                  {t("currentSubscription.expires", { date: formatDate(subscription.endDate) })}
+                  {t("currentSubscription.expires", {
+                    date: formatDate(subscription.endDate, locale),
+                  })}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
                   {t("currentSubscription.monthlyPrice")}
                 </p>
-                <p className="text-3xl font-bold">{formatCurrency(subscription.package.price)}</p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(subscription.package.price, locale)}
+                </p>
               </div>
             </div>
 
@@ -176,7 +181,7 @@ export default function SubscriptionPage() {
                       </div>
                       <CardDescription>
                         <span className="text-3xl font-bold text-foreground">
-                          {formatCurrency(pkg.price)}
+                          {formatCurrency(pkg.price, locale)}
                         </span>
                         <span className="text-muted-foreground">{t("plans.perMonth")}</span>
                       </CardDescription>

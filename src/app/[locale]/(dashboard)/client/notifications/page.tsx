@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Bell, Check } from "lucide-react";
 
 export default function NotificationsPage() {
   const t = useTranslations("client.notifications");
+  const locale = useLocale();
   const router = useRouter();
   const utils = trpc.useUtils();
   const { refreshUnreadCount } = useRealtimeNotifications();
@@ -131,7 +132,7 @@ export default function NotificationsPage() {
                       </div>
                       <p className="text-sm text-muted-foreground">{notification.message}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDateTime(notification.createdAt)}
+                        {formatDateTime(notification.createdAt, locale)}
                       </p>
                     </div>
                     {!notification.isRead && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -196,6 +196,7 @@ function UserListItem({
   isDeleted?: boolean;
 }): JSX.Element {
   const t = useTranslations("admin.users");
+  const locale = useLocale();
   const providerServices = user.providerProfile?.supportedServices || [];
 
   return (
@@ -213,7 +214,7 @@ function UserListItem({
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
             <span className="text-xs text-muted-foreground">
-              {t("table.joined")} {formatDate(user.createdAt)}
+              {t("table.joined")} {formatDate(user.createdAt, locale)}
             </span>
           </div>
           {user.role === "PROVIDER" && (
@@ -283,6 +284,7 @@ function UserListItem({
 
 export default function AdminUsersPage() {
   const t = useTranslations("admin.users");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { Send, Upload, Play, CheckCircle } from "lucide-react";
 export default function ProviderRequestDetailPage() {
   const params = useParams();
   const t = useTranslations("provider.requestDetail");
+  const locale = useLocale();
   const requestId = params.id as string;
   const [comment, setComment] = useState("");
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
@@ -385,7 +386,7 @@ export default function ProviderRequestDetailPage() {
                               {comment.type === "SYSTEM" ? t("messages.system") : comment.user.name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {formatDateTime(comment.createdAt)}
+                              {formatDateTime(comment.createdAt, locale)}
                             </span>
                             {comment.type === "DELIVERABLE" && (
                               <Badge variant="secondary">{t("messages.deliverable")}</Badge>
@@ -502,7 +503,7 @@ export default function ProviderRequestDetailPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">
                     {t("rating.ratedOn", {
-                      date: formatDateTime((request as any).rating.createdAt),
+                      date: formatDateTime((request as any).rating.createdAt, locale),
                     })}
                   </p>
                 </div>

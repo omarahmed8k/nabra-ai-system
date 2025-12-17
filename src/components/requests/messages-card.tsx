@@ -11,7 +11,7 @@ import { Send } from "lucide-react";
 import { formatDateTime, getInitials } from "@/lib/utils";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface Comment {
   id: string;
@@ -44,6 +44,7 @@ export function MessagesCard({
   canSendMessages = true,
 }: MessagesCardProps) {
   const t = useTranslations("requests.messages");
+  const locale = useLocale();
   const [comment, setComment] = useState("");
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
 
@@ -106,7 +107,7 @@ export function MessagesCard({
                         : comment.user.name || comment.user.email}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {formatDateTime(comment.createdAt)}
+                      {formatDateTime(comment.createdAt, locale)}
                     </span>
                     {comment.type === "DELIVERABLE" && (
                       <Badge variant="secondary">{t("deliverable")}</Badge>

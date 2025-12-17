@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle } from "lucide-react";
 import { formatDateTime, getInitials } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface UserInfo {
   name: string | null;
@@ -43,6 +43,7 @@ export function RequestSidebar({
   revisionInfo,
 }: RequestSidebarProps) {
   const t = useTranslations("requests.sidebar");
+  const locale = useLocale();
 
   return (
     <div className="space-y-6">
@@ -112,18 +113,18 @@ export function RequestSidebar({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{t("created")}</p>
-            <p className="font-medium">{formatDateTime(createdAt)}</p>
+            <p className="font-medium">{formatDateTime(createdAt, locale)}</p>
           </div>
           {updatedAt && (
             <div>
-              <p className="text-sm text-muted-foreground">{t("updated")}</p>
-              <p className="font-medium">{formatDateTime(updatedAt)}</p>
+              <p className="text-muted-foreground text-sm">{t("lastUpdated")}</p>
+              <p className="font-medium">{formatDateTime(updatedAt, locale)}</p>
             </div>
           )}
           {estimatedDelivery && (
             <div>
               <p className="text-sm text-muted-foreground">{t("estimatedDelivery")}</p>
-              <p className="font-medium">{formatDateTime(estimatedDelivery)}</p>
+              <p className="font-medium">{formatDateTime(estimatedDelivery, locale)}</p>
               {new Date(estimatedDelivery) > new Date() && (
                 <p className="text-xs text-blue-600 mt-1">
                   {(() => {
@@ -154,7 +155,7 @@ export function RequestSidebar({
           {completedAt && (
             <div>
               <p className="text-sm text-muted-foreground">{t("completed")}</p>
-              <p className="font-medium">{formatDateTime(completedAt)}</p>
+              <p className="font-medium">{formatDateTime(completedAt, locale)}</p>
             </div>
           )}
           {(currentRevisionCount !== undefined || totalRevisions !== undefined) && (

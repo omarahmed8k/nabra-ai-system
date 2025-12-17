@@ -5,23 +5,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+export function formatCurrency(amount: number, locale: string = "en"): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "USD",
   }).format(amount);
 }
 
-export function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDate(date: Date | string, locale: string = "en"): string {
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(new Date(date));
 }
 
-export function formatDateTime(date: Date | string): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDateTime(date: Date | string, locale: string = "en"): string {
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",

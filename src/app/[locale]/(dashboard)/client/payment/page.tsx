@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./datepicker.css";
@@ -124,7 +124,13 @@ function NoPendingPayment() {
 }
 
 // Component for payment status display (when proof already submitted)
-function PaymentStatus({ subscription }: { subscription: PendingSubscription }) {
+function PaymentStatus({
+  subscription,
+  locale,
+}: {
+  subscription: PendingSubscription;
+  locale: string;
+}) {
   const router = useRouter();
   const t = useTranslations("client.payment");
   const proof = subscription.paymentProof!;
@@ -142,7 +148,9 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{subscription.package.name} Plan</CardTitle>
-              <CardDescription>{formatCurrency(subscription.package.price)}</CardDescription>
+              <CardDescription>
+                {formatCurrency(subscription.package.price, locale)}
+              </CardDescription>
             </div>
             <Badge variant={badgeVariant} className="flex items-center gap-1">
               {proof.status === "PENDING" && <Clock className="h-3 w-3" />}
@@ -184,11 +192,11 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t("info.amountPaid")}</p>
-              <p className="text-xl font-bold">{formatCurrency(proof.amount)}</p>
+              <p className="text-xl font-bold">{formatCurrency(proof.amount, locale)}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t("info.transferDate")}</p>
-              <p className="text-xl font-bold">{formatDate(proof.transferDate)}</p>
+              <p className="text-xl font-bold">{formatDate(proof.transferDate, locale)}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t("info.sender")}</p>
@@ -199,7 +207,7 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
             </div>
             <div className="p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground">{t("info.submitted")}</p>
-              <p className="font-medium">{formatDate(proof.createdAt)}</p>
+              <p className="font-medium">{formatDate(proof.createdAt, locale)}</p>
             </div>
           </div>
         </CardContent>
@@ -238,11 +246,13 @@ function BankDetailsCard({
   paymentInfo,
   copied,
   onCopy,
+  locale,
 }: {
   subscription: PendingSubscription;
   paymentInfo: PaymentInfo;
   copied: string | null;
   onCopy: (text: string, field: string) => void;
+  locale: string;
 }) {
   const t = useTranslations("client.payment");
 
@@ -264,7 +274,7 @@ function BankDetailsCard({
               {subscription.package.credits} {t("badges.credits")}
             </Badge>
           </div>
-          <p className="text-2xl font-bold">{formatCurrency(subscription.package.price)}</p>
+          <p className="text-2xl font-bold">{formatCurrency(subscription.package.price, locale)}</p>
         </div>
 
         {/* Bank Details */}
@@ -598,6 +608,7 @@ export default function PaymentPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const t = useTranslations("client.payment");
+  const locale = useLocale();
   const [copied, setCopied] = useState<string | null>(null);
 
   const { data: pendingSubscriptionData, isLoading: subLoading } =
@@ -654,7 +665,7 @@ export default function PaymentPage() {
 
   // Payment already submitted
   if (pendingSubscription.paymentProof) {
-    return <PaymentStatus subscription={pendingSubscription} />;
+    return <PaymentStatus subscription={pendingSubscription} locale={locale} />;
   }
 
   const handleCancelSubscription = () => {
@@ -687,6 +698,7 @@ export default function PaymentPage() {
             paymentInfo={paymentInfo}
             copied={copied}
             onCopy={copyToClipboard}
+            locale={locale}
           />
         )}
         <PaymentProofForm

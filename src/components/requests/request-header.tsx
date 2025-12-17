@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { getStatusColor, getPriorityColor, formatDate } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface RequestHeaderProps {
   readonly title: string;
@@ -148,6 +148,7 @@ export function RequestHeader({
 }: RequestHeaderProps) {
   const t = useTranslations("requests.header");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
 
   const getPriorityKey = (priority: number): "LOW" | "MEDIUM" | "HIGH" => {
     if (priority === 1) return "LOW";
@@ -187,7 +188,7 @@ export function RequestHeader({
           </div>
           <p className="text-muted-foreground mt-1">
             {serviceTypeIcon && `${serviceTypeIcon} `}
-            {serviceTypeName} • {t("created")} {formatDate(createdAt)}
+            {serviceTypeName} • {t("created")} {formatDate(createdAt, locale)}
           </p>
         </div>
         {actions && <div className="flex gap-2">{actions}</div>}

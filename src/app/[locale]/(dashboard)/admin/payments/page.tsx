@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -89,6 +89,7 @@ function StatusIcon({ status }: { readonly status: string }) {
 
 export default function AdminPaymentsPage() {
   const t = useTranslations("admin.payments");
+  const locale = useLocale();
   const utils = trpc.useUtils();
   const [selectedPayment, setSelectedPayment] = useState<PaymentProof | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -159,17 +160,17 @@ export default function AdminPaymentsPage() {
           <div>
             <p className="font-medium">{payment.subscription.package.name}</p>
             <p className="text-sm text-muted-foreground">
-              {formatCurrency(payment.subscription.package.price)}
+              {formatCurrency(payment.subscription.package.price, locale)}
             </p>
           </div>
         </TableCell>
         <TableCell>
           <div>
-            <p className="font-medium">{formatCurrency(payment.amount)}</p>
+            <p className="font-medium">{formatCurrency(payment.amount, locale)}</p>
             <p className="text-sm text-muted-foreground">{payment.senderBank}</p>
           </div>
         </TableCell>
-        <TableCell>{formatDate(payment.transferDate)}</TableCell>
+        <TableCell>{formatDate(payment.transferDate, locale)}</TableCell>
         <TableCell>
           <Badge variant={badgeVariant} className="flex items-center gap-1">
             <StatusIcon status={payment.status} />
@@ -387,19 +388,19 @@ export default function AdminPaymentsPage() {
                   <Label className="text-muted-foreground">{t("details.package")}</Label>
                   <p className="font-medium">{selectedPayment.subscription.package.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatCurrency(selectedPayment.subscription.package.price)} -{" "}
+                    {formatCurrency(selectedPayment.subscription.package.price, locale)} -{" "}
                     {selectedPayment.subscription.package.credits} credits
                   </p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">{t("details.amountSent")}</Label>
                   <p className="font-medium text-lg">
-                    {formatCurrency(selectedPayment.amount)} {selectedPayment.currency}
+                    {formatCurrency(selectedPayment.amount, locale)} {selectedPayment.currency}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">{t("details.transferDate")}</Label>
-                  <p className="font-medium">{formatDate(selectedPayment.transferDate)}</p>
+                  <p className="font-medium">{formatDate(selectedPayment.transferDate, locale)}</p>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">{t("details.senderName")}</Label>
