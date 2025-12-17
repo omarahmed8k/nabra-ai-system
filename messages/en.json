@@ -757,6 +757,310 @@
       },
       "successMessage": "Password changed successfully",
       "errorMessage": "Failed to change password"
+    },
+    "settings": {
+      "title": "Profile Settings",
+      "subtitle": "Manage your account settings and preferences",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security"
+      }
+    }
+  },
+  "client": {
+    "dashboard": {
+      "welcome": "Welcome back, {name}!",
+      "overview": "Here's an overview of your account",
+      "newRequest": "New Request",
+      "stats": {
+        "creditsAvailable": "Credits Available",
+        "activeRequests": "Active Requests",
+        "completed": "Completed",
+        "subscription": "Subscription",
+        "plan": "{name} plan",
+        "noActivePlan": "No active plan",
+        "inProgressOrPending": "In progress or pending",
+        "allTime": "All time",
+        "daysRemaining": "Days remaining"
+      },
+      "noSubscription": {
+        "title": "No Active Subscription",
+        "description": "Subscribe to a plan to start creating requests and accessing our services.",
+        "viewPlans": "View Plans"
+      },
+      "recentRequests": {
+        "title": "Recent Requests",
+        "description": "Your latest service requests",
+        "viewAll": "View All",
+        "noRequests": "No requests yet",
+        "noRequestsDescription": "Create your first request to get started"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Stay updated on your requests and activity",
+      "markAllAsRead": "Mark All as Read",
+      "allNotifications": "All Notifications",
+      "unreadCount": "{count} unread notification",
+      "unreadCountPlural": "{count} unread notifications",
+      "noNotifications": "No notifications",
+      "noNotificationsDesc": "You'll see updates about your requests here",
+      "new": "New"
+    },
+    "payment": {
+      "title": "Payment",
+      "subtitle": "Submit payment proof for your subscription",
+      "statusTitle": "Payment Status",
+      "statusSubtitle": "Track your payment verification",
+      "noPendingPayment": {
+        "title": "No Pending Payment",
+        "description": "You don't have any pending subscriptions that require payment.",
+        "viewSubscriptions": "View Subscriptions"
+      },
+      "status": {
+        "pending": "Verification in Progress",
+        "pendingDesc": "We're reviewing your payment. This usually takes 1-2 business days.",
+        "rejected": "Payment Rejected",
+        "rejectedDesc": "Your payment could not be verified. Please contact support.",
+        "approved": "Payment Approved!",
+        "approvedDesc": "Your subscription is now active. You can start creating requests."
+      },
+      "info": {
+        "amountPaid": "Amount Paid",
+        "transferDate": "Transfer Date",
+        "sender": "Sender",
+        "submitted": "Submitted"
+      },
+      "bankDetails": {
+        "title": "Bank Transfer Details",
+        "description": "Send payment to the following account via international bank transfer (IBAN)",
+        "bankName": "Bank Name",
+        "accountName": "Account Name",
+        "iban": "IBAN",
+        "swiftCode": "SWIFT/BIC"
+      },
+      "uploadProof": {
+        "title": "Upload Payment Proof",
+        "description": "After making the transfer, fill in the details and upload the receipt",
+        "transferReceipt": "Transfer Receipt *",
+        "uploadImage": "Upload an image of your transfer receipt (Max 10MB)",
+        "senderName": "Sender Name *",
+        "senderNamePlaceholder": "Name on bank account",
+        "senderBank": "Bank Name *",
+        "senderBankPlaceholder": "e.g., Chase, HSBC",
+        "senderCountry": "Country *",
+        "senderCountryPlaceholder": "e.g., United States",
+        "transferDate": "Transfer Date *",
+        "transferDatePlaceholder": "Select transfer date",
+        "transferDateHint": "Date cannot be in the future",
+        "referenceNumber": "Reference Number (Optional)",
+        "referenceNumberPlaceholder": "Bank reference or transaction ID",
+        "notes": "Additional Notes",
+        "notesPlaceholder": "Any additional information...",
+        "submit": "Submit Payment Proof",
+        "submitting": "Submitting...",
+        "charactersHint": "{min}-{max} characters",
+        "maxCharactersHint": "Max {max} characters"
+      },
+      "actions": {
+        "backToSubscription": "Back to Subscription",
+        "cancelSubscription": "Cancel Subscription",
+        "cancelling": "Cancelling...",
+        "cancelConfirm": "Are you sure you want to cancel this subscription? You will need to subscribe again."
+      },
+      "validation": {
+        "transferReceiptRequired": "Transfer receipt is required",
+        "senderNameMin": "Sender name must be at least 2 characters",
+        "senderNameMax": "Sender name must not exceed 100 characters",
+        "senderBankMin": "Bank name must be at least 2 characters",
+        "senderBankMax": "Bank name must not exceed 100 characters",
+        "senderCountryMin": "Country must be at least 2 characters",
+        "senderCountryMax": "Country must not exceed 100 characters",
+        "transferDateRequired": "Transfer date is required",
+        "transferDateFuture": "Transfer date cannot be in the future",
+        "referenceNumberMax": "Reference number must not exceed 50 characters",
+        "notesMax": "Notes must not exceed 500 characters",
+        "fixErrors": "Please fix the validation errors before submitting"
+      },
+      "badges": {
+        "credits": "Credits"
+      },
+      "toast": {
+        "submitted": "Payment proof submitted successfully! We'll verify it soon.",
+        "cancelled": "Subscription cancelled."
+      },
+      "completePayment": {
+        "title": "Complete Payment",
+        "subtitle": "Transfer payment and upload proof to activate your subscription"
+      }
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "subtitle": "Manage your account settings and preferences",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security"
+      }
+    },
+    "requests": {
+      "title": "Requests",
+      "subtitle": "View and manage all your service requests",
+      "newRequest": "New Request",
+      "allRequests": "All Requests",
+      "totalRequests": "{count} total requests",
+      "noRequests": "No requests yet",
+      "noRequestsDesc": "Create your first request to get started",
+      "createRequest": "Create Request"
+    },
+    "requestDetail": {
+      "notFound": "Request not found",
+      "backToRequests": "Back to Requests",
+      "deliverableReady": {
+        "title": "Deliverable Ready",
+        "description": "Review the deliverable and either approve or request a revision.",
+        "approve": "Approve & Complete",
+        "approving": "Approving..."
+      },
+      "requestRevision": {
+        "title": "Request Revision",
+        "freeRemaining": "{count} free {revision} remaining",
+        "revision": "revision",
+        "revisions": "revisions",
+        "noFreeLeft": "No free revisions left - costs {cost} credit",
+        "placeholder": "Describe what changes you need...",
+        "minCharacters": "Minimum {min} characters required",
+        "button": "Request Revision",
+        "requesting": "Requesting..."
+      },
+      "rateService": {
+        "title": "Rate This Service",
+        "description": "Share your experience with this provider",
+        "reviewPlaceholder": "Write a review (optional)...",
+        "charactersCount": "{count} characters",
+        "submit": "Submit Rating",
+        "submitting": "Submitting..."
+      },
+      "yourRating": {
+        "title": "Your Rating"
+      },
+      "toast": {
+        "approved": "Request Approved!",
+        "approvedDesc": "The deliverable has been approved. Great work!",
+        "revisionRequested": "Revision Requested",
+        "revisionRequestedDesc": "The provider has been notified about your revision request.",
+        "ratingSubmitted": "Rating Submitted",
+        "ratingSubmittedDesc": "Thank you for your feedback!",
+        "invalidFeedback": "Invalid Feedback",
+        "invalidFeedbackDesc": "Please provide at least {min} characters describing the changes needed."
+      }
+    },
+    "newRequest": {
+      "title": "Create New Request",
+      "subtitle": "Describe what you need and we'll match you with a provider",
+      "requestDetails": "Request Details",
+      "costInfo": "Base cost: {baseCost} {credit} + Priority cost ({priorityCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
+      "costInfoNoService": "Select a service to see the credit cost. You have {available} credits available.",
+      "credit": "credit",
+      "credits": "credits",
+      "insufficientCredits": {
+        "title": "Insufficient Credits",
+        "description": "This request requires {required} {credit} ({baseCost} base + {priorityCost} priority) but you only have {available}. Please subscribe to a plan or purchase more credits.",
+        "viewPlans": "View Plans"
+      },
+      "noSubscription": {
+        "title": "No Active Subscription",
+        "description": "You need an active subscription to create requests. Please subscribe to a package to get started.",
+        "viewPackages": "View Packages"
+      },
+      "noServices": {
+        "title": "No Services Available",
+        "description": "Your current package ({name}) does not include any services. Please upgrade to access services.",
+        "upgradePackage": "Upgrade Package"
+      },
+      "fields": {
+        "serviceType": "Service Type *",
+        "serviceTypePlaceholder": "Select a service type",
+        "title": "Title *",
+        "titlePlaceholder": "E.g., Company Website Redesign",
+        "titleHint": "5-200 characters - Be clear and concise",
+        "description": "Description *",
+        "descriptionPlaceholder": "Describe your project in detail. Include any specific requirements, preferences, or references...",
+        "descriptionHint": "20-5000 characters - Provide detailed requirements and expectations",
+        "priority": "Priority",
+        "priorityLow": "Low (+{cost} credits)",
+        "priorityMedium": "Medium (+{cost} {credit})",
+        "priorityHigh": "High (+{cost} credits)",
+        "priorityHint": "Priority adds to base cost: Low=+{low}, Medium=+{medium}, High=+{high} credits",
+        "attachments": "Attachments (Optional)"
+      },
+      "serviceQuestions": {
+        "title": "Service-Specific Questions",
+        "description": "Please provide additional information about your request",
+        "selectOption": "Select an option"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Request ({cost} Credit)",
+        "createCredits": "Create Request ({cost} Credits)",
+        "creating": "Creating..."
+      },
+      "validation": {
+        "selectService": "Please select a service type",
+        "titleTooShort": "Title must be at least 5 characters",
+        "descriptionTooShort": "Description must be at least 20 characters"
+      },
+      "toast": {
+        "created": "Request Created!",
+        "createdDesc": "Your request has been submitted successfully.",
+        "validationError": "Validation Error"
+      }
+    },
+    "subscription": {
+      "title": "Subscription",
+      "subtitle": "Manage your subscription and credits",
+      "currentSubscription": {
+        "title": "{name} Plan",
+        "description": "Your current active subscription",
+        "active": "Active",
+        "creditsRemaining": "Credits Remaining",
+        "ofTotal": "of {total} total",
+        "daysRemaining": "Days Remaining",
+        "expires": "Expires {date}",
+        "monthlyPrice": "Monthly Price",
+        "expiringWarning": "Your subscription expires in {days} days",
+        "cancelSubscription": "Cancel Subscription"
+      },
+      "noSubscription": {
+        "title": "No Active Subscription",
+        "description": "Subscribe to a plan below to start creating requests"
+      },
+      "plans": {
+        "upgrade": "Upgrade Your Plan",
+        "choose": "Choose a Plan",
+        "current": "Current",
+        "perMonth": "/month",
+        "subscribe": "Subscribe",
+        "processing": "Processing...",
+        "currentPlan": "Current Plan",
+        "cancelFirstToSwitch": "Cancel first to switch",
+        "noPlans": "No plans available",
+        "noPlansDesc": "Please check back soon or contact support"
+      },
+      "usageStats": {
+        "title": "Usage Statistics",
+        "description": "Your credit usage this billing period",
+        "totalRequests": "Total Requests",
+        "completed": "Completed",
+        "active": "Active",
+        "creditsUsed": "Credits Used"
+      },
+      "confirmations": {
+        "cancel": "Are you sure you want to cancel your subscription?"
+      },
+      "toast": {
+        "subscribed": "Subscription created! Please complete the payment.",
+        "cancelled": "Subscription cancelled successfully."
+      }
     }
   }
 }

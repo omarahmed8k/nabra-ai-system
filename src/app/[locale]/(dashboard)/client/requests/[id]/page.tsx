@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import { showError } from "@/lib/error-handler";
 import { CheckCircle, RotateCcw, Star } from "lucide-react";
 
 export default function RequestDetailPage() {
+  const t = useTranslations("client.requestDetail");
   const params = useParams();
   const requestId = params.id as string;
   const [rating, setRating] = useState(0);
@@ -38,8 +40,8 @@ export default function RequestDetailPage() {
   const approveRequest = trpc.request.approve.useMutation({
     onSuccess: () => {
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Request Approved!", {
-        description: "The deliverable has been approved. Great work!",
+      toast.success(t("toast.approved"), {
+        description: t("toast.approvedDesc"),
       });
     },
     onError: (error: unknown) => {
@@ -51,8 +53,8 @@ export default function RequestDetailPage() {
     onSuccess: () => {
       setRevisionFeedback("");
       utils.request.getById.invalidate({ id: requestId });
-      toast.info("Revision Requested", {
-        description: "The provider has been notified about your revision request.",
+      toast.info(t("toast.revisionRequested"), {
+        description: t("toast.revisionRequestedDesc"),
       });
     },
     onError: (error: unknown) => {
@@ -63,8 +65,8 @@ export default function RequestDetailPage() {
   const submitRating = trpc.request.rate.useMutation({
     onSuccess: () => {
       utils.request.getById.invalidate({ id: requestId });
-      toast.success("Rating Submitted", {
-        description: "Thank you for your feedback!",
+      toast.success(t("toast.ratingSubmitted"), {
+        description: t("toast.ratingSubmittedDesc"),
       });
     },
     onError: (error: unknown) => {
@@ -78,8 +80,8 @@ export default function RequestDetailPage() {
 
   const handleRequestRevision = () => {
     if (!revisionFeedbackValid) {
-      toast.error("Invalid Feedback", {
-        description: `Please provide at least ${MIN_REVISION_FEEDBACK} characters describing the changes needed.`,
+      toast.error(t("toast.invalidFeedback"), {
+        description: t("toast.invalidFeedbackDesc", { min: MIN_REVISION_FEEDBACK }),
       });
       return;
     }
@@ -104,9 +106,9 @@ export default function RequestDetailPage() {
   if (!request) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold">Request not found</h2>
+        <h2 className="text-2xl font-bold">{t("notFound")}</h2>
         <Link href="/client/requests">
-          <Button className="mt-4">Back to Requests</Button>
+          <Button className="mt-4">{t("backToRequests")}</Button>
         </Link>
       </div>
     );
@@ -152,16 +154,18 @@ export default function RequestDetailPage() {
           {canApprove && (
             <Card className="border-blue-200 bg-blue-50">
               <CardHeader>
-                <CardTitle className="text-blue-800">Deliverable Ready</CardTitle>
+                <CardTitle className="text-blue-800">{t("deliverableReady.title")}</CardTitle>
                 <CardDescription className="text-blue-700">
-                  Review the deliverable and either approve or request a revision.
+                  {t("deliverableReady.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
                   <Button onClick={handleApprove} disabled={approveRequest.isPending}>
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    {approveRequest.isPending ? "Approving..." : "Approve & Complete"}
+                    {approveRequest.isPending
+                      ? t("deliverableReady.approving")
+                      : t("deliverableReady.approve")}
                   </Button>
                 </div>
 
@@ -170,18 +174,28 @@ export default function RequestDetailPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <RotateCcw className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-blue-600">Request Revision</span>
+                    <span className="font-medium text-blue-600">{t("requestRevision.title")}</span>
                     {revisionInfo && (
                       <span className="text-sm text-muted-foreground">
                         {revisionInfo.freeRevisionsRemaining > 0 ? (
                           <span className="text-green-600">
-                            ({revisionInfo.freeRevisionsRemaining} free{" "}
-                            {revisionInfo.freeRevisionsRemaining === 1 ? "revision" : "revisions"}{" "}
-                            remaining)
+                            (
+                            {t("requestRevision.freeRemaining", {
+                              count: revisionInfo.freeRevisionsRemaining,
+                              revision:
+                                revisionInfo.freeRevisionsRemaining === 1
+                                  ? t("requestRevision.revision")
+                                  : t("requestRevision.revisions"),
+                            })}
+                            )
                           </span>
                         ) : (
                           <span className="text-orange-600">
-                            (No free revisions left - costs {revisionInfo.nextRevisionCost} credit)
+                            (
+                            {t("requestRevision.noFreeLeft", {
+                              cost: revisionInfo.nextRevisionCost,
+                            })}
+                            )
                           </span>
                         )}
                       </span>
@@ -189,7 +203,7 @@ export default function RequestDetailPage() {
                   </div>
                   <div className="space-y-1">
                     <Textarea
-                      placeholder="Describe what changes you need..."
+                      placeholder={t("requestRevision.placeholder")}
                       value={revisionFeedback}
                       onChange={(e) => setRevisionFeedback(e.target.value)}
                       className={
@@ -208,7 +222,7 @@ export default function RequestDetailPage() {
                       >
                         {revisionFeedback.length > 0 &&
                           !revisionFeedbackValid &&
-                          `Minimum ${MIN_REVISION_FEEDBACK} characters required`}
+                          t("requestRevision.minCharacters", { min: MIN_REVISION_FEEDBACK })}
                       </span>
                       <span
                         className={
@@ -226,7 +240,9 @@ export default function RequestDetailPage() {
                     onClick={handleRequestRevision}
                     disabled={!revisionFeedbackValid || requestRevision.isPending}
                   >
-                    {requestRevision.isPending ? "Requesting..." : "Request Revision"}
+                    {requestRevision.isPending
+                      ? t("requestRevision.requesting")
+                      : t("requestRevision.button")}
                   </Button>
                 </div>
               </CardContent>
@@ -237,9 +253,9 @@ export default function RequestDetailPage() {
           {canRate && (
             <Card className="border-green-200 bg-green-50">
               <CardHeader>
-                <CardTitle className="text-green-800">Rate This Service</CardTitle>
+                <CardTitle className="text-green-800">{t("rateService.title")}</CardTitle>
                 <CardDescription className="text-green-700">
-                  Share your experience with this provider
+                  {t("rateService.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -256,13 +272,13 @@ export default function RequestDetailPage() {
                 </div>
                 <div className="space-y-1">
                   <Textarea
-                    placeholder="Write a review (optional)..."
+                    placeholder={t("rateService.reviewPlaceholder")}
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
                   />
                   {reviewText.length > 0 && (
                     <div className="flex justify-end text-xs text-muted-foreground">
-                      <span>{reviewText.length} characters</span>
+                      <span>{t("rateService.charactersCount", { count: reviewText.length })}</span>
                     </div>
                   )}
                 </div>
@@ -270,7 +286,7 @@ export default function RequestDetailPage() {
                   onClick={handleSubmitRating}
                   disabled={rating === 0 || submitRating.isPending}
                 >
-                  {submitRating.isPending ? "Submitting..." : "Submit Rating"}
+                  {submitRating.isPending ? t("rateService.submitting") : t("rateService.submit")}
                 </Button>
               </CardContent>
             </Card>
@@ -280,7 +296,7 @@ export default function RequestDetailPage() {
           {request.rating && (
             <Card>
               <CardHeader>
-                <CardTitle>Your Rating</CardTitle>
+                <CardTitle>{t("yourRating.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-1 mb-2">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./datepicker.css";
@@ -100,21 +101,22 @@ function getStatusBadgeVariant(status: string) {
 // Component for when there's no pending payment
 function NoPendingPayment() {
   const router = useRouter();
+  const t = useTranslations("client.payment");
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Payment</h1>
-        <p className="text-muted-foreground">Submit payment proof for your subscription</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
       <Card>
         <CardContent className="py-12 text-center">
           <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Pending Payment</h3>
-          <p className="text-muted-foreground mb-4">
-            You don&apos;t have any pending subscriptions that require payment.
-          </p>
-          <Button onClick={() => router.push("/client/subscription")}>View Subscriptions</Button>
+          <h3 className="text-lg font-semibold mb-2">{t("noPendingPayment.title")}</h3>
+          <p className="text-muted-foreground mb-4">{t("noPendingPayment.description")}</p>
+          <Button onClick={() => router.push("/client/subscription")}>
+            {t("noPendingPayment.viewSubscriptions")}
+          </Button>
         </CardContent>
       </Card>
     </div>
@@ -124,14 +126,15 @@ function NoPendingPayment() {
 // Component for payment status display (when proof already submitted)
 function PaymentStatus({ subscription }: { subscription: PendingSubscription }) {
   const router = useRouter();
+  const t = useTranslations("client.payment");
   const proof = subscription.paymentProof!;
   const badgeVariant = getStatusBadgeVariant(proof.status);
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Payment Status</h1>
-        <p className="text-muted-foreground">Track your payment verification</p>
+        <h1 className="text-3xl font-bold">{t("statusTitle")}</h1>
+        <p className="text-muted-foreground">{t("statusSubtitle")}</p>
       </div>
 
       <Card>
@@ -153,20 +156,17 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
           {proof.status === "PENDING" && (
             <Alert>
               <Clock className="h-4 w-4" />
-              <AlertTitle>Verification in Progress</AlertTitle>
-              <AlertDescription>
-                We&apos;re reviewing your payment. This usually takes 1-2 business days.
-              </AlertDescription>
+              <AlertTitle>{t("status.pending")}</AlertTitle>
+              <AlertDescription>{t("status.pendingDesc")}</AlertDescription>
             </Alert>
           )}
 
           {proof.status === "REJECTED" && (
             <Alert variant="destructive">
               <XCircle className="h-4 w-4" />
-              <AlertTitle>Payment Rejected</AlertTitle>
+              <AlertTitle>{t("status.rejected")}</AlertTitle>
               <AlertDescription>
-                {proof.rejectionReason ??
-                  "Your payment could not be verified. Please contact support."}
+                {proof.rejectionReason ?? t("status.rejectedDesc")}
               </AlertDescription>
             </Alert>
           )}
@@ -174,38 +174,38 @@ function PaymentStatus({ subscription }: { subscription: PendingSubscription }) 
           {proof.status === "APPROVED" && (
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800">Payment Approved!</AlertTitle>
+              <AlertTitle className="text-green-800">{t("status.approved")}</AlertTitle>
               <AlertDescription className="text-green-700">
-                Your subscription is now active. You can start creating requests.
+                {t("status.approvedDesc")}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Amount Paid</p>
+              <p className="text-sm text-muted-foreground">{t("info.amountPaid")}</p>
               <p className="text-xl font-bold">{formatCurrency(proof.amount)}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Transfer Date</p>
+              <p className="text-sm text-muted-foreground">{t("info.transferDate")}</p>
               <p className="text-xl font-bold">{formatDate(proof.transferDate)}</p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Sender</p>
+              <p className="text-sm text-muted-foreground">{t("info.sender")}</p>
               <p className="font-medium">{proof.senderName}</p>
               <p className="text-sm text-muted-foreground">
                 {proof.senderBank}, {proof.senderCountry}
               </p>
             </div>
             <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Submitted</p>
+              <p className="text-sm text-muted-foreground">{t("info.submitted")}</p>
               <p className="font-medium">{formatDate(proof.createdAt)}</p>
             </div>
           </div>
         </CardContent>
         <CardFooter>
           <Button variant="outline" onClick={() => router.push("/client/subscription")}>
-            Back to Subscription
+            {t("actions.backToSubscription")}
           </Button>
         </CardFooter>
       </Card>
@@ -244,23 +244,25 @@ function BankDetailsCard({
   copied: string | null;
   onCopy: (text: string, field: string) => void;
 }) {
+  const t = useTranslations("client.payment");
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
-          Bank Transfer Details
+          {t("bankDetails.title")}
         </CardTitle>
-        <CardDescription>
-          Send payment to the following account via international bank transfer (IBAN)
-        </CardDescription>
+        <CardDescription>{t("bankDetails.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Package Info */}
         <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">{subscription.package.name}</span>
-            <Badge>{subscription.package.credits} Credits</Badge>
+            <Badge>
+              {subscription.package.credits} {t("badges.credits")}
+            </Badge>
           </div>
           <p className="text-2xl font-bold">{formatCurrency(subscription.package.price)}</p>
         </div>
@@ -269,7 +271,7 @@ function BankDetailsCard({
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div>
-              <p className="text-xs text-muted-foreground">Bank Name</p>
+              <p className="text-xs text-muted-foreground">{t("bankDetails.bankName")}</p>
               <p className="font-medium">{paymentInfo.bankName}</p>
             </div>
             <CopyButton
@@ -282,7 +284,7 @@ function BankDetailsCard({
 
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div>
-              <p className="text-xs text-muted-foreground">Account Name</p>
+              <p className="text-xs text-muted-foreground">{t("bankDetails.accountName")}</p>
               <p className="font-medium">{paymentInfo.accountName}</p>
             </div>
             <CopyButton
@@ -295,7 +297,7 @@ function BankDetailsCard({
 
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div>
-              <p className="text-xs text-muted-foreground">IBAN</p>
+              <p className="text-xs text-muted-foreground">{t("bankDetails.iban")}</p>
               <p className="font-mono font-medium">{paymentInfo.iban}</p>
             </div>
             <CopyButton field="iban" value={paymentInfo.iban} copied={copied} onCopy={onCopy} />
@@ -303,7 +305,7 @@ function BankDetailsCard({
 
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div>
-              <p className="text-xs text-muted-foreground">SWIFT/BIC</p>
+              <p className="text-xs text-muted-foreground">{t("bankDetails.swiftCode")}</p>
               <p className="font-mono font-medium">{paymentInfo.swiftCode}</p>
             </div>
             <CopyButton
@@ -334,6 +336,7 @@ function PaymentProofForm({
   packagePrice: number;
   onSuccess: () => void;
 }) {
+  const t = useTranslations("client.payment");
   const [formData, setFormData] = useState<FormData>({
     senderName: "",
     senderBank: "",
@@ -348,7 +351,7 @@ function PaymentProofForm({
 
   const submitProofMutation = trpc.payment.submitProof.useMutation({
     onSuccess: () => {
-      showSuccess("Payment proof submitted successfully! We'll verify it soon.");
+      showSuccess(t("toast.submitted"));
       onSuccess();
     },
     onError: (error) => {
@@ -368,39 +371,39 @@ function PaymentProofForm({
     const newErrors: FormErrors = {};
 
     if (!formData.transferImageUrl) {
-      newErrors.transferImageUrl = "Transfer receipt is required";
+      newErrors.transferImageUrl = t("validation.transferReceiptRequired");
     }
 
     if (!formData.senderName || formData.senderName.trim().length < 2) {
-      newErrors.senderName = "Sender name must be at least 2 characters";
+      newErrors.senderName = t("validation.senderNameMin");
     } else if (formData.senderName.length > 100) {
-      newErrors.senderName = "Sender name must not exceed 100 characters";
+      newErrors.senderName = t("validation.senderNameMax");
     }
 
     if (!formData.senderBank || formData.senderBank.trim().length < 2) {
-      newErrors.senderBank = "Bank name must be at least 2 characters";
+      newErrors.senderBank = t("validation.senderBankMin");
     } else if (formData.senderBank.length > 100) {
-      newErrors.senderBank = "Bank name must not exceed 100 characters";
+      newErrors.senderBank = t("validation.senderBankMax");
     }
 
     if (!formData.senderCountry || formData.senderCountry.trim().length < 2) {
-      newErrors.senderCountry = "Country must be at least 2 characters";
+      newErrors.senderCountry = t("validation.senderCountryMin");
     } else if (formData.senderCountry.length > 100) {
-      newErrors.senderCountry = "Country must not exceed 100 characters";
+      newErrors.senderCountry = t("validation.senderCountryMax");
     }
 
     if (!formData.transferDate) {
-      newErrors.transferDate = "Transfer date is required";
+      newErrors.transferDate = t("validation.transferDateRequired");
     } else if (formData.transferDate > new Date()) {
-      newErrors.transferDate = "Transfer date cannot be in the future";
+      newErrors.transferDate = t("validation.transferDateFuture");
     }
 
     if (formData.referenceNumber && formData.referenceNumber.length > 50) {
-      newErrors.referenceNumber = "Reference number must not exceed 50 characters";
+      newErrors.referenceNumber = t("validation.referenceNumberMax");
     }
 
     if (formData.notes && formData.notes.length > 500) {
-      newErrors.notes = "Notes must not exceed 500 characters";
+      newErrors.notes = t("validation.notesMax");
     }
 
     setErrors(newErrors);
@@ -411,7 +414,7 @@ function PaymentProofForm({
     e.preventDefault();
 
     if (!validateForm()) {
-      showError("Please fix the validation errors before submitting");
+      showError(t("validation.fixErrors"));
       return;
     }
 
@@ -450,17 +453,15 @@ function PaymentProofForm({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5" />
-          Upload Payment Proof
+          {t("uploadProof.title")}
         </CardTitle>
-        <CardDescription>
-          After making the transfer, fill in the details and upload the receipt
-        </CardDescription>
+        <CardDescription>{t("uploadProof.description")}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {/* Image Upload */}
           <div className="space-y-2">
-            <Label>Transfer Receipt *</Label>
+            <Label>{t("uploadProof.transferReceipt")}</Label>
             <FileUpload
               onFilesChange={handleFilesChange}
               maxFiles={1}
@@ -470,17 +471,15 @@ function PaymentProofForm({
             {errors.transferImageUrl && (
               <p className="text-sm text-destructive">{errors.transferImageUrl}</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Upload an image of your transfer receipt (Max 10MB)
-            </p>
+            <p className="text-xs text-muted-foreground">{t("uploadProof.uploadImage")}</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="senderName">Sender Name *</Label>
+              <Label htmlFor="senderName">{t("uploadProof.senderName")}</Label>
               <Input
                 id="senderName"
-                placeholder="Name on bank account"
+                placeholder={t("uploadProof.senderNamePlaceholder")}
                 required
                 minLength={2}
                 maxLength={100}
@@ -489,13 +488,15 @@ function PaymentProofForm({
                 className={errors.senderName ? "border-destructive" : ""}
               />
               {errors.senderName && <p className="text-sm text-destructive">{errors.senderName}</p>}
-              <p className="text-xs text-muted-foreground">2-100 characters</p>
+              <p className="text-xs text-muted-foreground">
+                {t("uploadProof.charactersHint", { min: 2, max: 100 })}
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="senderBank">Bank Name *</Label>
+              <Label htmlFor="senderBank">{t("uploadProof.senderBank")}</Label>
               <Input
                 id="senderBank"
-                placeholder="e.g., Chase, HSBC"
+                placeholder={t("uploadProof.senderBankPlaceholder")}
                 required
                 minLength={2}
                 maxLength={100}
@@ -504,16 +505,18 @@ function PaymentProofForm({
                 className={errors.senderBank ? "border-destructive" : ""}
               />
               {errors.senderBank && <p className="text-sm text-destructive">{errors.senderBank}</p>}
-              <p className="text-xs text-muted-foreground">2-100 characters</p>
+              <p className="text-xs text-muted-foreground">
+                {t("uploadProof.charactersHint", { min: 2, max: 100 })}
+              </p>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="senderCountry">Country *</Label>
+              <Label htmlFor="senderCountry">{t("uploadProof.senderCountry")}</Label>
               <Input
                 id="senderCountry"
-                placeholder="e.g., United States"
+                placeholder={t("uploadProof.senderCountryPlaceholder")}
                 required
                 minLength={2}
                 maxLength={100}
@@ -524,10 +527,12 @@ function PaymentProofForm({
               {errors.senderCountry && (
                 <p className="text-sm text-destructive">{errors.senderCountry}</p>
               )}
-              <p className="text-xs text-muted-foreground">2-100 characters</p>
+              <p className="text-xs text-muted-foreground">
+                {t("uploadProof.charactersHint", { min: 2, max: 100 })}
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="transferDate">Transfer Date *</Label>
+              <Label htmlFor="transferDate">{t("uploadProof.transferDate")}</Label>
               <div className="relative">
                 <DatePicker
                   id="transferDate"
@@ -535,7 +540,7 @@ function PaymentProofForm({
                   onChange={(date) => updateDateField(date)}
                   dateFormat="yyyy-MM-dd"
                   maxDate={new Date()}
-                  placeholderText="Select transfer date"
+                  placeholderText={t("uploadProof.transferDatePlaceholder")}
                   required
                   className={`flex h-10 w-full rounded-md border ${errors.transferDate ? "border-destructive" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
                   calendarClassName="!bg-background !border-border"
@@ -546,15 +551,15 @@ function PaymentProofForm({
               {errors.transferDate && (
                 <p className="text-sm text-destructive">{errors.transferDate}</p>
               )}
-              <p className="text-xs text-muted-foreground">Date cannot be in the future</p>
+              <p className="text-xs text-muted-foreground">{t("uploadProof.transferDateHint")}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="referenceNumber">Reference Number (Optional)</Label>
+            <Label htmlFor="referenceNumber">{t("uploadProof.referenceNumber")}</Label>
             <Input
               id="referenceNumber"
-              placeholder="Bank reference or transaction ID"
+              placeholder={t("uploadProof.referenceNumberPlaceholder")}
               maxLength={50}
               value={formData.referenceNumber}
               onChange={(e) => updateField("referenceNumber", e.target.value)}
@@ -563,14 +568,16 @@ function PaymentProofForm({
             {errors.referenceNumber && (
               <p className="text-sm text-destructive">{errors.referenceNumber}</p>
             )}
-            <p className="text-xs text-muted-foreground">Max 50 characters</p>
+            <p className="text-xs text-muted-foreground">
+              {t("uploadProof.maxCharactersHint", { max: 50 })}
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes</Label>
+            <Label htmlFor="notes">{t("uploadProof.notes")}</Label>
             <Textarea
               id="notes"
-              placeholder="Any additional information..."
+              placeholder={t("uploadProof.notesPlaceholder")}
               value={formData.notes}
               onChange={(e) => updateField("notes", e.target.value)}
             />
@@ -578,7 +585,7 @@ function PaymentProofForm({
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={submitProofMutation.isPending}>
-            {submitProofMutation.isPending ? "Submitting..." : "Submit Payment Proof"}
+            {submitProofMutation.isPending ? t("uploadProof.submitting") : t("uploadProof.submit")}
           </Button>
         </CardFooter>
       </form>
@@ -590,6 +597,7 @@ function PaymentProofForm({
 export default function PaymentPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const t = useTranslations("client.payment");
   const [copied, setCopied] = useState<string | null>(null);
 
   const { data: pendingSubscriptionData, isLoading: subLoading } =
@@ -603,7 +611,7 @@ export default function PaymentPage() {
     onSuccess: () => {
       utils.subscription.getPending.invalidate();
       utils.subscription.getActive.invalidate();
-      showSuccess("Subscription cancelled.");
+      showSuccess(t("toast.cancelled"));
       router.push("/client/subscription");
     },
     onError: (error) => {
@@ -628,10 +636,8 @@ export default function PaymentPage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold">Complete Payment</h1>
-          <p className="text-muted-foreground">
-            Transfer payment and upload proof to activate your subscription
-          </p>
+          <h1 className="text-3xl font-bold">{t("completePayment.title")}</h1>
+          <p className="text-muted-foreground">{t("completePayment.subtitle")}</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
           <Skeleton className="h-96" />
@@ -652,11 +658,7 @@ export default function PaymentPage() {
   }
 
   const handleCancelSubscription = () => {
-    if (
-      confirm(
-        "Are you sure you want to cancel this subscription? You will need to subscribe again."
-      )
-    ) {
+    if (confirm(t("actions.cancelConfirm"))) {
       cancelMutation.mutate({ subscriptionId: pendingSubscription.id });
     }
   };
@@ -666,17 +668,15 @@ export default function PaymentPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Complete Payment</h1>
-          <p className="text-muted-foreground">
-            Transfer payment and upload proof to activate your subscription
-          </p>
+          <h1 className="text-3xl font-bold">{t("completePayment.title")}</h1>
+          <p className="text-muted-foreground">{t("completePayment.subtitle")}</p>
         </div>
         <Button
           variant="outline"
           onClick={handleCancelSubscription}
           disabled={cancelMutation.isPending}
         >
-          {cancelMutation.isPending ? "Cancelling..." : "Cancel Subscription"}
+          {cancelMutation.isPending ? t("actions.cancelling") : t("actions.cancelSubscription")}
         </Button>
       </div>
 

@@ -757,6 +757,310 @@
       },
       "successMessage": "تم تغيير كلمة المرور بنجاح",
       "errorMessage": "فشل تغيير كلمة المرور"
+    },
+    "settings": {
+      "title": "إعدادات الملف الشخصي",
+      "subtitle": "إدارة إعدادات حسابك وتفضيلاتك",
+      "tabs": {
+        "profile": "الملف الشخصي",
+        "security": "الأمان"
+      }
+    }
+  },
+  "client": {
+    "dashboard": {
+      "welcome": "مرحباً بعودتك، {name}!",
+      "overview": "إليك نظرة عامة على حسابك",
+      "newRequest": "طلب جديد",
+      "stats": {
+        "creditsAvailable": "الرصيد المتاح",
+        "activeRequests": "الطلبات النشطة",
+        "completed": "مكتملة",
+        "subscription": "الاشتراك",
+        "plan": "باقة {name}",
+        "noActivePlan": "لا توجد باقة نشطة",
+        "inProgressOrPending": "قيد التنفيذ أو الانتظار",
+        "allTime": "إجمالي",
+        "daysRemaining": "أيام متبقية"
+      },
+      "noSubscription": {
+        "title": "لا يوجد اشتراك نشط",
+        "description": "اشترك في باقة لبدء إنشاء الطلبات والوصول إلى خدماتنا.",
+        "viewPlans": "عرض الباقات"
+      },
+      "recentRequests": {
+        "title": "الطلبات الأخيرة",
+        "description": "آخر طلبات الخدمة لديك",
+        "viewAll": "عرض الكل",
+        "noRequests": "لا توجد طلبات بعد",
+        "noRequestsDescription": "أنشئ طلبك الأول للبدء"
+      }
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "subtitle": "ابقَ على اطلاع على طلباتك ونشاطك",
+      "markAllAsRead": "وضع علامة مقروء على الكل",
+      "allNotifications": "جميع الإشعارات",
+      "unreadCount": "{count} إشعار غير مقروء",
+      "unreadCountPlural": "{count} إشعارات غير مقروءة",
+      "noNotifications": "لا توجد إشعارات",
+      "noNotificationsDesc": "ستظهر التحديثات حول طلباتك هنا",
+      "new": "جديد"
+    },
+    "payment": {
+      "title": "الدفع",
+      "subtitle": "تقديم إثبات الدفع لاشتراكك",
+      "statusTitle": "حالة الدفع",
+      "statusSubtitle": "تتبع التحقق من دفعك",
+      "noPendingPayment": {
+        "title": "لا يوجد دفع معلق",
+        "description": "ليس لديك أي اشتراكات معلقة تتطلب دفع.",
+        "viewSubscriptions": "عرض الاشتراكات"
+      },
+      "status": {
+        "pending": "التحقق قيد التنفيذ",
+        "pendingDesc": "نحن نراجع دفعتك. عادة ما يستغرق هذا 1-2 يوم عمل.",
+        "rejected": "تم رفض الدفع",
+        "rejectedDesc": "لم يتم التحقق من دفعتك. يرجى الاتصال بالدعم.",
+        "approved": "تمت الموافقة على الدفع!",
+        "approvedDesc": "اشتراكك نشط الآن. يمكنك البدء في إنشاء الطلبات."
+      },
+      "info": {
+        "amountPaid": "المبلغ المدفوع",
+        "transferDate": "تاريخ التحويل",
+        "sender": "المرسل",
+        "submitted": "تم التقديم"
+      },
+      "bankDetails": {
+        "title": "تفاصيل التحويل البنكي",
+        "description": "أرسل الدفع إلى الحساب التالي عبر التحويل البنكي الدولي (IBAN)",
+        "bankName": "اسم البنك",
+        "accountName": "اسم الحساب",
+        "iban": "رقم الحساب الدولي (IBAN)",
+        "swiftCode": "رمز السويفت (SWIFT/BIC)"
+      },
+      "uploadProof": {
+        "title": "رفع إثبات الدفع",
+        "description": "بعد إجراء التحويل، املأ التفاصيل وارفع الإيصال",
+        "transferReceipt": "إيصال التحويل *",
+        "uploadImage": "ارفع صورة إيصال التحويل الخاص بك (بحد أقصى 10 ميجابايت)",
+        "senderName": "اسم المرسل *",
+        "senderNamePlaceholder": "الاسم على الحساب البنكي",
+        "senderBank": "اسم البنك *",
+        "senderBankPlaceholder": "مثال: بنك الأهلي، HSBC",
+        "senderCountry": "الدولة *",
+        "senderCountryPlaceholder": "مثال: المملكة العربية السعودية",
+        "transferDate": "تاريخ التحويل *",
+        "transferDatePlaceholder": "حدد تاريخ التحويل",
+        "transferDateHint": "لا يمكن أن يكون التاريخ في المستقبل",
+        "referenceNumber": "رقم المرجع (اختياري)",
+        "referenceNumberPlaceholder": "رقم مرجع البنك أو معرف المعاملة",
+        "notes": "ملاحظات إضافية",
+        "notesPlaceholder": "أي معلومات إضافية...",
+        "submit": "تقديم إثبات الدفع",
+        "submitting": "جاري التقديم...",
+        "charactersHint": "{min}-{max} حرف",
+        "maxCharactersHint": "الحد الأقصى {max} حرف"
+      },
+      "actions": {
+        "backToSubscription": "العودة إلى الاشتراك",
+        "cancelSubscription": "إلغاء الاشتراك",
+        "cancelling": "جاري الإلغاء...",
+        "cancelConfirm": "هل أنت متأكد من إلغاء هذا الاشتراك؟ ستحتاج إلى الاشتراك مرة أخرى."
+      },
+      "validation": {
+        "transferReceiptRequired": "إيصال التحويل مطلوب",
+        "senderNameMin": "يجب أن يكون اسم المرسل على الأقل حرفين",
+        "senderNameMax": "يجب ألا يتجاوز اسم المرسل 100 حرف",
+        "senderBankMin": "يجب أن يكون اسم البنك على الأقل حرفين",
+        "senderBankMax": "يجب ألا يتجاوز اسم البنك 100 حرف",
+        "senderCountryMin": "يجب أن تكون الدولة على الأقل حرفين",
+        "senderCountryMax": "يجب ألا تتجاوز الدولة 100 حرف",
+        "transferDateRequired": "تاريخ التحويل مطلوب",
+        "transferDateFuture": "لا يمكن أن يكون تاريخ التحويل في المستقبل",
+        "referenceNumberMax": "يجب ألا يتجاوز رقم المرجع 50 حرفاً",
+        "notesMax": "يجب ألا تتجاوز الملاحظات 500 حرف",
+        "fixErrors": "يرجى إصلاح أخطاء التحقق قبل التقديم"
+      },
+      "badges": {
+        "credits": "رصيد"
+      },
+      "toast": {
+        "submitted": "تم تقديم إثبات الدفع بنجاح! سنتحقق منه قريباً.",
+        "cancelled": "تم إلغاء الاشتراك."
+      },
+      "completePayment": {
+        "title": "إتمام الدفع",
+        "subtitle": "حوّل الدفع وارفع الإثبات لتفعيل اشتراكك"
+      }
+    },
+    "profile": {
+      "title": "إعدادات الملف الشخصي",
+      "subtitle": "إدارة إعدادات حسابك وتفضيلاتك",
+      "tabs": {
+        "profile": "الملف الشخصي",
+        "security": "الأمان"
+      }
+    },
+    "requests": {
+      "title": "الطلبات",
+      "subtitle": "عرض وإدارة جميع طلبات الخدمة الخاصة بك",
+      "newRequest": "طلب جديد",
+      "allRequests": "جميع الطلبات",
+      "totalRequests": "{count} إجمالي الطلبات",
+      "noRequests": "لا توجد طلبات بعد",
+      "noRequestsDesc": "أنشئ طلبك الأول للبدء",
+      "createRequest": "إنشاء طلب"
+    },
+    "requestDetail": {
+      "notFound": "الطلب غير موجود",
+      "backToRequests": "العودة إلى الطلبات",
+      "deliverableReady": {
+        "title": "التسليم جاهز",
+        "description": "راجع التسليم وإما وافق عليه أو اطلب مراجعة.",
+        "approve": "الموافقة والإكمال",
+        "approving": "جاري الموافقة..."
+      },
+      "requestRevision": {
+        "title": "طلب مراجعة",
+        "freeRemaining": "{count} {revision} مجانية متبقية",
+        "revision": "مراجعة",
+        "revisions": "مراجعات",
+        "noFreeLeft": "لا توجد مراجعات مجانية متبقية - تكلف {cost} رصيد",
+        "placeholder": "صف التغييرات التي تحتاجها...",
+        "minCharacters": "يتطلب الحد الأدنى {min} حرف",
+        "button": "طلب مراجعة",
+        "requesting": "جاري الطلب..."
+      },
+      "rateService": {
+        "title": "قيّم هذه الخدمة",
+        "description": "شارك تجربتك مع هذا المزود",
+        "reviewPlaceholder": "اكتب مراجعة (اختياري)...",
+        "charactersCount": "{count} حرف",
+        "submit": "تقديم التقييم",
+        "submitting": "جاري التقديم..."
+      },
+      "yourRating": {
+        "title": "تقييمك"
+      },
+      "toast": {
+        "approved": "تمت الموافقة على الطلب!",
+        "approvedDesc": "تمت الموافقة على التسليم. عمل رائع!",
+        "revisionRequested": "تم طلب المراجعة",
+        "revisionRequestedDesc": "تم إخطار المزود بشأن طلب المراجعة الخاص بك.",
+        "ratingSubmitted": "تم تقديم التقييم",
+        "ratingSubmittedDesc": "شكراً لملاحظاتك!",
+        "invalidFeedback": "ملاحظات غير صالحة",
+        "invalidFeedbackDesc": "يرجى تقديم {min} حرفاً على الأقل لوصف التغييرات المطلوبة."
+      }
+    },
+    "newRequest": {
+      "title": "إنشاء طلب جديد",
+      "subtitle": "صف ما تحتاجه وسنوصلك بمزود",
+      "requestDetails": "تفاصيل الطلب",
+      "costInfo": "التكلفة الأساسية: {baseCost} {credit} + تكلفة الأولوية ({priorityCost} {credit}) = {totalCost} {credit}. لديك {available} رصيد متاح.",
+      "costInfoNoService": "حدد خدمة لرؤية تكلفة الرصيد. لديك {available} رصيد متاح.",
+      "credit": "رصيد",
+      "credits": "رصيد",
+      "insufficientCredits": {
+        "title": "رصيد غير كافٍ",
+        "description": "يتطلب هذا الطلب {required} {credit} ({baseCost} أساسي + {priorityCost} أولوية) ولكن لديك {available} فقط. يرجى الاشتراك في باقة أو شراء المزيد من الرصيد.",
+        "viewPlans": "عرض الباقات"
+      },
+      "noSubscription": {
+        "title": "لا يوجد اشتراك نشط",
+        "description": "تحتاج إلى اشتراك نشط لإنشاء الطلبات. يرجى الاشتراك في باقة للبدء.",
+        "viewPackages": "عرض الباقات"
+      },
+      "noServices": {
+        "title": "لا توجد خدمات متاحة",
+        "description": "باقتك الحالية ({name}) لا تتضمن أي خدمات. يرجى الترقية للوصول إلى الخدمات.",
+        "upgradePackage": "ترقية الباقة"
+      },
+      "fields": {
+        "serviceType": "نوع الخدمة *",
+        "serviceTypePlaceholder": "حدد نوع الخدمة",
+        "title": "العنوان *",
+        "titlePlaceholder": "مثال: إعادة تصميم موقع الشركة",
+        "titleHint": "5-200 حرف - كن واضحاً وموجزاً",
+        "description": "الوصف *",
+        "descriptionPlaceholder": "صف مشروعك بالتفصيل. قم بتضمين أي متطلبات محددة أو تفضيلات أو مراجع...",
+        "descriptionHint": "20-5000 حرف - قدم متطلبات وتوقعات مفصلة",
+        "priority": "الأولوية",
+        "priorityLow": "منخفضة (+{cost} رصيد)",
+        "priorityMedium": "متوسطة (+{cost} {credit})",
+        "priorityHigh": "عالية (+{cost} رصيد)",
+        "priorityHint": "الأولوية تضاف للتكلفة الأساسية: منخفضة=+{low}، متوسطة=+{medium}، عالية=+{high} رصيد",
+        "attachments": "المرفقات (اختياري)"
+      },
+      "serviceQuestions": {
+        "title": "أسئلة خاصة بالخدمة",
+        "description": "يرجى تقديم معلومات إضافية حول طلبك",
+        "selectOption": "اختر خياراً"
+      },
+      "actions": {
+        "cancel": "إلغاء",
+        "create": "إنشاء طلب ({cost} رصيد)",
+        "createCredits": "إنشاء طلب ({cost} رصيد)",
+        "creating": "جاري الإنشاء..."
+      },
+      "validation": {
+        "selectService": "يرجى تحديد نوع الخدمة",
+        "titleTooShort": "يجب أن يكون العنوان 5 أحرف على الأقل",
+        "descriptionTooShort": "يجب أن يكون الوصف 20 حرفاً على الأقل"
+      },
+      "toast": {
+        "created": "تم إنشاء الطلب!",
+        "createdDesc": "تم تقديم طلبك بنجاح.",
+        "validationError": "خطأ في التحقق"
+      }
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "subtitle": "إدارة اشتراكك ورصيدك",
+      "currentSubscription": {
+        "title": "باقة {name}",
+        "description": "اشتراكك النشط الحالي",
+        "active": "نشط",
+        "creditsRemaining": "الرصيد المتبقي",
+        "ofTotal": "من {total} إجمالي",
+        "daysRemaining": "أيام متبقية",
+        "expires": "ينتهي في {date}",
+        "monthlyPrice": "السعر الشهري",
+        "expiringWarning": "ينتهي اشتراكك خلال {days} يوماً",
+        "cancelSubscription": "إلغاء الاشتراك"
+      },
+      "noSubscription": {
+        "title": "لا يوجد اشتراك نشط",
+        "description": "اشترك في باقة أدناه لبدء إنشاء الطلبات"
+      },
+      "plans": {
+        "upgrade": "ترقية باقتك",
+        "choose": "اختر باقة",
+        "current": "الحالية",
+        "perMonth": "/شهرياً",
+        "subscribe": "اشترك",
+        "processing": "جاري المعالجة...",
+        "currentPlan": "الباقة الحالية",
+        "cancelFirstToSwitch": "ألغِ أولاً للتبديل",
+        "noPlans": "لا توجد باقات متاحة",
+        "noPlansDesc": "يرجى المحاولة لاحقاً أو الاتصال بالدعم"
+      },
+      "usageStats": {
+        "title": "إحصاءات الاستخدام",
+        "description": "استخدام رصيدك في فترة الفوترة الحالية",
+        "totalRequests": "إجمالي الطلبات",
+        "completed": "مكتملة",
+        "active": "نشطة",
+        "creditsUsed": "الرصيد المستخدم"
+      },
+      "confirmations": {
+        "cancel": "هل أنت متأكد من إلغاء اشتراكك؟"
+      },
+      "toast": {
+        "subscribed": "تم إنشاء الاشتراك! يرجى إكمال الدفع.",
+        "cancelled": "تم إلغاء الاشتراك بنجاح."
+      }
     }
   }
 }

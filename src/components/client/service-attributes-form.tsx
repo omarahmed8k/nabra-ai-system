@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 interface ServiceAttributesFormProps {
@@ -26,6 +27,8 @@ export function ServiceAttributesForm({
   onChange,
   disabled = false,
 }: ServiceAttributesFormProps) {
+  const t = useTranslations("client.newRequest.serviceQuestions");
+
   if (!attributes || attributes.length === 0) {
     return null;
   }
@@ -51,21 +54,19 @@ export function ServiceAttributesForm({
   const toggleMultiselectOption = (question: string, option: string) => {
     const currentAnswer = getResponse(question);
     const currentArray = Array.isArray(currentAnswer) ? currentAnswer : [];
-    
+
     const newArray = currentArray.includes(option)
       ? currentArray.filter((o) => o !== option)
       : [...currentArray, option];
-    
+
     updateResponse(question, newArray);
   };
 
   return (
     <div className="space-y-6">
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4">Service-Specific Questions</h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          Please provide additional information about your request
-        </p>
+        <h3 className="text-lg font-semibold mb-4">{t("title")}</h3>
+        <p className="text-sm text-muted-foreground mb-6">{t("description")}</p>
 
         <div className="space-y-6">
           {attributes.map((attr, index) => (
@@ -75,9 +76,7 @@ export function ServiceAttributesForm({
                 {attr.required && <span className="text-destructive ml-1">*</span>}
               </Label>
 
-              {attr.helpText && (
-                <p className="text-xs text-muted-foreground">{attr.helpText}</p>
-              )}
+              {attr.helpText && <p className="text-xs text-muted-foreground">{attr.helpText}</p>}
 
               {/* Text Input */}
               {attr.type === "text" && (
@@ -113,7 +112,7 @@ export function ServiceAttributesForm({
                   required={attr.required}
                 >
                   <SelectTrigger id={`attr-${index}`}>
-                    <SelectValue placeholder="Select an option" />
+                    <SelectValue placeholder={t("selectOption")} />
                   </SelectTrigger>
                   <SelectContent>
                     {attr.options?.map((option) => (
@@ -136,9 +135,7 @@ export function ServiceAttributesForm({
                           Array.isArray(getResponse(attr.question)) &&
                           (getResponse(attr.question) as string[]).includes(option)
                         }
-                        onCheckedChange={() =>
-                          toggleMultiselectOption(attr.question, option)
-                        }
+                        onCheckedChange={() => toggleMultiselectOption(attr.question, option)}
                         disabled={disabled}
                       />
                       <label

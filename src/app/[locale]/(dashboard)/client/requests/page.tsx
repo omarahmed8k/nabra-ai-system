@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +11,7 @@ import { trpc } from "@/lib/trpc/client";
 import { Plus } from "lucide-react";
 
 export default function RequestsPage() {
+  const t = useTranslations("client.requests");
   const { data: requestsData, isLoading } = trpc.request.getAll.useQuery({
     limit: 50,
   });
@@ -18,21 +20,23 @@ export default function RequestsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Requests</h1>
-          <p className="text-muted-foreground">View and manage all your service requests</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Link href="/client/requests/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            New Request
+            {t("newRequest")}
           </Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Requests</CardTitle>
-          <CardDescription>{requestsData?.requests.length || 0} total requests</CardDescription>
+          <CardTitle>{t("allRequests")}</CardTitle>
+          <CardDescription>
+            {t("totalRequests", { count: requestsData?.requests.length || 0 })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -44,9 +48,9 @@ export default function RequestsPage() {
           )}
           {!isLoading && requestsData?.requests.length === 0 && (
             <EmptyRequestsState
-              title="No requests yet"
-              description="Create your first request to get started"
-              actionLabel="Create Request"
+              title={t("noRequests")}
+              description={t("noRequestsDesc")}
+              actionLabel={t("createRequest")}
               actionHref="/client/requests/new"
             />
           )}

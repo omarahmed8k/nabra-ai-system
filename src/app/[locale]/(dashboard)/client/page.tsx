@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { formatDate, getStatusColor } from "@/lib/utils";
 import { Plus, CreditCard, FileText, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
+  const t = useTranslations("client.dashboard");
   const { data: session } = useSession();
   const { data: subscription, isLoading: subLoading } = trpc.subscription.getActive.useQuery();
   const { data: usageStats, isLoading: statsLoading } = trpc.subscription.getUsageStats.useQuery();
@@ -26,14 +28,14 @@ export default function ClientDashboard() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            Welcome back, {session?.user?.name?.split(" ")[0]}!
+            {t("welcome", { name: session?.user?.name?.split(" ")[0] || "" })}
           </h1>
-          <p className="text-muted-foreground">Here&apos;s an overview of your account</p>
+          <p className="text-muted-foreground">{t("overview")}</p>
         </div>
         <Link href="/client/requests/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            New Request
+            {t("newRequest")}
           </Button>
         </Link>
       </div>
@@ -42,7 +44,7 @@ export default function ClientDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Credits Available</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.creditsAvailable")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -52,7 +54,9 @@ export default function ClientDashboard() {
               <>
                 <div className="text-2xl font-bold">{subscription?.remainingCredits || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {subscription ? `${subscription.package.name} plan` : "No active plan"}
+                  {subscription
+                    ? t("stats.plan", { name: subscription.package.name })
+                    : t("stats.noActivePlan")}
                 </p>
               </>
             )}
@@ -61,7 +65,7 @@ export default function ClientDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.activeRequests")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -70,7 +74,7 @@ export default function ClientDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{usageStats?.activeRequests || 0}</div>
-                <p className="text-xs text-muted-foreground">In progress or pending</p>
+                <p className="text-xs text-muted-foreground">{t("stats.inProgressOrPending")}</p>
               </>
             )}
           </CardContent>
@@ -78,7 +82,7 @@ export default function ClientDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.completed")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -87,7 +91,7 @@ export default function ClientDashboard() {
             ) : (
               <>
                 <div className="text-2xl font-bold">{usageStats?.completedRequests || 0}</div>
-                <p className="text-xs text-muted-foreground">All time</p>
+                <p className="text-xs text-muted-foreground">{t("stats.allTime")}</p>
               </>
             )}
           </CardContent>
@@ -95,7 +99,7 @@ export default function ClientDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Subscription</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("stats.subscription")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -103,13 +107,13 @@ export default function ClientDashboard() {
             {!isLoading && subscription && (
               <>
                 <div className="text-2xl font-bold">{subscription.daysRemaining}</div>
-                <p className="text-xs text-muted-foreground">Days remaining</p>
+                <p className="text-xs text-muted-foreground">{t("stats.daysRemaining")}</p>
               </>
             )}
             {!isLoading && !subscription && (
               <>
                 <div className="text-2xl font-bold">-</div>
-                <p className="text-xs text-muted-foreground">No active plan</p>
+                <p className="text-xs text-muted-foreground">{t("stats.noActivePlan")}</p>
               </>
             )}
           </CardContent>
@@ -120,14 +124,14 @@ export default function ClientDashboard() {
       {!isLoading && !subscription && (
         <Card className="border-orange-200 bg-orange-50">
           <CardHeader>
-            <CardTitle className="text-orange-800">No Active Subscription</CardTitle>
+            <CardTitle className="text-orange-800">{t("noSubscription.title")}</CardTitle>
             <CardDescription className="text-orange-700">
-              Subscribe to a plan to start creating requests and accessing our services.
+              {t("noSubscription.description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/client/subscription">
-              <Button>View Plans</Button>
+              <Button>{t("noSubscription.viewPlans")}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -137,12 +141,12 @@ export default function ClientDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Recent Requests</CardTitle>
-            <CardDescription>Your latest service requests</CardDescription>
+            <CardTitle>{t("recentRequests.title")}</CardTitle>
+            <CardDescription>{t("recentRequests.description")}</CardDescription>
           </div>
           <Link href="/client/requests">
             <Button variant="outline" size="sm">
-              View All
+              {t("recentRequests.viewAll")}
             </Button>
           </Link>
         </CardHeader>
@@ -157,8 +161,8 @@ export default function ClientDashboard() {
           {!isLoading && requestsData?.requests.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <p>No requests yet</p>
-              <p className="text-sm">Create your first request to get started</p>
+              <p>{t("recentRequests.noRequests")}</p>
+              <p className="text-sm">{t("recentRequests.noRequestsDescription")}</p>
             </div>
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
