@@ -55,8 +55,7 @@ export default function AdminRequestsPage() {
   const requests: any[] = data?.requests || [];
 
   const filteredRequests = requests.filter((request: any) => {
-    const matchesStatus =
-      statusFilter === "all" || request.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || request.status === statusFilter;
     const matchesSearch =
       searchQuery === "" ||
       request.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,9 +88,7 @@ export default function AdminRequestsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">All Requests</h1>
-        <p className="text-muted-foreground">
-          Manage and monitor all service requests
-        </p>
+        <p className="text-muted-foreground">Manage and monitor all service requests</p>
       </div>
 
       {/* Stats Cards */}
@@ -221,7 +218,11 @@ export default function AdminRequestsPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          if (confirm(`Delete request "${request.title}"? This action cannot be undone.`)) {
+                          if (
+                            confirm(
+                              `Delete request "${request.title}"? This action cannot be undone.`
+                            )
+                          ) {
                             deleteRequest.mutate({ requestId: request.id });
                           }
                         }}

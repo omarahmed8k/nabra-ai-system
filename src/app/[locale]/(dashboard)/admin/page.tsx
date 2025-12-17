@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
 import {
@@ -52,7 +46,8 @@ const STATUS_COLORS: Record<string, string> = {
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = trpc.admin.getStats.useQuery();
   const { data: analytics, isLoading: analyticsLoading } = trpc.admin.getAnalytics.useQuery();
-  const { data: subscriptionsData, isLoading: subsLoading } = trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
+  const { data: subscriptionsData, isLoading: subsLoading } =
+    trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
 
   const renderTopProviders = () => {
     if (analyticsLoading) {
@@ -65,31 +60,29 @@ export default function AdminDashboard() {
       );
     }
     if ((analytics?.topProviders?.length || 0) === 0) {
-      return (
-        <p className="text-center text-muted-foreground py-8">
-          No completed requests yet
-        </p>
-      );
+      return <p className="text-center text-muted-foreground py-8">No completed requests yet</p>;
     }
     return (
       <div className="space-y-4">
-        {analytics?.topProviders?.map((provider: { name: string; completedRequests: number }, index: number) => (
-          <div
-            key={provider.name || index}
-            className="flex items-center justify-between p-3 bg-muted rounded-lg"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                {index + 1}
+        {analytics?.topProviders?.map(
+          (provider: { name: string; completedRequests: number }, index: number) => (
+            <div
+              key={provider.name || index}
+              className="flex items-center justify-between p-3 bg-muted rounded-lg"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                  {index + 1}
+                </div>
+                <span className="font-medium">{provider.name}</span>
               </div>
-              <span className="font-medium">{provider.name}</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="font-bold">{provider.completedRequests}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="font-bold">{provider.completedRequests}</span>
-            </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
     );
   };
@@ -105,31 +98,29 @@ export default function AdminDashboard() {
       );
     }
     if ((subscriptionsData?.subscriptions?.length || 0) === 0) {
-      return (
-        <p className="text-center text-muted-foreground py-8">
-          No subscriptions yet
-        </p>
-      );
+      return <p className="text-center text-muted-foreground py-8">No subscriptions yet</p>;
     }
     return (
       <div className="space-y-4">
-        {subscriptionsData?.subscriptions?.map((sub: { id: string; user: { name: string | null; email: string }; package: { name: string; price: number }; remainingCredits: number }) => (
-          <div
-            key={sub.id}
-            className="flex items-center justify-between p-3 bg-muted rounded-lg"
-          >
-            <div>
-              <p className="font-medium">{sub.user.name || sub.user.email}</p>
-              <p className="text-sm text-muted-foreground">{sub.package.name}</p>
+        {subscriptionsData?.subscriptions?.map(
+          (sub: {
+            id: string;
+            user: { name: string | null; email: string };
+            package: { name: string; price: number };
+            remainingCredits: number;
+          }) => (
+            <div key={sub.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+              <div>
+                <p className="font-medium">{sub.user.name || sub.user.email}</p>
+                <p className="text-sm text-muted-foreground">{sub.package.name}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold">${sub.package.price}</p>
+                <p className="text-xs text-muted-foreground">{sub.remainingCredits} credits left</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-bold">${sub.package.price}</p>
-              <p className="text-xs text-muted-foreground">
-                {sub.remainingCredits} credits left
-              </p>
-            </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
     );
   };
@@ -138,9 +129,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage the platform and monitor activity
-        </p>
+        <p className="text-muted-foreground">Manage the platform and monitor activity</p>
       </div>
 
       {/* Stats Cards */}
@@ -216,9 +205,7 @@ export default function AdminDashboard() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">
-                  {(stats?.averageRating ?? 0).toFixed(1)}
-                </div>
+                <div className="text-2xl font-bold">{(stats?.averageRating ?? 0).toFixed(1)}</div>
                 <p className="text-xs text-muted-foreground">
                   {stats?.serviceTypes ?? 0} active service types
                 </p>
@@ -273,39 +260,46 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
-            {!analyticsLoading && (!analytics?.requestsByStatus || analytics.requestsByStatus.length === 0) && (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <p className="text-sm">No data available yet</p>
-                  <p className="text-xs text-muted-foreground/70">Requests will appear here once created</p>
+            {!analyticsLoading &&
+              (!analytics?.requestsByStatus || analytics.requestsByStatus.length === 0) && (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <p className="text-sm">No data available yet</p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Requests will appear here once created
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-            {!analyticsLoading && analytics?.requestsByStatus && analytics.requestsByStatus.length > 0 && (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={analytics?.requestsByStatus || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ payload }) => `${payload.status}: ${payload.count}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                    nameKey="status"
-                  >
-                    {(analytics?.requestsByStatus || []).map((entry: { status: string; count: number }, index: number) => (
-                      <Cell 
-                        key={`cell-${entry.status}`} 
-                        fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]} 
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
+              )}
+            {!analyticsLoading &&
+              analytics?.requestsByStatus &&
+              analytics.requestsByStatus.length > 0 && (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={analytics?.requestsByStatus || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ payload }) => `${payload.status}: ${payload.count}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="count"
+                      nameKey="status"
+                    >
+                      {(analytics?.requestsByStatus || []).map(
+                        (entry: { status: string; count: number }, index: number) => (
+                          <Cell
+                            key={`cell-${entry.status}`}
+                            fill={STATUS_COLORS[entry.status] || COLORS[index % COLORS.length]}
+                          />
+                        )
+                      )}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
           </CardContent>
         </Card>
       </div>
@@ -323,25 +317,31 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
-            {!analyticsLoading && (!analytics?.subscriptionsByPackage || analytics.subscriptionsByPackage.length === 0) && (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <p className="text-sm">No subscriptions yet</p>
-                  <p className="text-xs text-muted-foreground/70">Subscription data will appear once clients subscribe</p>
+            {!analyticsLoading &&
+              (!analytics?.subscriptionsByPackage ||
+                analytics.subscriptionsByPackage.length === 0) && (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <p className="text-sm">No subscriptions yet</p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Subscription data will appear once clients subscribe
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-            {!analyticsLoading && analytics?.subscriptionsByPackage && analytics.subscriptionsByPackage.length > 0 && (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analytics?.subscriptionsByPackage || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+              )}
+            {!analyticsLoading &&
+              analytics?.subscriptionsByPackage &&
+              analytics.subscriptionsByPackage.length > 0 && (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={analytics?.subscriptionsByPackage || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
           </CardContent>
         </Card>
 
@@ -356,25 +356,30 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             {analyticsLoading && <Skeleton className="h-[300px] w-full" />}
-            {!analyticsLoading && (!analytics?.requestsByService || analytics.requestsByService.length === 0) && (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <p className="text-sm">No service data available yet</p>
-                  <p className="text-xs text-muted-foreground/70">Service requests will appear here once created</p>
+            {!analyticsLoading &&
+              (!analytics?.requestsByService || analytics.requestsByService.length === 0) && (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <p className="text-sm">No service data available yet</p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Service requests will appear here once created
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-            {!analyticsLoading && analytics?.requestsByService && analytics.requestsByService.length > 0 && (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analytics?.requestsByService || []} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="service" type="category" width={100} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#00C49F" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+              )}
+            {!analyticsLoading &&
+              analytics?.requestsByService &&
+              analytics.requestsByService.length > 0 && (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={analytics?.requestsByService || []} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis dataKey="service" type="category" width={100} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#00C49F" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
           </CardContent>
         </Card>
       </div>
@@ -390,9 +395,7 @@ export default function AdminDashboard() {
             </CardTitle>
             <CardDescription>By completed requests</CardDescription>
           </CardHeader>
-          <CardContent>
-            {renderTopProviders()}
-          </CardContent>
+          <CardContent>{renderTopProviders()}</CardContent>
         </Card>
 
         {/* Recent Subscriptions */}
@@ -411,9 +414,7 @@ export default function AdminDashboard() {
               </span>
             </Link>
           </CardHeader>
-          <CardContent>
-            {renderRecentSubscriptions()}
-          </CardContent>
+          <CardContent>{renderRecentSubscriptions()}</CardContent>
         </Card>
       </div>
 
@@ -519,9 +520,7 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and manage all service requests
-              </p>
+              <p className="text-sm text-muted-foreground">View and manage all service requests</p>
             </CardContent>
           </Card>
         </Link>

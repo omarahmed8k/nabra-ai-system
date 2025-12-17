@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestCard } from "@/components/requests/request-card";
 import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
@@ -21,17 +15,13 @@ export default function MyRequestsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">My Requests</h1>
-        <p className="text-muted-foreground">
-          Manage requests you&apos;re working on
-        </p>
+        <p className="text-muted-foreground">Manage requests you&apos;re working on</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>All My Requests</CardTitle>
-          <CardDescription>
-            {requestsData?.requests.length || 0} total requests
-          </CardDescription>
+          <CardDescription>{requestsData?.requests.length || 0} total requests</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (

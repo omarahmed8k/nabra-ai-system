@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -101,8 +95,7 @@ export default function AdminPaymentsPage() {
   const { data: stats, isLoading: statsLoading } = trpc.payment.getStats.useQuery();
   const { data: pendingPayments, isLoading: pendingLoading } =
     trpc.payment.getPendingPayments.useQuery();
-  const { data: allPaymentsData, isLoading: allLoading } =
-    trpc.payment.getAllPayments.useQuery({});
+  const { data: allPaymentsData, isLoading: allLoading } = trpc.payment.getAllPayments.useQuery({});
 
   const approveMutation = trpc.payment.approvePayment.useMutation({
     onSuccess: () => {
@@ -183,11 +176,7 @@ export default function AdminPaymentsPage() {
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedPayment(payment)}
-            >
+            <Button size="sm" variant="outline" onClick={() => setSelectedPayment(payment)}>
               <Eye className="h-4 w-4" />
             </Button>
             {payment.status === "PENDING" && (
@@ -222,9 +211,7 @@ export default function AdminPaymentsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Payment Verification</h1>
-        <p className="text-muted-foreground">
-          Review and verify client payment proofs
-        </p>
+        <p className="text-muted-foreground">Review and verify client payment proofs</p>
       </div>
 
       {/* Stats Cards */}
@@ -238,9 +225,7 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Pending</p>
-                    <p className="text-3xl font-bold text-orange-600">
-                      {stats?.pending || 0}
-                    </p>
+                    <p className="text-3xl font-bold text-orange-600">{stats?.pending || 0}</p>
                   </div>
                   <Clock className="h-8 w-8 text-orange-600" />
                 </div>
@@ -251,9 +236,7 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Approved</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      {stats?.approved || 0}
-                    </p>
+                    <p className="text-3xl font-bold text-green-600">{stats?.approved || 0}</p>
                   </div>
                   <CheckCircle2 className="h-8 w-8 text-green-600" />
                 </div>
@@ -264,9 +247,7 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Rejected</p>
-                    <p className="text-3xl font-bold text-red-600">
-                      {stats?.rejected || 0}
-                    </p>
+                    <p className="text-3xl font-bold text-red-600">{stats?.rejected || 0}</p>
                   </div>
                   <XCircle className="h-8 w-8 text-red-600" />
                 </div>
@@ -304,9 +285,7 @@ export default function AdminPaymentsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Pending Verifications</CardTitle>
-              <CardDescription>
-                Review and approve or reject pending payment proofs
-              </CardDescription>
+              <CardDescription>Review and approve or reject pending payment proofs</CardDescription>
             </CardHeader>
             <CardContent>
               {pendingLoading && <Skeleton className="h-48" />}
@@ -375,13 +354,14 @@ export default function AdminPaymentsPage() {
       </Tabs>
 
       {/* View Payment Details Dialog */}
-      <Dialog open={!!selectedPayment && !showRejectDialog} onOpenChange={() => setSelectedPayment(null)}>
+      <Dialog
+        open={!!selectedPayment && !showRejectDialog}
+        onOpenChange={() => setSelectedPayment(null)}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Payment Details</DialogTitle>
-            <DialogDescription>
-              Review the payment proof submitted by the client
-            </DialogDescription>
+            <DialogDescription>Review the payment proof submitted by the client</DialogDescription>
           </DialogHeader>
           {selectedPayment && (
             <div className="space-y-4">
@@ -405,7 +385,8 @@ export default function AdminPaymentsPage() {
                   <Label className="text-muted-foreground">Package</Label>
                   <p className="font-medium">{selectedPayment.subscription.package.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatCurrency(selectedPayment.subscription.package.price)} - {selectedPayment.subscription.package.credits} credits
+                    {formatCurrency(selectedPayment.subscription.package.price)} -{" "}
+                    {selectedPayment.subscription.package.credits} credits
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -497,9 +478,7 @@ export default function AdminPaymentsPage() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={4}
               />
-              <p className="text-xs text-muted-foreground">
-                Minimum 10 characters required
-              </p>
+              <p className="text-xs text-muted-foreground">Minimum 10 characters required</p>
             </div>
           </div>
           <DialogFooter>

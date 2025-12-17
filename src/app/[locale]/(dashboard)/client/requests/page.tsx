@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestCard } from "@/components/requests/request-card";
 import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
@@ -25,9 +19,7 @@ export default function RequestsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Requests</h1>
-          <p className="text-muted-foreground">
-            View and manage all your service requests
-          </p>
+          <p className="text-muted-foreground">View and manage all your service requests</p>
         </div>
         <Link href="/client/requests/new">
           <Button>
@@ -40,9 +32,7 @@ export default function RequestsPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Requests</CardTitle>
-          <CardDescription>
-            {requestsData?.requests.length || 0} total requests
-          </CardDescription>
+          <CardDescription>{requestsData?.requests.length || 0} total requests</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (

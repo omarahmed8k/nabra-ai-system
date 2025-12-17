@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestCard } from "@/components/requests/request-card";
 import { EmptyRequestsState } from "@/components/requests/empty-requests-state";
@@ -16,24 +10,21 @@ import { trpc } from "@/lib/trpc/client";
 import { ArrowRight } from "lucide-react";
 
 export default function AvailableJobsPage() {
-  const { data: requestsData, isLoading } =
-    trpc.provider.getAvailableRequests.useQuery({ limit: 50 });
+  const { data: requestsData, isLoading } = trpc.provider.getAvailableRequests.useQuery({
+    limit: 50,
+  });
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Available Jobs</h1>
-        <p className="text-muted-foreground">
-          Browse and claim new service requests
-        </p>
+        <p className="text-muted-foreground">Browse and claim new service requests</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Open Requests</CardTitle>
-          <CardDescription>
-            {requestsData?.requests.length || 0} jobs available
-          </CardDescription>
+          <CardDescription>{requestsData?.requests.length || 0} jobs available</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (

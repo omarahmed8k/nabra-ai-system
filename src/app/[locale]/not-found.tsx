@@ -25,18 +25,13 @@ export default function NotFound() {
             <h1 className="text-6xl font-bold text-primary">404</h1>
             <h2 className="text-2xl font-semibold">Page Not Found</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
-              Sorry, we couldn&apos;t find the page you&apos;re looking for. It
-              might have been moved, deleted, or never existed.
+              Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been
+              moved, deleted, or never existed.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => router.back()}
-              className="gap-2"
-            >
+            <Button variant="outline" size="lg" onClick={() => router.back()} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Go Back
             </Button>

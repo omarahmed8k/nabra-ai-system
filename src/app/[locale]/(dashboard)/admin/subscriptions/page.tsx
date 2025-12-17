@@ -46,7 +46,8 @@ export default function AdminSubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isLoading } = trpc.admin.getAllSubscriptions.useQuery({
-    status: statusFilter === "all" ? undefined : statusFilter as "active" | "expired" | "cancelled",
+    status:
+      statusFilter === "all" ? undefined : (statusFilter as "active" | "expired" | "cancelled"),
   });
 
   const subscriptions: Subscription[] = data?.subscriptions || [];
@@ -80,9 +81,7 @@ export default function AdminSubscriptionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Subscriptions</h1>
-        <p className="text-muted-foreground">
-          Manage and monitor all client subscriptions
-        </p>
+        <p className="text-muted-foreground">Manage and monitor all client subscriptions</p>
       </div>
 
       {/* Stats Cards */}
@@ -202,9 +201,7 @@ export default function AdminSubscriptionsPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium">
-                            {sub.user.name || sub.user.email}
-                          </h3>
+                          <h3 className="font-medium">{sub.user.name || sub.user.email}</h3>
                           {isActive && (
                             <Badge className="bg-green-100 text-green-800">Active</Badge>
                           )}
@@ -231,7 +228,9 @@ export default function AdminSubscriptionsPage() {
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{sub.remainingCredits} / {sub.package.credits}</p>
+                          <p className="font-medium">
+                            {sub.remainingCredits} / {sub.package.credits}
+                          </p>
                           <p className="text-muted-foreground">Credits left</p>
                         </div>
                       </div>

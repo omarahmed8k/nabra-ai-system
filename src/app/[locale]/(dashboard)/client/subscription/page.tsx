@@ -21,8 +21,7 @@ export default function SubscriptionPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
 
-  const { data: subscription, isLoading: subLoading } =
-    trpc.subscription.getActive.useQuery();
+  const { data: subscription, isLoading: subLoading } = trpc.subscription.getActive.useQuery();
   const { data: packages, isLoading: pkgLoading } = trpc.package.getAll.useQuery();
   const { data: usageStats } = trpc.subscription.getUsageStats.useQuery();
 
@@ -67,9 +66,7 @@ export default function SubscriptionPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Subscription</h1>
-        <p className="text-muted-foreground">
-          Manage your subscription and credits
-        </p>
+        <p className="text-muted-foreground">Manage your subscription and credits</p>
       </div>
 
       {/* Current Subscription */}
@@ -79,12 +76,8 @@ export default function SubscriptionPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl">
-                  {subscription.package.name} Plan
-                </CardTitle>
-                <CardDescription>
-                  Your current active subscription
-                </CardDescription>
+                <CardTitle className="text-2xl">{subscription.package.name} Plan</CardTitle>
+                <CardDescription>Your current active subscription</CardDescription>
               </div>
               <Badge variant="default">Active</Badge>
             </div>
@@ -107,9 +100,7 @@ export default function SubscriptionPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Monthly Price</p>
-                <p className="text-3xl font-bold">
-                  {formatCurrency(subscription.package.price)}
-                </p>
+                <p className="text-3xl font-bold">{formatCurrency(subscription.package.price)}</p>
               </div>
             </div>
 
@@ -152,19 +143,24 @@ export default function SubscriptionPage() {
               <p className="text-sm">Please check back soon or contact support</p>
             </div>
           )}
-          {!isLoading && packages && packages.length > 0 && packages.map((pkg: { id: string; name: string; price: number; credits: number; features: string[] }) => {
+          {!isLoading &&
+            packages &&
+            packages.length > 0 &&
+            packages.map(
+              (pkg: {
+                id: string;
+                name: string;
+                price: number;
+                credits: number;
+                features: string[];
+              }) => {
                 const isCurrentPlan = subscription?.package.id === pkg.id;
                 return (
-                  <Card
-                    key={pkg.id}
-                    className={isCurrentPlan ? "border-primary" : ""}
-                  >
+                  <Card key={pkg.id} className={isCurrentPlan ? "border-primary" : ""}>
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle>{pkg.name}</CardTitle>
-                        {isCurrentPlan && (
-                          <Badge variant="secondary">Current</Badge>
-                        )}
+                        {isCurrentPlan && <Badge variant="secondary">Current</Badge>}
                       </div>
                       <CardDescription>
                         <span className="text-3xl font-bold text-foreground">
@@ -191,11 +187,7 @@ export default function SubscriptionPage() {
                     <CardFooter>
                       <Button
                         className="w-full"
-                        disabled={
-                          isCurrentPlan ||
-                          subscribeMutation.isPending ||
-                          !!subscription
-                        }
+                        disabled={isCurrentPlan || subscribeMutation.isPending || !!subscription}
                         onClick={() => handleSubscribe(pkg.id)}
                       >
                         {(() => {
@@ -208,7 +200,8 @@ export default function SubscriptionPage() {
                     </CardFooter>
                   </Card>
                 );
-              })}
+              }
+            )}
         </div>
       </div>
 
