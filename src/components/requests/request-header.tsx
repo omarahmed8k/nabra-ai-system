@@ -2,13 +2,7 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
-import {
-  getStatusColor,
-  getStatusLabel,
-  getPriorityLabel,
-  getPriorityColor,
-  formatDate,
-} from "@/lib/utils";
+import { getStatusColor, getPriorityColor, formatDate } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 interface RequestHeaderProps {
@@ -153,6 +147,14 @@ export function RequestHeader({
   actions,
 }: RequestHeaderProps) {
   const t = useTranslations("requests.header");
+  const tCommon = useTranslations("common");
+
+  const getPriorityKey = (priority: number): "LOW" | "MEDIUM" | "HIGH" => {
+    if (priority === 1) return "LOW";
+    if (priority === 3) return "HIGH";
+    return "MEDIUM";
+  };
+
   const breakdown = calculateCreditBreakdown(
     creditCost,
     baseCreditCost,
@@ -174,10 +176,10 @@ export function RequestHeader({
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold">{title}</h1>
             <Badge variant={null} className={getStatusColor(status)}>
-              {getStatusLabel(status)}
+              {tCommon(`requestStatus.${status}` as any)}
             </Badge>
             <Badge variant={null} className={getPriorityColor(priority)}>
-              {getPriorityLabel(priority)} {t("priority")}
+              {tCommon(`priority.${getPriorityKey(priority)}` as any)} {t("priority")}
             </Badge>
             <Badge variant="outline" className="font-semibold" title={breakdown.creditBreakdown}>
               💳 {creditCost} {creditCost === 1 ? t("credit") : t("credits")}
@@ -204,7 +206,9 @@ export function RequestHeader({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">
-                {t("priorityCost", { priority: getPriorityLabel(priority) })}
+                {t("priorityCost", {
+                  priority: tCommon(`priority.${getPriorityKey(priority)}` as any),
+                })}
               </span>
               <span className="font-medium">
                 +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}

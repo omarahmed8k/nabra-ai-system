@@ -14,6 +14,24 @@
       "terms": "الشروط",
       "contact": "تواصل",
       "copyright": "© 2024 نظام نبرا. جميع الحقوق محفوظة."
+    },
+    "requestStatus": {
+      "PENDING": "قيد الانتظار",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "DELIVERED": "تم التسليم",
+      "REVISION_REQUESTED": "طُلبت مراجعة",
+      "COMPLETED": "مكتمل",
+      "CANCELLED": "ملغى"
+    },
+    "roles": {
+      "SUPER_ADMIN": "مدير النظام",
+      "PROVIDER": "مزود الخدمة",
+      "CLIENT": "عميل"
+    },
+    "priority": {
+      "LOW": "منخفضة",
+      "MEDIUM": "متوسطة",
+      "HIGH": "عالية"
     }
   },
   "landing": {
@@ -298,6 +316,10 @@
           "title": "تعديل المستخدم",
           "description": "تحديث معلومات المستخدم"
         },
+        "delete": {
+          "title": "حذف المستخدم",
+          "description": "هل أنت متأكد من رغبتك في حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء."
+        },
         "fields": {
           "name": "الاسم الكامل",
           "email": "عنوان البريد الإلكتروني",
@@ -369,6 +391,7 @@
         "completed": "مكتمل",
         "active": "نشط",
         "noProviders": "لا يوجد مقدمو خدمات متاحون لهذا النوع من الخدمة",
+        "moreSkills": "مهارات أخرى",
         "buttons": {
           "assigning": "جاري التعيين...",
           "assign": "تعيين مقدم الخدمة",
@@ -707,6 +730,18 @@
       "messageSuccess": "تم إرسال رسالتك.",
       "messageFailed": "فشل إرسال الرسالة",
       "requestCompleted": "تم إكمال هذا الطلب. لم تعد التعليقات متاحة."
+    },
+    "card": {
+      "freeRevision": "مجانًا",
+      "paidRevision": "مدفوع",
+      "unassigned": "غير معيّن",
+      "client": "عميل",
+      "provider": "مزود",
+      "messages": "{count, plural, zero {لا توجد رسائل} one {رسالة واحدة} two {رسالتان} few {# رسائل} many {# رسالة} other {# رسالة}}"
+    },
+    "empty": {
+      "title": "لا توجد طلبات بعد",
+      "description": "لا توجد طلبات لعرضها"
     },
     "attributes": {
       "title": "معلومات خاصة بالخدمة"

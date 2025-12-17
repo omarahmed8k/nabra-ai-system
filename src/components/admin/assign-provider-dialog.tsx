@@ -170,7 +170,7 @@ function SelectedProviderInfo({
             ))}
             {selected.skills.length > 5 && (
               <Badge variant="secondary" className="text-xs">
-                +{selected.skills.length - 5} more
+                +{selected.skills.length - 5} {t("assignDialog.moreSkills")}
               </Badge>
             )}
           </div>

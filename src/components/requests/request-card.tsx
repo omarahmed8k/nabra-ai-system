@@ -1,13 +1,8 @@
 import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
-import {
-  formatDate,
-  getStatusColor,
-  getPriorityLabel,
-  getPriorityColor,
-  getStatusLabel,
-} from "@/lib/utils";
+import { formatDate, getStatusColor, getPriorityColor } from "@/lib/utils";
 import { Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface RequestCardProps {
   readonly id: string;
@@ -59,6 +54,15 @@ export function RequestCard({
   actions,
   variant = "compact",
 }: RequestCardProps) {
+  const tCommon = useTranslations("common");
+  const tCard = useTranslations("requests.card");
+
+  const getPriorityKey = (priority: number): "LOW" | "MEDIUM" | "HIGH" => {
+    if (priority === 1) return "LOW";
+    if (priority === 3) return "HIGH";
+    return "MEDIUM";
+  };
+
   const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
 
   const content = (
@@ -67,14 +71,14 @@ export function RequestCard({
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <h3 className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{title}</h3>
           <Badge variant={null} className={`${getStatusColor(status)} text-xs`}>
-            {getStatusLabel(status)}
+            {tCommon(`requestStatus.${status}` as any)}
           </Badge>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {priority && (
             <Badge variant={null} className={`${getPriorityColor(priority)} text-xs`}>
-              {getPriorityLabel(priority)}
+              {tCommon(`priority.${getPriorityKey(priority)}` as any)}
             </Badge>
           )}
           {creditCost !== undefined && creditCost !== null && (
@@ -89,12 +93,14 @@ export function RequestCard({
           )}
           {isRevision && revisionType && (
             <Badge variant={revisionType === "free" ? "secondary" : "default"} className="text-xs">
-              {revisionType === "free" ? "🔄 Free" : "💰 Paid"}
+              {revisionType === "free"
+                ? `🔄 ${tCard("freeRevision")}`
+                : `💰 ${tCard("paidRevision")}`}
             </Badge>
           )}
           {provider === null && (
             <Badge variant="outline" className="text-orange-600 border-orange-300 text-xs">
-              Unassigned
+              {tCard("unassigned")}
             </Badge>
           )}
         </div>
@@ -114,15 +120,15 @@ export function RequestCard({
           </span>
           {client && (
             <span className="truncate">
-              <strong>Client:</strong> {client.name || client.email}
+              <strong>{tCard("client")}:</strong> {client.name || client.email}
             </span>
           )}
           {provider && (
             <span className="truncate">
-              <strong>Provider:</strong> {provider.name || provider.email}
+              <strong>{tCard("provider")}:</strong> {provider.name || provider.email}
             </span>
           )}
-          {commentCount !== undefined && <span>{commentCount} messages</span>}
+          {commentCount !== undefined && <span>{tCard("messages", { count: commentCount })}</span>}
         </div>
       </div>
 

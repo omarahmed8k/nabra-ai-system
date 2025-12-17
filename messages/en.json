@@ -14,6 +14,24 @@
       "terms": "Terms",
       "contact": "Contact",
       "copyright": "© 2024 Nabra AI System. All rights reserved."
+    },
+    "requestStatus": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "DELIVERED": "Delivered",
+      "REVISION_REQUESTED": "Revision Requested",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "roles": {
+      "SUPER_ADMIN": "Super Admin",
+      "PROVIDER": "Provider",
+      "CLIENT": "Client"
+    },
+    "priority": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
     }
   },
   "landing": {
@@ -298,6 +316,10 @@
           "title": "Edit User",
           "description": "Update user information"
         },
+        "delete": {
+          "title": "Delete User",
+          "description": "Are you sure you want to delete this user? This action cannot be undone."
+        },
         "fields": {
           "name": "Full Name",
           "email": "Email Address",
@@ -369,6 +391,7 @@
         "completed": "Completed",
         "active": "Active",
         "noProviders": "No providers available for this service type",
+        "moreSkills": "more skills",
         "buttons": {
           "assigning": "Assigning...",
           "assign": "Assign Provider",
@@ -707,6 +730,18 @@
       "messageSuccess": "Your message has been sent.",
       "messageFailed": "Failed to send message",
       "requestCompleted": "This request has been completed. Comments are no longer available."
+    },
+    "card": {
+      "freeRevision": "Free",
+      "paidRevision": "Paid",
+      "unassigned": "Unassigned",
+      "client": "Client",
+      "provider": "Provider",
+      "messages": "{count, plural, one {# message} other {# messages}}"
+    },
+    "empty": {
+      "title": "No requests yet",
+      "description": "There are no requests to display"
     },
     "attributes": {
       "title": "Service-Specific Information"

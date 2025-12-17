@@ -272,7 +272,7 @@ function UserListItem({
                   className="flex items-center gap-1"
                 >
                   <Trash className="h-4 w-4" />
-                  Delete
+                  {t("dialog.delete.title")}
                 </Button>
               </div>
             )}
