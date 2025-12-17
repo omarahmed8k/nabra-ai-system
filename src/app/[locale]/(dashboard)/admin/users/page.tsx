@@ -82,7 +82,7 @@ function ServiceCheckboxItem({
   idPrefix: string;
 }): JSX.Element {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center gap-2 space-x-2">
       <Checkbox
         id={`${idPrefix}-${service.id}`}
         checked={checked}
