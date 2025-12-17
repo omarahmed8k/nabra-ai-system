@@ -123,8 +123,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 start-0 z-50 w-64 sm:w-72 lg:w-64 transform bg-background border-r transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+        className={`fixed inset-y-0 start-0 z-50 w-64 sm:w-72 lg:w-64 transform bg-background border-e transition-transform duration-200 ease-in-out lg:translate-x-0 rtl:lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0 rtl:translate-x-0" : "-translate-x-full rtl:translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">

@@ -76,6 +76,26 @@
     color-scheme: dark;
   }
 
+  /* Ensure all controls inherit the active locale font */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    font-family: inherit;
+    text-align: start; /* flips with LTR/RTL automatically */
+  }
+
+  /* Placeholder alignment follows control alignment */
+  input::placeholder,
+  textarea::placeholder {
+    text-align: inherit;
+  }
+  input::-webkit-input-placeholder,
+  textarea::-webkit-input-placeholder {
+    text-align: inherit;
+  }
+
   /* Font family based on direction */
   [dir="ltr"] {
     font-family: var(--font-lato), sans-serif;
