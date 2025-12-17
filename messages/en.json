@@ -329,6 +329,19 @@
       "title": "All Requests",
       "subtitle": "Manage and monitor all service requests",
       "search": "Search requests...",
+      "statuses": {
+        "pending": "Pending",
+        "inProgress": "In Progress",
+        "delivered": "Delivered",
+        "revisionRequested": "Revision Requested",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "priorities": {
+        "low": "Low Priority",
+        "medium": "Medium Priority",
+        "high": "High Priority"
+      },
       "filters": {
         "status": "Filter by Status",
         "allStatuses": "All Statuses",
@@ -626,6 +639,19 @@
       "info": {
         "to": "to"
       }
+    }
+  },
+  "ui": {
+    "fileUpload": {
+      "clickToUpload": "Click to upload",
+      "dragAndDrop": "or drag and drop",
+      "attachedFiles": "Attached Files",
+      "uploading": "Uploading...",
+      "uploadComplete": "Upload complete",
+      "maximumFilesReached": "Maximum files reached",
+      "invalidFileType": "Invalid file type",
+      "fileTooLarge": "File too large",
+      "uploadFailed": "Upload failed"
     }
   },
   "requests": {
@@ -1225,6 +1251,34 @@
         "deliverFailed": "Failed to submit deliverable",
         "messageFailed": "Failed to send message"
       }
+    }
+  },
+  "charts": {
+    "tooltips": {
+      "revenue": "Revenue",
+      "requests": "Requests",
+      "count": "Count",
+      "date": "Date",
+      "month": "Month",
+      "service": "Service",
+      "status": "Status",
+      "package": "Package"
+    },
+    "axisLabels": {
+      "month": "Month",
+      "count": "Count",
+      "revenue": "Revenue",
+      "status": "Status",
+      "service": "Service",
+      "package": "Package"
+    },
+    "statuses": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "DELIVERED": "Delivered",
+      "REVISION_REQUESTED": "Revision Requested",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
     }
   }
 }

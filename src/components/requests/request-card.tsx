@@ -1,6 +1,12 @@
 import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
-import { formatDate, getStatusColor, getPriorityLabel, getPriorityColor } from "@/lib/utils";
+import {
+  formatDate,
+  getStatusColor,
+  getPriorityLabel,
+  getPriorityColor,
+  getStatusLabel,
+} from "@/lib/utils";
 import { Clock } from "lucide-react";
 
 interface RequestCardProps {
@@ -61,7 +67,7 @@ export function RequestCard({
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <h3 className="font-medium text-sm sm:text-base truncate flex-1 min-w-0">{title}</h3>
           <Badge variant={null} className={`${getStatusColor(status)} text-xs`}>
-            {status.replace("_", " ")}
+            {getStatusLabel(status)}
           </Badge>
         </div>
 

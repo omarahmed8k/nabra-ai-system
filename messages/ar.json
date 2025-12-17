@@ -329,6 +329,19 @@
       "title": "جميع الطلبات",
       "subtitle": "إدارة ومراقبة جميع طلبات الخدمة",
       "search": "ابحث في الطلبات...",
+      "statuses": {
+        "pending": "قيد الانتظار",
+        "inProgress": "قيد التنفيذ",
+        "delivered": "تم التسليم",
+        "revisionRequested": "طُلبت مراجعة",
+        "completed": "مكتمل",
+        "cancelled": "ملغى"
+      },
+      "priorities": {
+        "low": "أولوية منخفضة",
+        "medium": "أولوية متوسطة",
+        "high": "أولوية عالية"
+      },
       "filters": {
         "status": "تصفية حسب الحالة",
         "allStatuses": "جميع الحالات",
@@ -626,6 +639,19 @@
       "info": {
         "to": "إلى"
       }
+    }
+  },
+  "ui": {
+    "fileUpload": {
+      "clickToUpload": "انقر للتحميل",
+      "dragAndDrop": "أو اسحب وأسقط",
+      "attachedFiles": "الملفات المرفقة",
+      "uploading": "جاري التحميل...",
+      "uploadComplete": "اكتمل التحميل",
+      "maximumFilesReached": "تم الوصول للحد الأقصى من الملفات",
+      "invalidFileType": "نوع ملف غير صالح",
+      "fileTooLarge": "الملف كبير جداً",
+      "uploadFailed": "فشل التحميل"
     }
   },
   "requests": {
@@ -1225,6 +1251,34 @@
         "deliverFailed": "فشل تقديم التسليم",
         "messageFailed": "فشل إرسال الرسالة"
       }
+    }
+  },
+  "charts": {
+    "tooltips": {
+      "revenue": "الإيرادات",
+      "requests": "الطلبات",
+      "count": "العدد",
+      "date": "التاريخ",
+      "month": "الشهر",
+      "service": "الخدمة",
+      "status": "الحالة",
+      "package": "الباقة"
+    },
+    "axisLabels": {
+      "month": "الشهر",
+      "count": "العدد",
+      "revenue": "الإيرادات",
+      "status": "الحالة",
+      "service": "الخدمة",
+      "package": "الباقة"
+    },
+    "statuses": {
+      "PENDING": "قيد الانتظار",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "DELIVERED": "تم التسليم",
+      "REVISION_REQUESTED": "طُلبت مراجعة",
+      "COMPLETED": "مكتمل",
+      "CANCELLED": "ملغى"
     }
   }
 }

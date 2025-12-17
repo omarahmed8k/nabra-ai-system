@@ -56,6 +56,18 @@ export function getStatusColor(status: string): string {
   return colors[status] || "bg-gray-100 text-gray-800";
 }
 
+export function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    PENDING: "Pending",
+    IN_PROGRESS: "In Progress",
+    DELIVERED: "Delivered",
+    REVISION_REQUESTED: "Revision Requested",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+  };
+  return labels[status] || status.replace("_", " ");
+}
+
 export function getPriorityLabel(priority: number): string {
   const labels: Record<number, string> = {
     1: "Low",

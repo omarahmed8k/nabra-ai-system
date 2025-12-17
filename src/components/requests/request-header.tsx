@@ -2,7 +2,13 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
-import { getStatusColor, getPriorityLabel, getPriorityColor, formatDate } from "@/lib/utils";
+import {
+  getStatusColor,
+  getStatusLabel,
+  getPriorityLabel,
+  getPriorityColor,
+  formatDate,
+} from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 interface RequestHeaderProps {
@@ -168,7 +174,7 @@ export function RequestHeader({
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold">{title}</h1>
             <Badge variant={null} className={getStatusColor(status)}>
-              {status.replace("_", " ")}
+              {getStatusLabel(status)}
             </Badge>
             <Badge variant={null} className={getPriorityColor(priority)}>
               {getPriorityLabel(priority)} {t("priority")}

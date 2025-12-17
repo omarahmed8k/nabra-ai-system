@@ -278,6 +278,11 @@ export function InlineFileUpload({
   readonly onFilesChange: (files: UploadedFile[]) => void;
   readonly maxFiles?: number;
   readonly disabled?: boolean;
+  readonly uploadingLabel?: string;
+  readonly attachFilesLabel?: string;
+  readonly maxFilesLabel?: string;
+  readonly attachedFilesLabel?: string;
+  readonly clearAllLabel?: string;
 }) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
