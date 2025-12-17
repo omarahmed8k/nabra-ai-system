@@ -3,11 +3,10 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import type { Direction } from "@radix-ui/react-direction";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
-type SelectDirection = Direction;
+type SelectDirection = "ltr" | "rtl";
 
 function useSelectDirection(dirProp?: React.HTMLAttributes<HTMLElement>["dir"]): SelectDirection {
   const locale = useLocale();
