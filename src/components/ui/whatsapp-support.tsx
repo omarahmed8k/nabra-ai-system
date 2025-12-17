@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 const WHATSAPP_NUMBER = "201207401576";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
@@ -23,11 +23,11 @@ export function WhatsAppSupport() {
   );
 }
 
-export function WhatsAppButton({ 
+export function WhatsAppButton({
   children = "WhatsApp Support",
   className = "",
-  size = "default"
-}: Readonly<{ 
+  size = "default",
+}: Readonly<{
   children?: React.ReactNode;
   className?: string;
   size?: "sm" | "default" | "lg";
@@ -35,7 +35,7 @@ export function WhatsAppButton({
   const sizeClasses = {
     sm: "px-3 py-2 text-sm",
     default: "px-4 py-2",
-    lg: "px-6 py-3 text-lg"
+    lg: "px-6 py-3 text-lg",
   };
 
   return (
@@ -51,10 +51,10 @@ export function WhatsAppButton({
   );
 }
 
-export function WhatsAppLink({ 
+export function WhatsAppLink({
   children = "Contact support on WhatsApp",
-  className = ""
-}: Readonly<{ 
+  className = "",
+}: Readonly<{
   children?: React.ReactNode;
   className?: string;
 }>) {

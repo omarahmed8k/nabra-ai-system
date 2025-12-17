@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, getStatusColor, getPriorityLabel, getPriorityColor } from "@/lib/utils";
 import { Clock } from "lucide-react";

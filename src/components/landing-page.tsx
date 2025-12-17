@@ -1,10 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
+import type { ComponentType } from "react";
+
 import { Button } from "@/components/ui/button";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import {
   Card,
   CardContent,
@@ -15,79 +19,34 @@ import {
 } from "@/components/ui/card";
 import { Check, Zap, Shield, Clock, Star, Users } from "lucide-react";
 
-const features = [
-  {
-    icon: Zap,
-    title: "Credit-Based System",
-    description: "Purchase credits and use them for any service. No per-project negotiations.",
-  },
-  {
-    icon: Shield,
-    title: "Quality Guaranteed",
-    description:
-      "All providers are vetted professionals. Satisfaction guaranteed on every request.",
-  },
-  {
-    icon: Clock,
-    title: "Fast Turnaround",
-    description: "Most requests completed within 48-72 hours. Rush options available.",
-  },
-  {
-    icon: Star,
-    title: "Smart Revisions",
-    description: "Free revisions included with every package. Additional revisions at a fair rate.",
-  },
-  {
-    icon: Users,
-    title: "Expert Team",
-    description: "Access designers, developers, and content creators all in one platform.",
-  },
+type FeatureKey = "credit" | "quality" | "speed" | "revisions" | "experts";
+
+type PackageKey = "starter" | "professional" | "enterprise";
+
+type StepKey = "subscribe" | "create" | "results";
+
+const featureItems: Array<{ icon: ComponentType<{ className?: string }>; key: FeatureKey }> = [
+  { icon: Zap, key: "credit" },
+  { icon: Shield, key: "quality" },
+  { icon: Clock, key: "speed" },
+  { icon: Star, key: "revisions" },
+  { icon: Users, key: "experts" },
 ];
 
-const packages = [
-  {
-    name: "Starter",
-    price: 49,
-    credits: 5,
-    revisions: 2,
-    popular: false,
-    features: [
-      "5 request credits",
-      "2 free revisions per request",
-      "Email support",
-      "48-hour response time",
-    ],
-  },
-  {
-    name: "Professional",
-    price: 149,
-    credits: 20,
-    revisions: 3,
-    popular: true,
-    features: [
-      "20 request credits",
-      "3 free revisions per request",
-      "Priority support",
-      "24-hour response time",
-      "Dedicated account manager",
-    ],
-  },
-  {
-    name: "Enterprise",
-    price: 299,
-    credits: 50,
-    revisions: 5,
-    popular: false,
-    features: [
-      "50 request credits",
-      "5 free revisions per request",
-      "24/7 priority support",
-      "12-hour response time",
-      "Dedicated account manager",
-      "Custom integrations",
-      "API access",
-    ],
-  },
+const packageItems: Array<{
+  key: PackageKey;
+  price: number;
+  popular: boolean;
+}> = [
+  { key: "starter", price: 49, popular: false },
+  { key: "professional", price: 149, popular: true },
+  { key: "enterprise", price: 299, popular: false },
+];
+
+const howSteps: Array<{ step: number; key: StepKey }> = [
+  { step: 1, key: "subscribe" },
+  { step: 2, key: "create" },
+  { step: 3, key: "results" },
 ];
 
 // Animation variants
@@ -117,6 +76,12 @@ const scaleIn = {
 };
 
 export default function LandingPage() {
+  const t = useTranslations("landing");
+  const tCommon = useTranslations("common");
+
+  const packageFeatures = (pkgKey: PackageKey) =>
+    (t.raw(`pricing.packages.${pkgKey}.features`) as string[]) || [];
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Navigation */}
@@ -143,28 +108,29 @@ export default function LandingPage() {
               href="#features"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Features
+              {t("nav.features")}
             </Link>
             <Link
               href="#pricing"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Pricing
+              {t("nav.pricing")}
             </Link>
             <Link
               href="#how-it-works"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              How It Works
+              {t("nav.how")}
             </Link>
           </nav>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <LanguageSwitcher />
             <Link href="/auth/login">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="ghost">{tCommon("buttons.signIn")}</Button>
             </Link>
             <Link href="/auth/register">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button>Get Started</Button>
+                <Button>{tCommon("buttons.getStarted")}</Button>
               </motion.div>
             </Link>
           </div>
@@ -185,7 +151,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
               className="text-4xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]"
             >
-              Digital Services,{" "}
+              {t("hero.title")}{" "}
               <motion.span
                 className="bg-gradient-to-r from-white to-[#f900fe] bg-clip-text text-transparent"
                 animate={{
@@ -193,7 +159,7 @@ export default function LandingPage() {
                 }}
                 transition={{ duration: 5, repeat: Infinity }}
               >
-                Simplified
+                {t("hero.accent")}
               </motion.span>
             </motion.h1>
             <motion.p
@@ -201,9 +167,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="max-w-[750px] text-lg text-muted-foreground sm:text-xl"
             >
-              Connect with expert designers, developers, and content creators through our
-              credit-based platform. No negotiations, no surprises – just quality work delivered
-              fast.
+              {t("hero.subtitle")}
             </motion.p>
             <motion.div
               variants={fadeInUp}
@@ -213,14 +177,14 @@ export default function LandingPage() {
               <Link href="/auth/register">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" className="h-12 px-8">
-                    Start Free Trial
+                    {tCommon("buttons.startFreeTrial")}
                   </Button>
                 </motion.div>
               </Link>
               <Link href="#how-it-works">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" variant="outline" className="h-12 px-8">
-                    Learn More
+                    {tCommon("buttons.learnMore")}
                   </Button>
                 </motion.div>
               </Link>
@@ -230,7 +194,7 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-sm text-muted-foreground"
             >
-              No credit card required • Cancel anytime
+              {t("hero.note")}
             </motion.p>
           </motion.div>
         </section>
@@ -247,11 +211,9 @@ export default function LandingPage() {
               className="mb-12 text-center"
             >
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Everything you need to get work done
+                {t("features.heading")}
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                One platform for all your digital service needs
-              </p>
+              <p className="mt-4 text-lg text-muted-foreground">{t("features.subheading")}</p>
             </motion.div>
             <motion.div
               initial="hidden"
@@ -260,9 +222,9 @@ export default function LandingPage() {
               variants={staggerContainer}
               className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
             >
-              {features.map((feature) => (
+              {featureItems.map((feature) => (
                 <motion.div
-                  key={feature.title}
+                  key={feature.key}
                   variants={fadeInUp}
                   transition={{ duration: 0.5 }}
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
@@ -275,10 +237,14 @@ export default function LandingPage() {
                       >
                         <feature.icon className="h-6 w-6 text-primary" />
                       </motion.div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl">
+                        {t(`features.items.${feature.key}.title`)}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground">{feature.description}</p>
+                      <p className="text-muted-foreground">
+                        {t(`features.items.${feature.key}.description`)}
+                      </p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -299,11 +265,9 @@ export default function LandingPage() {
               className="mb-12 text-center"
             >
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Simple, transparent pricing
+                {t("pricing.heading")}
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Choose the plan that fits your needs. Upgrade or downgrade anytime.
-              </p>
+              <p className="mt-4 text-lg text-muted-foreground">{t("pricing.subheading")}</p>
             </motion.div>
             <motion.div
               initial="hidden"
@@ -312,9 +276,9 @@ export default function LandingPage() {
               variants={staggerContainer}
               className="grid gap-8 md:grid-cols-3"
             >
-              {packages.map((pkg) => (
+              {packageItems.map((pkg) => (
                 <motion.div
-                  key={pkg.name}
+                  key={pkg.key}
                   variants={scaleIn}
                   whileHover={{
                     y: -10,
@@ -334,19 +298,21 @@ export default function LandingPage() {
                         transition={{ delay: 0.5, type: "spring" }}
                         className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
                       >
-                        Most Popular
+                        {t("pricing.mostPopular")}
                       </motion.div>
                     )}
                     <CardHeader className="text-center">
-                      <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+                      <CardTitle className="text-2xl">
+                        {t(`pricing.packages.${pkg.key}.name`)}
+                      </CardTitle>
                       <CardDescription>
                         <span className="text-4xl font-bold text-foreground">${pkg.price}</span>
-                        <span className="text-muted-foreground">/month</span>
+                        <span className="text-muted-foreground">{t("pricing.perMonth")}</span>
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-3">
-                        {pkg.features.map((feature, featureIndex) => (
+                        {packageFeatures(pkg.key).map((feature, featureIndex) => (
                           <motion.li
                             key={feature}
                             className="flex items-center gap-2"
@@ -365,7 +331,7 @@ export default function LandingPage() {
                       <Link href="/auth/register" className="w-full">
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                           <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
-                            Get Started
+                            {tCommon("buttons.getStarted")}
                           </Button>
                         </motion.div>
                       </Link>
@@ -388,10 +354,8 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
               className="mb-12 text-center"
             >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Get started in just 3 simple steps
-              </p>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("how.heading")}</h2>
+              <p className="mt-4 text-lg text-muted-foreground">{t("how.subheading")}</p>
             </motion.div>
             <motion.div
               initial="hidden"
@@ -400,26 +364,9 @@ export default function LandingPage() {
               variants={staggerContainer}
               className="grid gap-8 md:grid-cols-3"
             >
-              {[
-                {
-                  step: 1,
-                  title: "Subscribe",
-                  description: "Choose a plan that fits your needs and get your credits instantly.",
-                },
-                {
-                  step: 2,
-                  title: "Create Request",
-                  description: "Describe what you need. Our providers will pick up your request.",
-                },
-                {
-                  step: 3,
-                  title: "Get Results",
-                  description:
-                    "Review deliverables, request revisions if needed, and approve when satisfied.",
-                },
-              ].map((item) => (
+              {howSteps.map((item) => (
                 <motion.div
-                  key={item.step}
+                  key={item.key}
                   variants={fadeInUp}
                   transition={{ duration: 0.5 }}
                   className="text-center"
@@ -431,8 +378,8 @@ export default function LandingPage() {
                   >
                     {item.step}
                   </motion.div>
-                  <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                  <h3 className="mb-2 text-xl font-semibold">{t(`how.steps.${item.key}.title`)}</h3>
+                  <p className="text-muted-foreground">{t(`how.steps.${item.key}.description`)}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -448,14 +395,12 @@ export default function LandingPage() {
             variants={scaleIn}
             className="mx-auto max-w-[600px] text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to get started?</h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Join thousands of businesses already using Nabra to streamline their digital services.
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("cta.heading")}</h2>
+            <p className="mt-4 text-lg text-muted-foreground">{t("cta.subheading")}</p>
             <motion.div className="mt-8" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link href="/auth/register">
                 <Button size="lg" className="h-12 px-8">
-                  Start Your Free Trial
+                  {t("cta.button")}
                 </Button>
               </Link>
             </motion.div>
@@ -481,27 +426,25 @@ export default function LandingPage() {
               className="h-8 w-auto"
             />
           </div>
-          <p className="text-sm text-muted-foreground">
-            © 2024 Nabra AI System. All rights reserved.
-          </p>
+          <p className="text-sm text-muted-foreground">{tCommon("footer.copyright")}</p>
           <div className="flex items-center space-x-4">
             <Link
               href="#"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Privacy
+              {tCommon("footer.privacy")}
             </Link>
             <Link
               href="#"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Terms
+              {tCommon("footer.terms")}
             </Link>
             <Link
               href="#"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Contact
+              {tCommon("footer.contact")}
             </Link>
           </div>
         </div>

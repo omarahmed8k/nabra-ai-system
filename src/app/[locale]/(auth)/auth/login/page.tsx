@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { signIn, getSession, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
+import { Link, useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslations("auth.login");
 
   // Redirect if already logged in
   useEffect(() => {
@@ -68,8 +69,8 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error("Login Failed", {
-          description: "Invalid email or password. Please try again.",
+        toast.error(t("loginFailed"), {
+          description: t("invalidCredentials"),
         });
         setIsLoading(false);
         return;
@@ -78,8 +79,8 @@ export default function LoginPage() {
       // Get the updated session to determine user role
       const session = await getSession();
 
-      toast.success("Welcome back!", {
-        description: "You have been successfully logged in.",
+      toast.success(t("welcomeBack"), {
+        description: t("successLogin"),
       });
 
       // Redirect based on user role with full page reload to ensure proper session initialization
@@ -92,8 +93,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("Error", {
-        description: "An error occurred. Please try again.",
+      toast.error(t("error"), {
+        description: t("errorMessage"),
       });
       setIsLoading(false);
     }
@@ -120,26 +121,24 @@ export default function LoginPage() {
               </motion.div>
             </Link>
           </div>
-          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to sign in to your account
-          </CardDescription>
+          <CardTitle className="text-2xl text-center">{t("title")}</CardTitle>
+          <CardDescription className="text-center">{t("description")}</CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">{t("emailLabel")} *</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t("passwordLabel")} *</Label>
               <Input
                 id="password"
                 name="password"
@@ -153,13 +152,13 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col space-y-4">
             <motion.div className="w-full" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? t("signingIn") : t("signInButton")}
               </Button>
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account?{" "}
+              {t("noAccount")}{" "}
               <Link href="/auth/register" className="text-primary hover:underline">
-                Sign up
+                {t("signUp")}
               </Link>
             </p>
           </CardFooter>

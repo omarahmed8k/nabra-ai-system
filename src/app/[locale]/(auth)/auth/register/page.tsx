@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import Image from "next/image";
+import { Link, useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,18 +24,19 @@ export default function RegisterPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [error, setError] = useState("");
+  const t = useTranslations("auth.register");
 
   // All hooks must be called before any conditional returns
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {
-      toast.success("Account created!", {
-        description: "You can now sign in with your credentials.",
+      toast.success(t("accountCreated"), {
+        description: t("successMessage"),
       });
       router.push("/auth/login?registered=true");
     },
     onError: (err) => {
       setError(err.message);
-      toast.error("Registration Failed", {
+      toast.error(t("registrationFailed"), {
         description: err.message,
       });
     },
@@ -80,9 +81,9 @@ export default function RegisterPage() {
     const confirmPassword = formData.get("confirmPassword") as string;
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      toast.error("Validation Error", {
-        description: "Passwords do not match",
+      setError(t("passwordsNotMatch"));
+      toast.error(t("validationError"), {
+        description: t("passwordsNotMatch"),
       });
       return;
     }
@@ -111,10 +112,8 @@ export default function RegisterPage() {
               </motion.div>
             </Link>
           </div>
-          <CardTitle className="text-2xl text-center">Create an account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your details to get started
-          </CardDescription>
+          <CardTitle className="text-2xl text-center">{t("title")}</CardTitle>
+          <CardDescription className="text-center">{t("description")}</CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit}>
           <CardContent className="space-y-4">
@@ -124,33 +123,33 @@ export default function RegisterPage() {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name">{t("nameLabel")} *</Label>
               <Input
                 id="name"
                 name="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder={t("namePlaceholder")}
                 required
                 minLength={2}
                 maxLength={100}
                 disabled={registerMutation.isPending}
               />
-              <p className="text-xs text-muted-foreground">2-100 characters</p>
+              <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">{t("emailLabel")} *</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="name@example.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 disabled={registerMutation.isPending}
               />
-              <p className="text-xs text-muted-foreground">Valid email address required</p>
+              <p className="text-xs text-muted-foreground">{t("emailHint")}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t("passwordLabel")} *</Label>
               <Input
                 id="password"
                 name="password"
@@ -160,10 +159,10 @@ export default function RegisterPage() {
                 maxLength={100}
                 disabled={registerMutation.isPending}
               />
-              <p className="text-xs text-muted-foreground">Minimum 6 characters required</p>
+              <p className="text-xs text-muted-foreground">{t("passwordHint")}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
+              <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")} *</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -173,19 +172,19 @@ export default function RegisterPage() {
                 maxLength={100}
                 disabled={registerMutation.isPending}
               />
-              <p className="text-xs text-muted-foreground">Must match password above</p>
+              <p className="text-xs text-muted-foreground">{t("confirmPasswordHint")}</p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <motion.div className="w-full" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                {registerMutation.isPending ? "Creating account..." : "Create Account"}
+                {registerMutation.isPending ? t("creatingAccount") : t("createAccountButton")}
               </Button>
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
-              Already have an account?{" "}
+              {t("haveAccount")}{" "}
               <Link href="/auth/login" className="text-primary hover:underline">
-                Sign in
+                {t("signInLink")}
               </Link>
             </p>
           </CardFooter>

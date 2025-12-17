@@ -1,1 +1,206 @@
-{}
+{
+  "common": {
+    "buttons": {
+      "signIn": "Sign In",
+      "getStarted": "Get Started",
+      "startFreeTrial": "Start Free Trial",
+      "learnMore": "Learn More",
+      "startYourFreeTrial": "Start Your Free Trial",
+      "goBack": "Go Back",
+      "backHome": "Back to Home"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact",
+      "copyright": "© 2024 Nabra AI System. All rights reserved."
+    }
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "how": "How It Works"
+    },
+    "hero": {
+      "title": "Digital Services,",
+      "accent": "Simplified",
+      "subtitle": "Connect with expert designers, developers, and content creators through our credit-based platform. No negotiations, no surprises – just quality work delivered fast.",
+      "note": "No credit card required • Cancel anytime"
+    },
+    "features": {
+      "heading": "Everything you need to get work done",
+      "subheading": "One platform for all your digital service needs",
+      "items": {
+        "credit": {
+          "title": "Credit-Based System",
+          "description": "Purchase credits and use them for any service. No per-project negotiations."
+        },
+        "quality": {
+          "title": "Quality Guaranteed",
+          "description": "All providers are vetted professionals. Satisfaction guaranteed on every request."
+        },
+        "speed": {
+          "title": "Fast Turnaround",
+          "description": "Most requests completed within 48-72 hours. Rush options available."
+        },
+        "revisions": {
+          "title": "Smart Revisions",
+          "description": "Free revisions included with every package. Additional revisions at a fair rate."
+        },
+        "experts": {
+          "title": "Expert Team",
+          "description": "Access designers, developers, and content creators all in one platform."
+        }
+      }
+    },
+    "pricing": {
+      "heading": "Simple, transparent pricing",
+      "subheading": "Choose the plan that fits your needs. Upgrade or downgrade anytime.",
+      "mostPopular": "Most Popular",
+      "perMonth": "/month",
+      "packages": {
+        "starter": {
+          "name": "Starter",
+          "features": [
+            "5 request credits",
+            "2 free revisions per request",
+            "Email support",
+            "48-hour response time"
+          ]
+        },
+        "professional": {
+          "name": "Professional",
+          "features": [
+            "20 request credits",
+            "3 free revisions per request",
+            "Priority support",
+            "24-hour response time",
+            "Dedicated account manager"
+          ]
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "features": [
+            "50 request credits",
+            "5 free revisions per request",
+            "24/7 priority support",
+            "12-hour response time",
+            "Dedicated account manager",
+            "Custom integrations",
+            "API access"
+          ]
+        }
+      }
+    },
+    "how": {
+      "heading": "How It Works",
+      "subheading": "Get started in just 3 simple steps",
+      "steps": {
+        "subscribe": {
+          "title": "Subscribe",
+          "description": "Choose a plan that fits your needs and get your credits instantly."
+        },
+        "create": {
+          "title": "Create Request",
+          "description": "Describe what you need. Our providers will pick up your request."
+        },
+        "results": {
+          "title": "Get Results",
+          "description": "Review deliverables, request revisions if needed, and approve when satisfied."
+        }
+      }
+    },
+    "cta": {
+      "heading": "Ready to get started?",
+      "subheading": "Join thousands of businesses already using Nabra to streamline their digital services.",
+      "button": "Start Your Free Trial"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    }
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or never existed.",
+    "goBack": "Go Back",
+    "backHome": "Back to Home",
+    "needHelp": "Need help?"
+  },
+  "dashboard": {
+    "nav": {
+      "client": {
+        "dashboard": "Dashboard",
+        "requests": "Requests",
+        "subscription": "Subscription",
+        "payment": "Payment",
+        "notifications": "Notifications",
+        "profile": "Profile"
+      },
+      "provider": {
+        "dashboard": "Dashboard",
+        "available": "Available Jobs",
+        "myRequests": "My Requests",
+        "notifications": "Notifications",
+        "profile": "Profile"
+      },
+      "admin": {
+        "dashboard": "Dashboard",
+        "users": "Users",
+        "requests": "All Requests",
+        "payments": "Payments",
+        "packages": "Packages",
+        "services": "Services",
+        "profile": "Profile"
+      },
+      "signOut": "Sign Out"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "description": "Enter your credentials to sign in to your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "signingIn": "Signing in...",
+      "signInButton": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "loginFailed": "Login Failed",
+      "invalidCredentials": "Invalid email or password. Please try again.",
+      "welcomeBack": "Welcome back!",
+      "successLogin": "You have been successfully logged in.",
+      "error": "Error",
+      "errorMessage": "An error occurred. Please try again."
+    },
+    "register": {
+      "title": "Create an account",
+      "description": "Enter your details to get started",
+      "nameLabel": "Full Name",
+      "namePlaceholder": "John Doe",
+      "nameHint": "2-100 characters",
+      "emailLabel": "Email",
+      "emailPlaceholder": "name@example.com",
+      "emailHint": "Valid email address required",
+      "passwordLabel": "Password",
+      "passwordHint": "Minimum 6 characters required",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordHint": "Must match password above",
+      "creatingAccount": "Creating account...",
+      "createAccountButton": "Create Account",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "accountCreated": "Account created!",
+      "successMessage": "You can now sign in with your credentials.",
+      "registrationFailed": "Registration Failed",
+      "passwordsNotMatch": "Passwords do not match",
+      "validationError": "Validation Error"
+    },
+    "common": {
+      "required": "*"
+    }
+  }
+}

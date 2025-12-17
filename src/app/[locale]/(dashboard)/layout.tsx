@@ -1,14 +1,15 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
+import { Link, usePathname } from "@/i18n/routing";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { NotificationPermissionBanner } from "@/components/ui/notification-permission-banner";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import {
   LayoutDashboard,
@@ -28,31 +29,31 @@ import {
 import { useState } from "react";
 import { getInitials } from "@/lib/utils";
 
-const clientNavItems = [
-  { href: "/client", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/client/requests", label: "Requests", icon: FileText },
-  { href: "/client/subscription", label: "Subscription", icon: CreditCard },
-  { href: "/client/payment", label: "Payment", icon: Wallet },
-  { href: "/client/notifications", label: "Notifications", icon: Bell },
-  { href: "/client/profile", label: "Profile", icon: User },
+const clientNavConfig = [
+  { href: "/client", labelKey: "client.dashboard", icon: LayoutDashboard },
+  { href: "/client/requests", labelKey: "client.requests", icon: FileText },
+  { href: "/client/subscription", labelKey: "client.subscription", icon: CreditCard },
+  { href: "/client/payment", labelKey: "client.payment", icon: Wallet },
+  { href: "/client/notifications", labelKey: "client.notifications", icon: Bell },
+  { href: "/client/profile", labelKey: "client.profile", icon: User },
 ];
 
-const providerNavItems = [
-  { href: "/provider", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/provider/available", label: "Available Jobs", icon: Workflow },
-  { href: "/provider/my-requests", label: "My Requests", icon: FileText },
-  { href: "/provider/notifications", label: "Notifications", icon: Bell },
-  { href: "/provider/profile", label: "Profile", icon: User },
+const providerNavConfig = [
+  { href: "/provider", labelKey: "provider.dashboard", icon: LayoutDashboard },
+  { href: "/provider/available", labelKey: "provider.available", icon: Workflow },
+  { href: "/provider/my-requests", labelKey: "provider.myRequests", icon: FileText },
+  { href: "/provider/notifications", labelKey: "provider.notifications", icon: Bell },
+  { href: "/provider/profile", labelKey: "provider.profile", icon: User },
 ];
 
-const adminNavItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/requests", label: "All Requests", icon: FileText },
-  { href: "/admin/payments", label: "Payments", icon: CheckCircle },
-  { href: "/admin/packages", label: "Packages", icon: CreditCard },
-  { href: "/admin/services", label: "Services", icon: Settings },
-  { href: "/admin/profile", label: "Profile", icon: User },
+const adminNavConfig = [
+  { href: "/admin", labelKey: "admin.dashboard", icon: LayoutDashboard },
+  { href: "/admin/users", labelKey: "admin.users", icon: Users },
+  { href: "/admin/requests", labelKey: "admin.requests", icon: FileText },
+  { href: "/admin/payments", labelKey: "admin.payments", icon: CheckCircle },
+  { href: "/admin/packages", labelKey: "admin.packages", icon: CreditCard },
+  { href: "/admin/services", labelKey: "admin.services", icon: Settings },
+  { href: "/admin/profile", labelKey: "admin.profile", icon: User },
 ];
 
 export default function DashboardLayout({
@@ -64,13 +65,16 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { unreadCount } = useRealtimeNotifications();
+  const tNav = useTranslations("dashboard.nav");
 
   const role = session?.user?.role;
 
   const getNavItems = () => {
-    if (role === "SUPER_ADMIN") return adminNavItems;
-    if (role === "PROVIDER") return providerNavItems;
-    return clientNavItems;
+    if (role === "SUPER_ADMIN")
+      return adminNavConfig.map((item) => ({ ...item, label: tNav(item.labelKey) }));
+    if (role === "PROVIDER")
+      return providerNavConfig.map((item) => ({ ...item, label: tNav(item.labelKey) }));
+    return clientNavConfig.map((item) => ({ ...item, label: tNav(item.labelKey) }));
   };
 
   const getBasePath = () => {
@@ -107,11 +111,14 @@ export default function DashboardLayout({
             className="w-auto h-6 sm:h-8"
           />
         </Link>
-        {unreadCount > 0 && (
-          <Badge variant="destructive" className="h-5 min-w-5 px-1 text-xs">
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="h-5 min-w-5 px-1 text-xs">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Sidebar */}
@@ -185,15 +192,18 @@ export default function DashboardLayout({
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start text-xs sm:text-sm"
-              onClick={() => signOut({ callbackUrl: "/" })}
-            >
-              <LogOut className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              Sign Out
-            </Button>
+            <div className="space-y-2">
+              <LanguageSwitcher />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start text-xs sm:text-sm"
+                onClick={() => signOut({ callbackUrl: "/" })}
+              >
+                <LogOut className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                {tNav("signOut")}
+              </Button>
+            </div>
           </div>
         </div>
       </aside>

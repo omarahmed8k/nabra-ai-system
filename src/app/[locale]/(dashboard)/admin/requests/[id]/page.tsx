@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileText } from "lucide-react";
 import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";

@@ -24,7 +24,7 @@ import {
   UserPlus,
   Trash,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { AssignProviderDialog } from "@/components/admin/assign-provider-dialog";
 
 type Request = {
