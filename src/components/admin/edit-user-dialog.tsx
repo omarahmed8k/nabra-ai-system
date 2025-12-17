@@ -124,22 +124,24 @@ export function EditUserDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={updateUser.isPending}
-            >
-              {t("dialog.buttons.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={updateUser.isPending}
-              className="flex items-center gap-2"
-            >
-              {updateUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {t("dialog.buttons.update")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={updateUser.isPending}
+              >
+                {t("dialog.buttons.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateUser.isPending}
+                className="flex items-center gap-2"
+              >
+                {updateUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t("dialog.buttons.update")}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

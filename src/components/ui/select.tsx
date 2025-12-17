@@ -3,9 +3,24 @@
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import type { Direction } from "@radix-ui/react-direction";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root;
+type SelectDirection = Direction;
+
+function useSelectDirection(dirProp?: React.HTMLAttributes<HTMLElement>["dir"]): SelectDirection {
+  const locale = useLocale();
+  const isRtl = locale === "ar";
+  const normalized = dirProp === "rtl" || dirProp === "ltr" ? dirProp : undefined;
+  return normalized ?? (isRtl ? "rtl" : "ltr");
+}
+
+const Select = ({ dir, ...props }: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => {
+  const direction = useSelectDirection(dir);
+  return <SelectPrimitive.Root dir={direction} {...props} />;
+};
+Select.displayName = SelectPrimitive.Root.displayName;
 
 const SelectGroup = SelectPrimitive.Group;
 

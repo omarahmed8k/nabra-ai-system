@@ -482,16 +482,18 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
-              {t("buttons.cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleReject}
-              disabled={rejectMutation.isPending || rejectReason.length < 10}
-            >
-              {rejectMutation.isPending ? t("reject.rejecting") : t("reject.button")}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
+                {t("buttons.cancel")}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={rejectMutation.isPending || rejectReason.length < 10}
+              >
+                {rejectMutation.isPending ? t("reject.rejecting") : t("reject.button")}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,19 +1,36 @@
+"use client";
+
 import * as React from "react";
+import { useLocale } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
+type TableDirection = React.HTMLAttributes<HTMLElement>["dir"];
+
+function useTableDirection(dirProp?: TableDirection): TableDirection {
+  const locale = useLocale();
+  const isRtl = locale === "ar";
+  const normalized = dirProp === "rtl" || dirProp === "ltr" ? dirProp : undefined;
+  return normalized ?? (isRtl ? "rtl" : "ltr");
+}
+
 // This is a wrapper component; TableHeader is composed by consumers
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
-  ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-      {/* eslint-disable-next-line jsx-a11y/table-has-caption */}
-      <table // NOSONAR: header is added by consumers via TableHeader component
-        ref={ref}
-        className={cn("w-full caption-bottom text-xs sm:text-sm", className)}
-        {...props}
-      />
-    </div>
-  )
+  ({ className, dir, ...props }, ref) => {
+    const direction = useTableDirection(dir);
+
+    return (
+      <div className="relative w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+        {/* eslint-disable-next-line jsx-a11y/table-has-caption */}
+        <table // NOSONAR: header is added by consumers via TableHeader component
+          ref={ref}
+          dir={direction}
+          className={cn("w-full caption-bottom text-xs sm:text-sm", className)}
+          {...props}
+        />
+      </div>
+    );
+  }
 );
 Table.displayName = "Table";
 

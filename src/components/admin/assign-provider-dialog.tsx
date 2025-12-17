@@ -319,28 +319,30 @@ export function AssignProviderDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            {t("assignDialog.buttons.cancel")}
-          </Button>
-          <Button
-            onClick={handleAssign}
-            disabled={
-              isLoading || !selectedProviderId || selectedProviderId === request.provider?.id
-            }
-            className="flex items-center gap-2"
-          >
-            {assignMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t("assignDialog.buttons.assigning")}
-              </>
-            ) : (
-              <>
-                <UserPlus className="h-4 w-4" />
-                {t("assignDialog.buttons.assign")}
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              {t("assignDialog.buttons.cancel")}
+            </Button>
+            <Button
+              onClick={handleAssign}
+              disabled={
+                isLoading || !selectedProviderId || selectedProviderId === request.provider?.id
+              }
+              className="flex items-center gap-2"
+            >
+              {assignMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("assignDialog.buttons.assigning")}
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  {t("assignDialog.buttons.assign")}
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
