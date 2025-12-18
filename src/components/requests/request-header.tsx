@@ -179,9 +179,11 @@ export function RequestHeader({
             <Badge variant={null} className={getStatusColor(status)}>
               {tCommon(`requestStatus.${status}` as any)}
             </Badge>
-            <Badge variant={null} className={getPriorityColor(priority)}>
-              {tCommon(`priority.${getPriorityKey(priority)}` as any)} {t("priority")}
-            </Badge>
+            {!(priority === 1 && priorityCreditCost === 0) && (
+              <Badge variant={null} className={getPriorityColor(priority)}>
+                {tCommon(`priority.${getPriorityKey(priority)}` as any)} {t("priority")}
+              </Badge>
+            )}
             <Badge variant="outline" className="font-semibold" title={breakdown.creditBreakdown}>
               💳 {creditCost} {creditCost === 1 ? t("credit") : t("credits")}
             </Badge>
@@ -205,16 +207,18 @@ export function RequestHeader({
                 {baseCreditCost} {baseCreditCost === 1 ? t("credit") : t("credits")}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                {t("priorityCost", {
-                  priority: tCommon(`priority.${getPriorityKey(priority)}` as any),
-                })}
-              </span>
-              <span className="font-medium">
-                +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}
-              </span>
-            </div>
+            {priorityCreditCost !== 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  {t("priorityCost", {
+                    priority: tCommon(`priority.${getPriorityKey(priority)}` as any),
+                  })}
+                </span>
+                <span className="font-medium">
+                  +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}
+                </span>
+              </div>
+            )}
             {breakdown.hasPaidRevisions && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("revisionCost")}</span>
