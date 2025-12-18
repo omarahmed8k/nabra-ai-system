@@ -138,7 +138,7 @@ export async function notifyNewMessage(params: {
   const [request, user] = await Promise.all([
     db.request.findUnique({
       where: { id: requestId },
-      select: { title: true },
+      select: { title: true, providerId: true },
     }),
     db.user.findUnique({
       where: { id: recipientId },
@@ -149,14 +149,25 @@ export async function notifyNewMessage(params: {
   if (!request) return;
 
   const emailTemplate = getNewMessageEmailTemplate(senderName, request.title, messagePreview);
-  const linkPrefix = user?.role === "CLIENT" ? "/client" : "/provider";
+
+  // Determine the correct link based on role and assignment status
+  let link: string;
+  if (user?.role === "CLIENT") {
+    link = `/client/requests/${requestId}`;
+  } else if (user?.role === "PROVIDER") {
+    // If provider is not assigned to this request, send to available page
+    const isAssigned = request.providerId === recipientId;
+    link = isAssigned ? `/provider/requests/${requestId}` : `/provider/available/${requestId}`;
+  } else {
+    link = `/provider/requests/${requestId}`;
+  }
 
   return createNotification({
     userId: recipientId,
     title: `New message from ${senderName}`,
     message: messagePreview,
     type: "message",
-    link: `${linkPrefix}/requests/${requestId}`,
+    link,
     emailTemplate,
   });
 }
