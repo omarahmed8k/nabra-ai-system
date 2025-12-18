@@ -83,7 +83,7 @@ export default function NewRequestPage() {
     const formData = new FormData(e.currentTarget);
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const formPriority = Number.parseInt(formData.get("priority") as string) || 2;
+    const formPriority = Number.parseInt(formData.get("priority") as string) || 1;
 
     if (!selectedServiceType) {
       toast.error(t("toast.validationError"), {
@@ -104,6 +104,27 @@ export default function NewRequestPage() {
         description: t("validation.descriptionTooShort"),
       });
       return;
+    }
+
+    // Validate required service attributes
+    if (selectedService && (selectedService as any).attributes) {
+      const attributes = (selectedService as any).attributes as any[];
+      const requiredAttributes = attributes.filter((attr: any) => attr.required);
+
+      for (const reqAttr of requiredAttributes) {
+        const response = attributeResponses.find((r) => r.question === reqAttr.question);
+        if (
+          !response ||
+          !response.answer ||
+          (typeof response.answer === "string" && response.answer.trim() === "") ||
+          (Array.isArray(response.answer) && response.answer.length === 0)
+        ) {
+          toast.error(t("toast.validationError"), {
+            description: t("validation.requiredAttribute", { field: reqAttr.question }),
+          });
+          return;
+        }
+      }
     }
 
     createRequest.mutate({
@@ -250,7 +271,7 @@ export default function NewRequestPage() {
               <p className="text-xs text-muted-foreground">{t("fields.descriptionHint")}</p>
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="priority">{t("fields.priority")}</Label>
               <Select
                 name="priority"
@@ -275,7 +296,7 @@ export default function NewRequestPage() {
               <p className="text-xs text-muted-foreground">
                 {t("fields.priorityHint", { low: lowCost, medium: mediumCost, high: highCost })}
               </p>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
               <Label>{t("fields.attachments")}</Label>

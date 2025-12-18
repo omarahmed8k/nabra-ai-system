@@ -110,14 +110,11 @@ export function NotificationProvider({ children }: { readonly children: React.Re
   const showDesktopNotification = useCallback(
     (notification: RealtimeNotification) => {
       if (hasPermission && notification.title) {
-        console.log("🔔 Showing desktop notification:", notification.title);
         new Notification(notification.title, {
           body: notification.message,
           icon: "/favicon.ico",
           badge: "/favicon.ico",
         });
-      } else if (!hasPermission) {
-        console.log("⚠️ Desktop notifications not permitted");
       }
     },
     [hasPermission]
@@ -139,7 +136,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
           : undefined,
       });
 
-      console.log("🔔 Toast notification shown");
       setUnreadCount((prev) => prev + 1);
       showDesktopNotification(notification);
     },
@@ -148,7 +144,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) {
-      console.log("🔴 Notification: Not authenticated, skipping SSE connection");
       return;
     }
 
@@ -162,7 +157,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       reconnectAttempts += 1;
 
       if (reconnectAttempts > maxAttempts) {
-        console.error("❌ Max reconnection attempts reached. Please refresh the page.");
         toast.error("Connection lost", {
           description: "Unable to reconnect to notification service. Please refresh the page.",
           duration: 10000,
@@ -171,9 +165,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       }
 
       const delay = calculateReconnectDelay(reconnectAttempts);
-      console.log(
-        `🔄 Attempting to reconnect (${reconnectAttempts}/${maxAttempts}) in ${Math.round(delay / 1000)}s...`
-      );
 
       reconnectTimeout = setTimeout(() => {
         if (isMounted) {
@@ -186,13 +177,11 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       if (!isMounted) return;
       setIsConnected(true);
       reconnectAttempts = 0;
-      console.log("✅ Connected to notification stream");
     };
 
     const handleError = (connect: () => void) => {
       if (!isMounted) return;
       setIsConnected(false);
-      console.log("❌ Notification stream disconnected");
       es?.close();
       scheduleReconnect(connect);
     };
@@ -202,7 +191,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
 
       try {
         const notification: RealtimeNotification = JSON.parse(event.data);
-        console.log("📬 Received notification:", notification);
 
         if (notification.type === "connected") return;
 
@@ -214,8 +202,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
 
     const connect = () => {
       if (!isMounted) return;
-
-      console.log("🟡 Notification: Connecting to SSE...");
 
       try {
         es = new EventSource("/api/notifications/sse");
@@ -233,7 +219,6 @@ export function NotificationProvider({ children }: { readonly children: React.Re
     connect();
 
     return () => {
-      console.log("🔴 Cleaning up SSE connection");
       isMounted = false;
 
       if (reconnectTimeout) {

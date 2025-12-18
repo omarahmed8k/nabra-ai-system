@@ -191,6 +191,14 @@ export default function DashboardLayout({
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                   {session?.user?.email}
                 </p>
+                {session?.user?.phone && (
+                  <p
+                    dir="ltr"
+                    className="text-[10px] sm:text-xs text-muted-foreground truncate rtl:text-right"
+                  >
+                    {session?.user?.phone}
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-2">

@@ -13,6 +13,8 @@ declare module "next-auth" {
       name: string;
       role: UserRole;
       image?: string | null;
+      phone?: string | null;
+      hasWhatsapp?: boolean;
     };
   }
 
@@ -22,6 +24,8 @@ declare module "next-auth" {
     name: string;
     role: UserRole;
     image?: string | null;
+    phone?: string | null;
+    hasWhatsapp?: boolean;
   }
 }
 
@@ -29,6 +33,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: UserRole;
+    phone?: string | null;
+    hasWhatsapp?: boolean;
   }
 }
 
@@ -76,6 +82,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name || "",
           role: user.role,
           image: user.image,
+          phone: user.phone,
+          hasWhatsapp: user.hasWhatsapp,
         };
       },
     }),
@@ -88,6 +96,8 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.email = user.email;
         token.picture = user.image;
+        token.phone = user.phone;
+        token.hasWhatsapp = user.hasWhatsapp;
       }
 
       // Update token when session is updated
@@ -95,6 +105,8 @@ export const authOptions: NextAuthOptions = {
         token.name = session.name ?? token.name;
         token.email = session.email ?? token.email;
         token.picture = session.image ?? token.picture;
+        token.phone = session.phone ?? token.phone;
+        token.hasWhatsapp = session.hasWhatsapp ?? token.hasWhatsapp;
       }
 
       return token;
@@ -106,6 +118,8 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.image = token.picture as string | null;
+        session.user.phone = token.phone as string | null | undefined;
+        session.user.hasWhatsapp = token.hasWhatsapp as boolean | undefined;
       }
       return session;
     },

@@ -101,6 +101,59 @@ export async function deductCredits(
 }
 
 /**
+ * Combined check and deduct credits in a single operation
+ * Optimized to avoid duplicate database queries
+ */
+export async function checkAndDeductCredits(
+  userId: string,
+  credits: number = 1,
+  reason?: string
+): Promise<CreditDeductionResult & { allowed: boolean }> {
+  const subscription = await db.clientSubscription.findFirst({
+    where: {
+      userId,
+      isActive: true,
+      endDate: { gte: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!subscription) {
+    return {
+      success: false,
+      allowed: false,
+      newBalance: 0,
+      message: "No active subscription found. Please subscribe to a package.",
+    };
+  }
+
+  if (subscription.remainingCredits < credits) {
+    return {
+      success: false,
+      allowed: false,
+      newBalance: subscription.remainingCredits,
+      message: `Insufficient credits. You have ${subscription.remainingCredits} credits but need ${credits}.`,
+    };
+  }
+
+  const updatedSubscription = await db.clientSubscription.update({
+    where: { id: subscription.id },
+    data: {
+      remainingCredits: subscription.remainingCredits - credits,
+    },
+  });
+
+  console.log(`[CREDIT] Deducted ${credits} from user ${userId}. Reason: ${reason || "N/A"}`);
+
+  return {
+    success: true,
+    allowed: true,
+    newBalance: updatedSubscription.remainingCredits,
+    message: `Successfully deducted ${credits} credit(s).`,
+  };
+}
+
+/**
  * Add credits to user's subscription (e.g., for refunds or bonuses)
  */
 export async function addCredits(

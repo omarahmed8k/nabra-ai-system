@@ -167,13 +167,18 @@ export default function SubscriptionPage() {
               (pkg: {
                 id: string;
                 name: string;
+                durationDays: number;
                 price: number;
                 credits: number;
                 features: string[];
+                services: { serviceType: { id: string; name: string; icon: string | null } }[];
               }) => {
                 const isCurrentPlan = subscription?.package.id === pkg.id;
                 return (
-                  <Card key={pkg.id} className={isCurrentPlan ? "border-primary" : ""}>
+                  <Card
+                    key={pkg.id}
+                    className={`flex flex-col ${isCurrentPlan ? "border-primary" : ""}`}
+                  >
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle>{pkg.name}</CardTitle>
@@ -183,15 +188,36 @@ export default function SubscriptionPage() {
                         <span className="text-3xl font-bold text-foreground">
                           {formatCurrency(pkg.price, locale)}
                         </span>
-                        <span className="text-muted-foreground">{t("plans.perMonth")}</span>
+                        <span className="text-muted-foreground">
+                          / {pkg.durationDays} {t("info.dayDuration")}
+                        </span>
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-1">
                       <ul className="space-y-3">
                         <li className="flex items-center gap-2">
                           <CreditCard className="h-4 w-4 text-primary" />
                           <span>{pkg.credits} credits</span>
                         </li>
+
+                        {pkg.services && pkg.services.length > 0 && (
+                          <li className="flex flex-col gap-2">
+                            <span className="text-sm font-medium">
+                              {t("info.servicesIncluded")}:
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {pkg.services.map((svc) => (
+                                <Badge
+                                  key={svc.serviceType.id}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {svc.serviceType.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </li>
+                        )}
 
                         {pkg.features.map((feature: string, i: number) => (
                           <li key={`${pkg.id}-feature-${i}`} className="flex items-center gap-2">
@@ -201,7 +227,7 @@ export default function SubscriptionPage() {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="mt-auto">
                       <Button
                         className="w-full"
                         disabled={isCurrentPlan || subscribeMutation.isPending || !!subscription}

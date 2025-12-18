@@ -355,16 +355,13 @@ export default function AdminPackagesPage() {
                               <span className="text-2xl font-bold text-foreground">
                                 {formatCurrency(pkg.price, locale)}
                               </span>{" "}
-                              {t("info.perMonth")}
+                              / {pkg.durationDays} {t("info.dayDuration")}
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
                             <ul className="space-y-2 text-sm">
                               <li>
                                 {pkg.credits} {t("info.credits")}
-                              </li>
-                              <li>
-                                {pkg.durationDays} {t("info.dayDuration")}
                               </li>
                               {pkg.features.map((feature: string, i: number) => (
                                 <li

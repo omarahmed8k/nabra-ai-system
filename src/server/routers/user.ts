@@ -12,6 +12,8 @@ export const userRouter = router({
         id: true,
         name: true,
         email: true,
+        phone: true,
+        hasWhatsapp: true,
         image: true,
         role: true,
         createdAt: true,
@@ -43,6 +45,8 @@ export const userRouter = router({
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
         email: z.string().email("Invalid email address").optional(),
         image: z.string().nullable().optional(),
+        phone: z.string().optional(),
+        hasWhatsapp: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -71,11 +75,15 @@ export const userRouter = router({
           ...(input.name && { name: input.name }),
           ...(input.email && { email: input.email }),
           ...(input.image !== undefined && { image: input.image }),
+          ...(input.phone !== undefined && { phone: input.phone }),
+          ...(input.hasWhatsapp !== undefined && { hasWhatsapp: input.hasWhatsapp }),
         },
         select: {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          hasWhatsapp: true,
           image: true,
           role: true,
         },

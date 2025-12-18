@@ -322,7 +322,9 @@
         "joined": "تاريخ الانضمام",
         "actions": "الإجراءات",
         "noUsers": "لم يتم العثور على مستخدمين",
-        "tryAdjusting": "حاول تعديل البحث أو الفلاتر"
+        "allUsers": "المستخدمين",
+        "tryAdjusting": "حاول تعديل البحث أو الفلاتر",
+        "hasWhatsapp": "لديه واتساب"
       },
       "dialog": {
         "create": {
@@ -340,6 +342,8 @@
         "fields": {
           "name": "الاسم الكامل",
           "email": "عنوان البريد الإلكتروني",
+          "phone": "رقم الهاتف",
+          "hasWhatsapp": "لديه واتساب",
           "password": "كلمة المرور",
           "role": "دور المستخدم",
           "services": "الخدمات المدعومة",
@@ -814,11 +818,14 @@
       "labels": {
         "name": "الاسم الكامل",
         "email": "البريد الإلكتروني",
-        "profileImage": "صورة الملف الشخصي (اختياري)"
+        "profileImage": "صورة الملف الشخصي (اختياري)",
+        "phone": "رقم الهاتف",
+        "hasWhatsapp": "هذا الرقم يستخدم واتساب"
       },
       "placeholders": {
         "name": "أدخل اسمك",
-        "email": "your@email.com"
+        "email": "your@email.com",
+        "phone": "123 456 789"
       },
       "buttons": {
         "uploadPhoto": "رفع الصورة",
@@ -838,7 +845,8 @@
       "helperText": {
         "emailWarning": "تغيير بريدك الإلكتروني سيؤثر على بيانات تسجيل الدخول",
         "currentPhoto": "الصورة الحالية",
-        "maxFileSize": "الحد الأقصى 5 ميجابايت، JPG/PNG/GIF"
+        "maxFileSize": "الحد الأقصى 5 ميجابايت، JPG/PNG/GIF",
+        "phone": "أضف رقم هاتف لتسهيل التواصل معك"
       },
       "successMessage": "تم تحديث الملف الشخصي بنجاح",
       "errorMessage": "فشل تحديث الملف الشخصي"
@@ -1128,7 +1136,8 @@
       "validation": {
         "selectService": "يرجى تحديد نوع الخدمة",
         "titleTooShort": "يجب أن يكون العنوان 5 أحرف على الأقل",
-        "descriptionTooShort": "يجب أن يكون الوصف 20 حرفاً على الأقل"
+        "descriptionTooShort": "يجب أن يكون الوصف 20 حرفاً على الأقل",
+        "requiredAttribute": "يرجى الإجابة على السؤال المطلوب: {field}"
       },
       "toast": {
         "created": "تم إنشاء الطلب!",
@@ -1166,6 +1175,10 @@
         "cancelFirstToSwitch": "ألغِ أولاً للتبديل",
         "noPlans": "لا توجد باقات متاحة",
         "noPlansDesc": "يرجى المحاولة لاحقاً أو الاتصال بالدعم"
+      },
+      "info": {
+        "dayDuration": "أيام",
+        "servicesIncluded": "الخدمات المتضمنة"
       },
       "usageStats": {
         "title": "إحصاءات الاستخدام",

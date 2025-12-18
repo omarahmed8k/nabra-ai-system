@@ -18,6 +18,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
 
 export default function RegisterPage() {
@@ -41,6 +49,16 @@ export default function RegisterPage() {
       });
     },
   });
+
+  const [countryCode, setCountryCode] = useState("+20");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [hasWhatsapp, setHasWhatsapp] = useState(false);
+
+  useEffect(() => {
+    if (!phoneInput) {
+      setHasWhatsapp(false);
+    }
+  }, [phoneInput]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -79,8 +97,9 @@ export default function RegisterPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const phone = (formData.get("phone") as string) || undefined;
-    const hasWhatsapp = formData.get("hasWhatsapp") === "on";
+    const phoneRaw = (formData.get("phone") as string) || "";
+
+    const phone = phoneRaw ? `${countryCode} ${phoneRaw}` : undefined;
 
     if (password !== confirmPassword) {
       setError(t("passwordsNotMatch"));
@@ -139,23 +158,6 @@ export default function RegisterPage() {
               <p className="text-xs text-muted-foreground">{t("nameHint")}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">{t("phoneLabel")}</Label>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder={t("phonePlaceholder")}
-                disabled={registerMutation.isPending}
-              />
-              <div className="flex items-center gap-2">
-                <input id="hasWhatsapp" name="hasWhatsapp" type="checkbox" className="h-4 w-4" />
-                <Label htmlFor="hasWhatsapp" className="text-sm">
-                  {t("hasWhatsappLabel")}
-                </Label>
-              </div>
-              <p className="text-xs text-muted-foreground">{t("phoneHint")}</p>
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="email">{t("emailLabel")} *</Label>
               <Input
                 id="email"
@@ -166,6 +168,51 @@ export default function RegisterPage() {
                 disabled={registerMutation.isPending}
               />
               <p className="text-xs text-muted-foreground">{t("emailHint")}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">{t("phoneLabel")}</Label>
+              <div className="flex rtl:flex-row-reverse gap-2">
+                <Select
+                  value={countryCode}
+                  onValueChange={setCountryCode}
+                  disabled={registerMutation.isPending}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="+20">🇪🇬 +20</SelectItem>
+                    <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                    <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                    <SelectItem value="+965">🇰🇼 +965</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder={t("phonePlaceholder")}
+                  disabled={registerMutation.isPending}
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="hasWhatsapp"
+                  checked={hasWhatsapp}
+                  onCheckedChange={(checked) => setHasWhatsapp(checked === true)}
+                  disabled={!phoneInput || registerMutation.isPending}
+                />
+                <Label
+                  htmlFor="hasWhatsapp"
+                  className={`text-sm ${!phoneInput ? "opacity-50" : ""}`}
+                >
+                  {t("hasWhatsappLabel")}
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("phoneHint")}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("passwordLabel")} *</Label>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
-import { deductCredits, checkCredits } from "@/lib/credit-logic";
+import { checkAndDeductCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses } from "@/lib/attribute-validation";
 import { getPriorityCostsForService } from "@/lib/priority-costs";
@@ -106,25 +106,17 @@ export const requestRouter = router({
       const priorityCost = priorityCosts[input.priority] ?? costs.medium;
       const totalCreditCost = baseCreditCost + priorityCost;
 
-      // Check credits before creating
-      const creditCheck = await checkCredits(userId, totalCreditCost);
-      if (!creditCheck.allowed) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: creditCheck.message,
-        });
-      }
-
-      // Deduct credits based on service type and priority
-      const deductResult = await deductCredits(
+      // Check and deduct credits in a single optimized operation
+      const creditResult = await checkAndDeductCredits(
         userId,
         totalCreditCost,
         `New request: ${input.title} (Priority ${input.priority})`
       );
-      if (!deductResult.success) {
+
+      if (!creditResult.allowed || !creditResult.success) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: deductResult.message,
+          message: creditResult.message,
         });
       }
 
@@ -197,7 +189,7 @@ export const requestRouter = router({
       return {
         success: true,
         request,
-        creditsRemaining: deductResult.newBalance,
+        creditsRemaining: creditResult.newBalance,
         message: `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? "" : "s"} ${totalCreditCost === 1 ? "has" : "have"} been deducted.`,
       };
     }),
@@ -232,10 +224,7 @@ export const requestRouter = router({
         where.clientId = userId;
       } else if (role === "PROVIDER") {
         // Providers see their accepted requests + pending requests matching their skills
-        await ctx.db.providerProfile.findUnique({
-          where: { userId },
-        });
-
+        // Note: We don't need to fetch provider profile here as we're just building where clause
         where = {
           OR: [
             { providerId: userId },

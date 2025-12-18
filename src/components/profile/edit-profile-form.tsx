@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
 import { toast } from "sonner";
 import { Loader2, User, Mail, Upload, X } from "lucide-react";
@@ -20,7 +28,16 @@ export function EditProfileForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
+  const [countryCode, setCountryCode] = useState("+20");
+  const [phone, setPhone] = useState("");
+  const [hasWhatsapp, setHasWhatsapp] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (!phone) {
+      setHasWhatsapp(false);
+    }
+  }, [phone]);
 
   // Set form values when profile loads
   useEffect(() => {
@@ -28,6 +45,19 @@ export function EditProfileForm() {
       setName(profile.name || "");
       setEmail(profile.email);
       setImage(profile.image || "");
+      if (profile.phone) {
+        const parts = profile.phone.split(" ");
+        if (parts.length > 1 && parts[0].startsWith("+")) {
+          setCountryCode(parts[0]);
+          setPhone(parts.slice(1).join(" "));
+        } else {
+          setPhone(profile.phone);
+        }
+      } else {
+        setPhone("");
+        setCountryCode("+20");
+      }
+      setHasWhatsapp(profile.hasWhatsapp ?? false);
     }
   }, [profile]);
 
@@ -80,6 +110,8 @@ export function EditProfileForm() {
         name?: string;
         email?: string;
         image?: string | null;
+        phone?: string;
+        hasWhatsapp?: boolean;
       } = {};
 
       if (name === profile?.name) {
@@ -98,6 +130,15 @@ export function EditProfileForm() {
         /* no change */
       } else {
         updates.image = image || null;
+      }
+
+      const composedPhone = phone ? `${countryCode} ${phone}` : undefined;
+      if (composedPhone !== profile?.phone) {
+        updates.phone = composedPhone;
+      }
+
+      if (hasWhatsapp !== profile?.hasWhatsapp) {
+        updates.hasWhatsapp = hasWhatsapp;
       }
 
       const result = await updateProfile.mutateAsync(updates);
@@ -162,6 +203,43 @@ export function EditProfileForm() {
               required
             />
             <p className="text-xs text-muted-foreground">{t("helperText.emailWarning")}</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">{t("labels.phone")}</Label>
+            <div className="flex rtl:flex-row-reverse gap-2">
+              <Select value={countryCode} onValueChange={setCountryCode}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="+20">🇪🇬 +20</SelectItem>
+                  <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                  <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                  <SelectItem value="+965">🇰🇼 +965</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t("placeholders.phone")}
+                className="flex-1"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="hasWhatsapp"
+                checked={hasWhatsapp}
+                onCheckedChange={(checked) => setHasWhatsapp(checked === true)}
+                disabled={!phone}
+              />
+              <Label htmlFor="hasWhatsapp" className={`text-sm ${!phone ? "opacity-50" : ""}`}>
+                {t("labels.hasWhatsapp")}
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground">{t("helperText.phone")}</p>
           </div>
 
           <div className="space-y-2">
@@ -236,6 +314,19 @@ export function EditProfileForm() {
                 setName(profile?.name || "");
                 setEmail(profile?.email || "");
                 setImage(profile?.image || "");
+                if (profile?.phone) {
+                  const parts = profile.phone.split(" ");
+                  if (parts.length > 1 && parts[0].startsWith("+")) {
+                    setCountryCode(parts[0]);
+                    setPhone(parts.slice(1).join(" "));
+                  } else {
+                    setPhone(profile.phone);
+                  }
+                } else {
+                  setPhone("");
+                  setCountryCode("+20");
+                }
+                setHasWhatsapp(profile?.hasWhatsapp ?? false);
               }}
             >
               {t("buttons.reset")}

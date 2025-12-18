@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
-import { getCreditBalance, checkSubscriptionExpiry } from "@/lib/credit-logic";
+import { getCreditBalance } from "@/lib/credit-logic";
 
 export const subscriptionRouter = router({
   // Get active subscription for current user
@@ -24,12 +24,16 @@ export const subscriptionRouter = router({
       return null;
     }
 
-    const expiryInfo = await checkSubscriptionExpiry(userId);
+    // Calculate expiry info inline to avoid extra DB call
+    const now = Date.now();
+    const endDate = new Date(subscription.endDate).getTime();
+    const diffTime = endDate - now;
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
     return {
       ...subscription,
-      isExpiring: expiryInfo.isExpiring,
-      daysRemaining: expiryInfo.daysRemaining,
+      isExpiring: daysRemaining <= 7,
+      daysRemaining,
     };
   }),
 

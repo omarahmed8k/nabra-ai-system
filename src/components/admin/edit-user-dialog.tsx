@@ -5,6 +5,14 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +30,8 @@ interface EditUserDialogProps {
     id: string;
     name: string | null;
     email: string;
+    phone?: string | null;
+    hasWhatsapp?: boolean | null;
   } | null;
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
@@ -37,6 +47,9 @@ export function EditUserDialog({
   const t = useTranslations("admin.users");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+20");
+  const [phone, setPhone] = useState("");
+  const [hasWhatsapp, setHasWhatsapp] = useState(false);
 
   const updateUser = trpc.admin.updateUser.useMutation();
 
@@ -44,8 +57,30 @@ export function EditUserDialog({
     if (user) {
       setName(user.name || "");
       setEmail(user.email);
+
+      const rawPhone = (user as any).phone as string | undefined | null;
+      if (rawPhone) {
+        const parts = rawPhone.split(" ");
+        if (parts.length > 1 && parts[0].startsWith("+")) {
+          setCountryCode(parts[0]);
+          setPhone(parts.slice(1).join(" "));
+        } else {
+          setPhone(rawPhone);
+        }
+      } else {
+        setPhone("");
+        setCountryCode("+20");
+      }
+
+      setHasWhatsapp(Boolean((user as any).hasWhatsapp));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!phone) {
+      setHasWhatsapp(false);
+    }
+  }, [phone]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +91,8 @@ export function EditUserDialog({
       const updates: {
         name?: string;
         email?: string;
+        phone?: string;
+        hasWhatsapp?: boolean;
       } = {};
 
       if (name === user.name) {
@@ -68,6 +105,15 @@ export function EditUserDialog({
         /* no change */
       } else {
         updates.email = email;
+      }
+
+      const composedPhone = phone ? `${countryCode} ${phone}` : "";
+      if (composedPhone !== (user as any).phone) {
+        updates.phone = composedPhone;
+      }
+
+      if (hasWhatsapp !== (user as any).hasWhatsapp) {
+        updates.hasWhatsapp = hasWhatsapp;
       }
 
       await updateUser.mutateAsync({
@@ -121,6 +167,49 @@ export function EditUserDialog({
               required
             />
             <p className="text-xs text-muted-foreground">{t("dialog.edit.description")}</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-phone">{t("dialog.fields.phone")}</Label>
+            <div className="flex rtl:flex-row-reverse gap-2">
+              <Select value={countryCode} onValueChange={setCountryCode}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="+20">🇪🇬 +20</SelectItem>
+                  <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                  <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                  <SelectItem value="+965">🇰🇼 +965</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                id="edit-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="123 456 789"
+                className="flex-1"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="edit-hasWhatsapp"
+                checked={hasWhatsapp}
+                onCheckedChange={(checked) => setHasWhatsapp(checked === true)}
+                disabled={!phone}
+              />
+              <label
+                htmlFor="edit-hasWhatsapp"
+                className={`text-sm font-medium leading-none ${
+                  !phone
+                    ? "cursor-not-allowed opacity-50"
+                    : "peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                }`}
+              >
+                {t("dialog.fields.hasWhatsapp")}
+              </label>
+            </div>
           </div>
 
           <DialogFooter>

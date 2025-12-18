@@ -2,7 +2,7 @@ import { z } from "zod";
 import { router, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { notifyProviderAssignment, notifyStatusChange } from "@/lib/notifications";
+import { notifyProviderAssignment } from "@/lib/notifications";
 
 export const adminRouter = router({
   // Get dashboard stats
@@ -18,7 +18,8 @@ export const adminRouter = router({
       activeSubscriptions,
       serviceTypes,
       avgRating,
-      totalRevenue,
+      // Use raw SQL aggregate for efficient revenue calculation
+      revenueData,
     ] = await Promise.all([
       ctx.db.user.count(),
       ctx.db.user.count({ where: { role: "CLIENT" } }),
@@ -34,16 +35,16 @@ export const adminRouter = router({
       }),
       ctx.db.serviceType.count({ where: { isActive: true } }),
       ctx.db.rating.aggregate({ _avg: { rating: true } }),
-      ctx.db.clientSubscription.findMany({
-        where: { isActive: true },
-        include: { package: true },
-      }),
+      // Efficient revenue calculation using aggregate
+      ctx.db.$queryRaw<[{ total: number }]>`
+        SELECT COALESCE(SUM(p.price), 0) as total
+        FROM "ClientSubscription" cs
+        JOIN "Package" p ON cs."packageId" = p.id
+        WHERE cs."isActive" = true
+      `,
     ]);
 
-    const revenue = totalRevenue.reduce(
-      (sum: number, sub: { package: { price: number } }) => sum + sub.package.price,
-      0
-    );
+    const revenue = Number(revenueData[0]?.total ?? 0);
 
     return {
       totalUsers,
@@ -62,66 +63,89 @@ export const adminRouter = router({
 
   // Get analytics data for charts
   getAnalytics: adminProcedure.query(async ({ ctx }) => {
-    // Get requests by status for pie chart
-    const requestsByStatus = await ctx.db.request.groupBy({
-      by: ["status"],
-      _count: { id: true },
-    });
-
-    // Get subscriptions by package for pie chart
-    const subscriptionsByPackage = await ctx.db.clientSubscription.findMany({
-      where: { isActive: true },
-      include: { package: true },
-    });
-
-    const packageCounts = subscriptionsByPackage.reduce(
-      (acc: Record<string, number>, sub: { package: { name: string } }) => {
-        const name = sub.package.name;
-        acc[name] = (acc[name] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    // Get requests by service type
-    const requestsByService = await ctx.db.request.groupBy({
-      by: ["serviceTypeId"],
-      _count: { id: true },
-    });
-
-    const serviceTypes = await ctx.db.serviceType.findMany();
-    const serviceMap = serviceTypes.reduce(
-      (acc: Record<string, string>, s: { id: string; name: string }) => {
-        acc[s.id] = s.name;
-        return acc;
-      },
-      {} as Record<string, string>
-    );
-
-    // Get recent users (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const recentUsers = await ctx.db.user.count({
-      where: { createdAt: { gte: thirtyDaysAgo } },
-    });
-
-    // Get recent requests (last 30 days)
-    const recentRequests = await ctx.db.request.count({
-      where: { createdAt: { gte: thirtyDaysAgo } },
-    });
-
-    // Monthly revenue trend (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    const subscriptions = await ctx.db.clientSubscription.findMany({
-      where: { createdAt: { gte: sixMonthsAgo } },
-      include: { package: true },
-      orderBy: { createdAt: "asc" },
-    });
+    // Batch all independent queries in parallel for maximum performance
+    const [
+      requestsByStatus,
+      subscriptionsByPackage,
+      requestsByService,
+      serviceTypes,
+      recentUsers,
+      recentRequests,
+      subscriptions,
+      topProviders,
+    ] = await Promise.all([
+      // Get requests by status for pie chart
+      ctx.db.request.groupBy({
+        by: ["status"],
+        _count: { id: true },
+      }),
+      // Get subscriptions by package - use groupBy for efficiency
+      ctx.db.clientSubscription.groupBy({
+        by: ["packageId"],
+        where: { isActive: true },
+        _count: { id: true },
+      }),
+      // Get requests by service type
+      ctx.db.request.groupBy({
+        by: ["serviceTypeId"],
+        _count: { id: true },
+      }),
+      // Get all service types for mapping
+      ctx.db.serviceType.findMany({
+        select: { id: true, name: true },
+      }),
+      // Get recent users (last 30 days)
+      ctx.db.user.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      // Get recent requests (last 30 days)
+      ctx.db.request.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
+      // Monthly revenue trend (last 6 months)
+      ctx.db.clientSubscription.findMany({
+        where: { createdAt: { gte: sixMonthsAgo } },
+        include: { package: { select: { price: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      // Get top providers by completed requests
+      ctx.db.request.groupBy({
+        by: ["providerId"],
+        where: {
+          status: "COMPLETED",
+          providerId: { not: null },
+        },
+        _count: { id: true },
+        orderBy: { _count: { id: "desc" } },
+        take: 5,
+      }),
+    ]);
 
-    const monthlyRevenue: { month: string; revenue: number }[] = [];
+    // Build service map for lookups - O(n) once
+    const serviceMap = new Map(serviceTypes.map((s) => [s.id, s.name]));
+
+    // Fetch packages for subscription count mapping
+    const packageIds = subscriptionsByPackage.map((s) => s.packageId);
+    const packages =
+      packageIds.length > 0
+        ? await ctx.db.package.findMany({
+            where: { id: { in: packageIds } },
+            select: { id: true, name: true },
+          })
+        : [];
+    const packageMap = new Map(packages.map((p) => [p.id, p.name]));
+
+    const packageCounts = subscriptionsByPackage.map((s) => ({
+      name: packageMap.get(s.packageId) || "Unknown",
+      count: s._count.id,
+    }));
+
+    // Build monthly revenue using pre-calculated data
     const months = [
       "Jan",
       "Feb",
@@ -136,47 +160,41 @@ export const adminRouter = router({
       "Nov",
       "Dec",
     ];
+    const monthlyRevenue: { month: string; revenue: number }[] = [];
 
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthName = months[date.getMonth()];
-      const monthSubs = subscriptions.filter((s: { createdAt: Date }) => {
+      const targetMonth = date.getMonth();
+      const targetYear = date.getFullYear();
+
+      const monthSubs = subscriptions.filter((s) => {
         const subDate = new Date(s.createdAt);
-        return (
-          subDate.getMonth() === date.getMonth() && subDate.getFullYear() === date.getFullYear()
-        );
+        return subDate.getMonth() === targetMonth && subDate.getFullYear() === targetYear;
       });
-      const revenue = monthSubs.reduce(
-        (sum: number, s: { package: { price: number } }) => sum + s.package.price,
-        0
-      );
-      monthlyRevenue.push({ month: monthName, revenue });
+
+      const revenue = monthSubs.reduce((sum, s) => sum + s.package.price, 0);
+      monthlyRevenue.push({ month: months[targetMonth], revenue });
     }
 
-    // Get top providers by completed requests
-    const topProviders = await ctx.db.request.groupBy({
-      by: ["providerId"],
-      where: {
-        status: "COMPLETED",
-        providerId: { not: null },
-      },
-      _count: { id: true },
-      orderBy: { _count: { id: "desc" } },
-      take: 5,
-    });
-
+    // Fetch provider info for top providers - O(1) lookup with Map
     const providerIds = topProviders
       .map((p: { providerId: string | null }) => p.providerId)
-      .filter(Boolean) as string[];
-    const providers = await ctx.db.user.findMany({
-      where: { id: { in: providerIds } },
-      select: { id: true, name: true, email: true },
-    });
+      .filter((id): id is string => id !== null);
+
+    const providers =
+      providerIds.length > 0
+        ? await ctx.db.user.findMany({
+            where: { id: { in: providerIds } },
+            select: { id: true, name: true, email: true },
+          })
+        : [];
+
+    const providerMap = new Map(providers.map((p) => [p.id, p]));
 
     const topProvidersWithInfo = topProviders.map(
       (p: { providerId: string | null; _count: { id: number } }) => {
-        const provider = providers.find((u: { id: string }) => u.id === p.providerId);
+        const provider = p.providerId ? providerMap.get(p.providerId) : null;
         return {
           name: provider?.name || provider?.email || "Unknown",
           completedRequests: p._count.id,
@@ -189,13 +207,10 @@ export const adminRouter = router({
         status: r.status,
         count: r._count.id,
       })),
-      subscriptionsByPackage: Object.entries(packageCounts).map(([name, count]) => ({
-        name,
-        count,
-      })),
+      subscriptionsByPackage: packageCounts,
       requestsByService: requestsByService.map(
         (r: { serviceTypeId: string; _count: { id: number } }) => ({
-          service: serviceMap[r.serviceTypeId] || "Unknown",
+          service: serviceMap.get(r.serviceTypeId) || "Unknown",
           count: r._count.id,
         })
       ),
@@ -250,8 +265,9 @@ export const adminRouter = router({
       };
     }),
 
-  // Get dashboard stats (alias for backwards compatibility)
+  // Get dashboard stats (optimized - reuses getStats logic with additional recent requests)
   getDashboardStats: adminProcedure.query(async ({ ctx }) => {
+    // Run all queries in parallel for maximum efficiency
     const [
       totalUsers,
       totalClients,
@@ -260,7 +276,8 @@ export const adminRouter = router({
       pendingRequests,
       completedRequests,
       activeSubscriptions,
-      totalRevenue,
+      revenueData,
+      recentRequests,
     ] = await Promise.all([
       ctx.db.user.count(),
       ctx.db.user.count({ where: { role: "CLIENT" } }),
@@ -271,27 +288,25 @@ export const adminRouter = router({
       ctx.db.clientSubscription.count({
         where: { isActive: true, endDate: { gte: new Date() } },
       }),
-      ctx.db.clientSubscription.findMany({
-        where: { isActive: true },
-        include: { package: true },
+      // Efficient revenue calculation using aggregate
+      ctx.db.$queryRaw<[{ total: number }]>`
+        SELECT COALESCE(SUM(p.price), 0) as total
+        FROM "ClientSubscription" cs
+        JOIN "Package" p ON cs."packageId" = p.id
+        WHERE cs."isActive" = true
+      `,
+      ctx.db.request.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          client: { select: { name: true, email: true } },
+          provider: { select: { name: true, email: true } },
+          serviceType: true,
+        },
       }),
     ]);
 
-    const revenue = totalRevenue.reduce(
-      (sum: number, sub: { package: { price: number } }) => sum + sub.package.price,
-      0
-    );
-
-    // Get recent requests
-    const recentRequests = await ctx.db.request.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        client: { select: { name: true, email: true } },
-        provider: { select: { name: true, email: true } },
-        serviceType: true,
-      },
-    });
+    const revenue = Number(revenueData[0]?.total ?? 0);
 
     return {
       totalUsers,
@@ -347,6 +362,8 @@ export const adminRouter = router({
             id: true,
             name: true,
             email: true,
+            phone: true,
+            hasWhatsapp: true,
             image: true,
             role: true,
             createdAt: true,
@@ -1019,6 +1036,8 @@ export const adminRouter = router({
         email: z.string().email(),
         password: z.string().min(6),
         role: z.enum(["CLIENT", "PROVIDER", "SUPER_ADMIN"]),
+        phone: z.string().optional(),
+        hasWhatsapp: z.boolean().optional(),
         supportedServiceIds: z.array(z.string()).optional(), // For providers only
       })
     )
@@ -1045,6 +1064,8 @@ export const adminRouter = router({
           email: input.email,
           password: hashedPassword,
           role: input.role,
+          phone: input.phone,
+          hasWhatsapp: input.hasWhatsapp ?? false,
         },
       });
 
@@ -1268,10 +1289,12 @@ export const adminRouter = router({
         userId: z.string(),
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
         email: z.string().email("Invalid email address").optional(),
+        phone: z.string().optional(),
+        hasWhatsapp: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, name, email } = input;
+      const { userId, name, email, phone, hasWhatsapp } = input;
 
       // Check if user exists
       const user = await ctx.db.user.findUnique({
@@ -1307,11 +1330,15 @@ export const adminRouter = router({
         data: {
           ...(name && { name }),
           ...(email && { email }),
+          ...(phone !== undefined && { phone }),
+          ...(hasWhatsapp !== undefined && { hasWhatsapp }),
         },
         select: {
           id: true,
           name: true,
           email: true,
+          phone: true,
+          hasWhatsapp: true,
           role: true,
         },
       });

@@ -6,10 +6,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, locale: string = "en"): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "USD",
+  const formatted = new Intl.NumberFormat(locale, {
+    style: "decimal",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amount);
+
+  // Always show $ before the number for consistency
+  return `$${formatted}`;
 }
 
 export function formatDate(date: Date | string, locale: string = "en"): string {

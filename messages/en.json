@@ -322,7 +322,9 @@
         "joined": "Joined",
         "actions": "Actions",
         "noUsers": "No users found",
-        "tryAdjusting": "Try adjusting your search or filters"
+        "allUsers": "Users",
+        "tryAdjusting": "Try adjusting your search or filters",
+        "hasWhatsapp": "Has WhatsApp"
       },
       "dialog": {
         "create": {
@@ -340,6 +342,8 @@
         "fields": {
           "name": "Full Name",
           "email": "Email Address",
+          "phone": "Phone Number",
+          "hasWhatsapp": "Has WhatsApp",
           "password": "Password",
           "role": "User Role",
           "services": "Supported Services",
@@ -814,11 +818,14 @@
       "labels": {
         "name": "Full Name",
         "email": "Email Address",
-        "profileImage": "Profile Photo (optional)"
+        "profileImage": "Profile Photo (optional)",
+        "phone": "Phone Number",
+        "hasWhatsapp": "This number uses WhatsApp"
       },
       "placeholders": {
         "name": "Enter your name",
-        "email": "your@email.com"
+        "email": "your@email.com",
+        "phone": "123 456 789"
       },
       "buttons": {
         "uploadPhoto": "Upload Photo",
@@ -838,7 +845,8 @@
       "helperText": {
         "emailWarning": "Changing your email will affect your login credentials",
         "currentPhoto": "Current photo",
-        "maxFileSize": "Max 5MB, JPG/PNG/GIF"
+        "maxFileSize": "Max 5MB, JPG/PNG/GIF",
+        "phone": "Add a phone number so providers can reach you"
       },
       "successMessage": "Profile updated successfully",
       "errorMessage": "Failed to update profile"
@@ -1128,7 +1136,8 @@
       "validation": {
         "selectService": "Please select a service type",
         "titleTooShort": "Title must be at least 5 characters",
-        "descriptionTooShort": "Description must be at least 20 characters"
+        "descriptionTooShort": "Description must be at least 20 characters",
+        "requiredAttribute": "Please answer the required question: {field}"
       },
       "toast": {
         "created": "Request Created!",
@@ -1166,6 +1175,10 @@
         "cancelFirstToSwitch": "Cancel first to switch",
         "noPlans": "No plans available",
         "noPlansDesc": "Please check back soon or contact support"
+      },
+      "info": {
+        "dayDuration": "days",
+        "servicesIncluded": "Services Included"
       },
       "usageStats": {
         "title": "Usage Statistics",

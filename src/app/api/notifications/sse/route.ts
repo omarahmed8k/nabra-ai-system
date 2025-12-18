@@ -5,17 +5,10 @@ import { getSseClients, sendNotificationToUser } from "@/lib/notifications/sse-u
 
 export const dynamic = "force-dynamic";
 
-// Set the SSE sender in the notification module immediately
-console.log("🔧 SSE Route: Module loaded, registering notification sender...");
-setSseNotificationSender(sendNotificationToUser);
-console.log("✅ SSE Route: Notification sender registered successfully");
-
-// Also ensure this gets called on any import
-if (typeof globalThis !== "undefined") {
-  if (!(globalThis as any).__sseInitialized) {
-    (globalThis as any).__sseInitialized = true;
-    console.log("✅ SSE: Global initialization complete");
-  }
+// Register the SSE sender function (only logs once globally)
+if (typeof globalThis !== "undefined" && !(globalThis as any).__sseInitialized) {
+  setSseNotificationSender(sendNotificationToUser);
+  (globalThis as any).__sseInitialized = true;
 }
 
 export async function GET(request: Request) {
@@ -28,13 +21,11 @@ export async function GET(request: Request) {
 
   const userId = session.user.id;
   const clients = getSseClients();
-  console.log(`🟢 SSE: New connection from user ${userId}`);
 
   const stream = new ReadableStream({
     start(controller) {
       // Store the connection
       clients.set(userId, controller);
-      console.log(`📡 SSE: Client connected, total clients: ${clients.size}`);
 
       // Send initial connection message
       controller.enqueue(
@@ -44,10 +35,9 @@ export async function GET(request: Request) {
       // Heartbeat to keep connection alive
       const heartbeat = setInterval(() => {
         try {
-          controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
+          controller.enqueue(new TextEncoder().encode(`: heartbeat\n\n`));
         } catch {
           // Failed to enqueue, connection likely closed
-          console.log(`💔 SSE: Heartbeat failed for user ${userId}`);
           clearInterval(heartbeat);
           clients.delete(userId);
         }
@@ -55,7 +45,6 @@ export async function GET(request: Request) {
 
       // Cleanup on close
       request.signal.addEventListener("abort", () => {
-        console.log(`🔴 SSE: Connection closed for user ${userId}`);
         clearInterval(heartbeat);
         clients.delete(userId);
         try {
