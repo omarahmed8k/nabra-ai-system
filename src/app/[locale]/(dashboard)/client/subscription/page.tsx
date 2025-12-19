@@ -80,7 +80,11 @@ export default function SubscriptionPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-2xl">
-                  {t("currentSubscription.title", { name: subscription.package.name })}
+                  {t("currentSubscription.title", {
+                    name: (subscription.package as any).nameI18n
+                      ? (subscription.package as any).nameI18n[locale] || subscription.package.name
+                      : subscription.package.name,
+                  })}
                 </CardTitle>
                 <CardDescription>{t("currentSubscription.description")}</CardDescription>
               </div>
@@ -163,88 +167,89 @@ export default function SubscriptionPage() {
           {!isLoading &&
             packages &&
             packages.length > 0 &&
-            packages.map(
-              (pkg: {
-                id: string;
-                name: string;
-                durationDays: number;
-                price: number;
-                credits: number;
-                features: string[];
-                services: { serviceType: { id: string; name: string; icon: string | null } }[];
-              }) => {
-                const isCurrentPlan = subscription?.package.id === pkg.id;
-                return (
-                  <Card
-                    key={pkg.id}
-                    className={`flex flex-col ${isCurrentPlan ? "border-primary" : ""}`}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle>{pkg.name}</CardTitle>
-                        {isCurrentPlan && <Badge variant="secondary">{t("plans.current")}</Badge>}
-                      </div>
-                      <CardDescription>
-                        <span className="text-3xl font-bold text-foreground">
-                          {formatCurrency(pkg.price, locale)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          / {pkg.durationDays} {t("info.dayDuration")}
-                        </span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <ul className="space-y-3">
-                        <li className="flex items-center gap-2">
-                          <CreditCard className="h-4 w-4 text-primary" />
-                          <span>{pkg.credits} credits</span>
+            packages.map((pkg) => {
+              const isCurrentPlan = subscription?.package.id === pkg.id;
+              const pkgData = pkg as any; // Cast to access i18n fields and relations
+              return (
+                <Card
+                  key={pkg.id}
+                  className={`flex flex-col ${isCurrentPlan ? "border-primary" : ""}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>
+                        {pkgData.nameI18n ? pkgData.nameI18n[locale] || pkg.name : pkg.name}
+                      </CardTitle>
+                      {isCurrentPlan && <Badge variant="secondary">{t("plans.current")}</Badge>}
+                    </div>
+                    <CardDescription>
+                      <span className="text-3xl font-bold text-foreground">
+                        {formatCurrency(pkg.price, locale)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        / {pkg.durationDays} {t("info.dayDuration")}
+                      </span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        <span>{pkg.credits} credits</span>
+                      </li>
+
+                      {pkgData.services && pkgData.services.length > 0 && (
+                        <li className="flex flex-col gap-2">
+                          <span className="text-sm font-medium">{t("info.servicesIncluded")}:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {pkgData.services.map((svc: any) => (
+                              <Badge key={svc.serviceType.id} variant="outline" className="text-xs">
+                                {svc.serviceType.nameI18n
+                                  ? svc.serviceType.nameI18n[locale] || svc.serviceType.name
+                                  : svc.serviceType.name}
+                              </Badge>
+                            ))}
+                          </div>
                         </li>
+                      )}
 
-                        {pkg.services && pkg.services.length > 0 && (
-                          <li className="flex flex-col gap-2">
-                            <span className="text-sm font-medium">
-                              {t("info.servicesIncluded")}:
-                            </span>
-                            <div className="flex flex-wrap gap-2">
-                              {pkg.services.map((svc) => (
-                                <Badge
-                                  key={svc.serviceType.id}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {svc.serviceType.name}
-                                </Badge>
-                              ))}
-                            </div>
-                          </li>
-                        )}
-
-                        {pkg.features.map((feature: string, i: number) => (
-                          <li key={`${pkg.id}-feature-${i}`} className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <CardFooter className="mt-auto">
-                      <Button
-                        className="w-full"
-                        disabled={isCurrentPlan || subscribeMutation.isPending || !!subscription}
-                        onClick={() => handleSubscribe(pkg.id)}
-                      >
-                        {(() => {
-                          if (subscribeMutation.isPending) return t("plans.processing");
-                          if (isCurrentPlan) return t("plans.currentPlan");
-                          if (subscription) return t("plans.cancelFirstToSwitch");
-                          return t("plans.subscribe");
-                        })()}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              }
-            )}
+                      {pkgData.featuresI18n
+                        ? (pkgData.featuresI18n[locale] || pkg.features).map(
+                            (feature: string, i: number) => (
+                              <li
+                                key={`${pkg.id}-feature-${i}`}
+                                className="flex items-center gap-2"
+                              >
+                                <Check className="h-4 w-4 text-green-500" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            )
+                          )
+                        : pkg.features.map((feature: string, i: number) => (
+                            <li key={`${pkg.id}-feature-${i}`} className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-500" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter className="mt-auto">
+                    <Button
+                      className="w-full"
+                      disabled={isCurrentPlan || subscribeMutation.isPending || !!subscription}
+                      onClick={() => handleSubscribe(pkg.id)}
+                    >
+                      {(() => {
+                        if (subscribeMutation.isPending) return t("plans.processing");
+                        if (isCurrentPlan) return t("plans.currentPlan");
+                        if (subscription) return t("plans.cancelFirstToSwitch");
+                        return t("plans.subscribe");
+                      })()}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
         </div>
       </div>
 

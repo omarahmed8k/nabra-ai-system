@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,11 +11,13 @@ import { RequestDescription } from "@/components/requests/request-description";
 import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
+import { resolveLocalizedText } from "@/lib/i18n";
 
 export default function AvailableJobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("provider.availableDetail");
+  const locale = useLocale();
   const requestId = params.id as string;
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({
@@ -70,7 +72,7 @@ export default function AvailableJobDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={request.title}
+        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
@@ -79,7 +81,11 @@ export default function AvailableJobDetailPage() {
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}
-        serviceTypeName={request.serviceType.name}
+        serviceTypeName={resolveLocalizedText(
+          (request.serviceType as any).nameI18n,
+          locale,
+          request.serviceType.name
+        )}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/provider/available"
@@ -93,7 +99,14 @@ export default function AvailableJobDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          <RequestDescription description={request.description} attachments={request.attachments} />
+          <RequestDescription
+            description={resolveLocalizedText(
+              (request as any).descriptionI18n,
+              locale,
+              request.description
+            )}
+            attachments={request.attachments}
+          />
 
           {/* Service-Specific Q&A Responses */}
           {(request as any).attributeResponses &&

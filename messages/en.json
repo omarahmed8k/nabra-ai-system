@@ -519,9 +519,11 @@
         "name": "Name",
         "nameRequired": "Name *",
         "nameHint": "2-100 characters",
+        "localizedName": "Localized Name",
         "description": "Description",
         "descriptionRequired": "Description *",
         "descriptionHint": "10-500 characters",
+        "localizedDescription": "Localized Description",
         "creditCost": "Base Credit Cost",
         "creditCostRequired": "Base Credit Cost *",
         "creditCostHint": "Number of credits required to create a request for this service",
@@ -569,6 +571,15 @@
         "restored": "Service restored successfully",
         "deleteFailed": "Failed to delete service",
         "restoreFailed": "Failed to restore service"
+      },
+      "display": {
+        "questionLabel": "question",
+        "questionsLabel": "questions",
+        "creditLabel": "credit",
+        "creditsLabel": "credits",
+        "revisionInfo": "{freeRevisions} free, then {paidCost} {creditLabel}/revision",
+        "resetsOnPaid": "Resets on paid",
+        "noResetOnPaid": "No reset on paid"
       }
     },
     "attributesManager": {
@@ -598,7 +609,8 @@
       "moveUp": "Move up",
       "moveDown": "Move down",
       "deleteQuestion": "Delete question",
-      "actions": "Actions"
+      "actions": "Actions",
+      "optional": "optional"
     },
     "payments": {
       "title": "Payment Verification",
@@ -1081,7 +1093,10 @@
         "ratingSubmittedDesc": "Thank you for your feedback!",
         "invalidFeedback": "Invalid Feedback",
         "invalidFeedbackDesc": "Please provide at least {min} characters describing the changes needed."
-      }
+      },
+      "messagesTitle": "Messages",
+      "messagesDescription": "Communicate with your provider",
+      "messagesPlaceholder": "Type your message..."
     },
     "newRequest": {
       "title": "Create New Request",
@@ -1428,5 +1443,9 @@
       "COMPLETED": "Completed",
       "CANCELLED": "Cancelled"
     }
+  },
+  "locales": {
+    "en": "English",
+    "ar": "Arabic"
   }
 }

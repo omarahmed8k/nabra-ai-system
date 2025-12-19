@@ -7,11 +7,14 @@ export type AttributeType = "text" | "select" | "multiselect" | "textarea";
 
 export interface ServiceAttribute {
   question: string;
+  questionI18n?: { [locale: string]: string }; // Optional localized question
   required: boolean;
   type: AttributeType;
   options?: string[]; // For select/multiselect types
   placeholder?: string;
+  placeholderI18n?: { [locale: string]: string };
   helpText?: string;
+  helpTextI18n?: { [locale: string]: string };
 }
 
 export interface AttributeResponse {
@@ -21,7 +24,7 @@ export interface AttributeResponse {
 
 /**
  * Example usage:
- * 
+ *
  * Service Attributes (stored in ServiceType.attributes):
  * [
  *   {
@@ -37,7 +40,7 @@ export interface AttributeResponse {
  *     placeholder: "e.g., 1920x1080"
  *   }
  * ]
- * 
+ *
  * Client Responses (stored in Request.attributeResponses):
  * [
  *   {

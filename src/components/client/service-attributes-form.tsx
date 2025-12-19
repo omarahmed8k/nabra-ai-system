@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 interface ServiceAttributesFormProps {
@@ -28,6 +29,7 @@ export function ServiceAttributesForm({
   disabled = false,
 }: ServiceAttributesFormProps) {
   const t = useTranslations("client.newRequest.serviceQuestions");
+  const locale = useLocale();
 
   if (!attributes || attributes.length === 0) {
     return null;
@@ -72,17 +74,25 @@ export function ServiceAttributesForm({
           {attributes.map((attr, index) => (
             <div key={`${attr.question}-${index}`} className="space-y-2">
               <Label htmlFor={`attr-${index}`} className="flex items-center gap-1">
-                {attr.question}
+                {resolveLocalizedText((attr as any).questionI18n, locale, attr.question)}
                 {attr.required && <span className="text-destructive">*</span>}
               </Label>
 
-              {attr.helpText && <p className="text-xs text-muted-foreground">{attr.helpText}</p>}
+              {(attr.helpText || (attr as any).helpTextI18n) && (
+                <p className="text-xs text-muted-foreground">
+                  {resolveLocalizedText((attr as any).helpTextI18n, locale, attr.helpText)}
+                </p>
+              )}
 
               {/* Text Input */}
               {attr.type === "text" && (
                 <Input
                   id={`attr-${index}`}
-                  placeholder={attr.placeholder}
+                  placeholder={resolveLocalizedText(
+                    (attr as any).placeholderI18n,
+                    locale,
+                    attr.placeholder
+                  )}
                   value={(getResponse(attr.question) as string) || ""}
                   onChange={(e) => updateResponse(attr.question, e.target.value)}
                   required={attr.required}
@@ -94,7 +104,11 @@ export function ServiceAttributesForm({
               {attr.type === "textarea" && (
                 <Textarea
                   id={`attr-${index}`}
-                  placeholder={attr.placeholder}
+                  placeholder={resolveLocalizedText(
+                    (attr as any).placeholderI18n,
+                    locale,
+                    attr.placeholder
+                  )}
                   value={(getResponse(attr.question) as string) || ""}
                   onChange={(e) => updateResponse(attr.question, e.target.value)}
                   required={attr.required}

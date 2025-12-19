@@ -6,7 +6,7 @@ export const packageRouter = router({
   // Get all active packages (public) - excludes free package
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.package.findMany({
-      where: { 
+      where: {
         isActive: true,
         isFreePackage: false, // Only show admin-created packages
       },
@@ -14,6 +14,9 @@ export const packageRouter = router({
         id: true,
         name: true,
         description: true,
+        nameI18n: true,
+        descriptionI18n: true,
+        featuresI18n: true,
         price: true,
         credits: true,
         durationDays: true,
@@ -25,6 +28,7 @@ export const packageRouter = router({
               select: {
                 id: true,
                 name: true,
+                nameI18n: true,
                 icon: true,
               },
             },
@@ -36,22 +40,20 @@ export const packageRouter = router({
   }),
 
   // Get single package by ID
-  getById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const pkg = await ctx.db.package.findUnique({
-        where: { id: input.id },
+  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const pkg = await ctx.db.package.findUnique({
+      where: { id: input.id },
+    });
+
+    if (!pkg) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Package not found",
       });
+    }
 
-      if (!pkg) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Package not found",
-        });
-      }
-
-      return pkg;
-    }),
+    return pkg;
+  }),
 
   // Create package (admin only)
   create: adminProcedure
@@ -115,45 +117,43 @@ export const packageRouter = router({
     }),
 
   // Delete package (admin only) - soft delete by setting isActive to false
-  delete: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      // Prevent deletion of free package
-      const pkg = await ctx.db.package.findUnique({
-        where: { id: input.id },
+  delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    // Prevent deletion of free package
+    const pkg = await ctx.db.package.findUnique({
+      where: { id: input.id },
+    });
+
+    if (pkg?.isFreePackage) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Cannot delete the free package. It is required for all new user registrations.",
       });
+    }
 
-      if (pkg?.isFreePackage) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Cannot delete the free package. It is required for all new user registrations.",
-        });
-      }
+    // Check if there are active subscriptions using this package
+    const activeSubscriptions = await ctx.db.clientSubscription.count({
+      where: {
+        packageId: input.id,
+        isActive: true,
+        endDate: { gte: new Date() },
+      },
+    });
 
-      // Check if there are active subscriptions using this package
-      const activeSubscriptions = await ctx.db.clientSubscription.count({
-        where: {
-          packageId: input.id,
-          isActive: true,
-          endDate: { gte: new Date() },
-        },
+    if (activeSubscriptions > 0) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: `Cannot delete package with ${activeSubscriptions} active subscriptions. Deactivate it instead.`,
       });
+    }
 
-      if (activeSubscriptions > 0) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: `Cannot delete package with ${activeSubscriptions} active subscriptions. Deactivate it instead.`,
-        });
-      }
+    const updated = await ctx.db.package.update({
+      where: { id: input.id },
+      data: { isActive: false },
+    });
 
-      const updated = await ctx.db.package.update({
-        where: { id: input.id },
-        data: { isActive: false },
-      });
-
-      return {
-        success: true,
-        package: updated,
-      };
-    }),
+    return {
+      success: true,
+      package: updated,
+    };
+  }),
 });

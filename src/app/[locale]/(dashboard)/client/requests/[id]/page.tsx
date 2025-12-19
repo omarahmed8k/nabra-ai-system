@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,9 +18,11 @@ import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { CheckCircle, RotateCcw, Star } from "lucide-react";
+import { resolveLocalizedText } from "@/lib/i18n";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
+  const locale = useLocale();
   const params = useParams();
   const requestId = params.id as string;
   const [rating, setRating] = useState(0);
@@ -122,7 +124,7 @@ export default function RequestDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={request.title}
+        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
@@ -131,7 +133,11 @@ export default function RequestDetailPage() {
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}
-        serviceTypeName={request.serviceType.name}
+        serviceTypeName={resolveLocalizedText(
+          (request.serviceType as any).nameI18n,
+          locale,
+          request.serviceType.name
+        )}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/client/requests"
@@ -141,7 +147,14 @@ export default function RequestDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
-          <RequestDescription description={request.description} attachments={request.attachments} />
+          <RequestDescription
+            description={resolveLocalizedText(
+              (request as any).descriptionI18n,
+              locale,
+              request.description
+            )}
+            attachments={request.attachments}
+          />
 
           {/* Service-Specific Q&A Responses */}
           {(request as any).attributeResponses &&
@@ -326,9 +339,9 @@ export default function RequestDetailPage() {
           <MessagesCard
             requestId={requestId}
             comments={request.comments as any}
-            title="Messages"
-            description="Communicate with your provider"
-            placeholder="Type your message..."
+            title={t("messagesTitle")}
+            description={t("messagesDescription")}
+            placeholder={t("messagesPlaceholder")}
             canSendMessages={request.status !== "COMPLETED"}
             maskProviderNames
           />

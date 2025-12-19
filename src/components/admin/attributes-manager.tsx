@@ -16,6 +16,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import type { ServiceAttribute } from "@/types/service-attributes";
+import { LocalizedInput } from "@/components/ui/localized-input";
 
 interface AttributeWithId extends ServiceAttribute {
   _id?: string;
@@ -145,17 +146,23 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                       <GripVertical className="h-5 w-5" />
                     </div>
                     <div className="flex-1 space-y-4">
-                      {/* Question Text */}
+                      {/* Question Text (localized) */}
                       <div className="space-y-2">
                         <Label htmlFor={`question-${index}`}>
                           {t("question", { number: index + 1 })}
                         </Label>
-                        <Input
+                        <LocalizedInput
                           id={`question-${index}`}
                           placeholder={t("exampleQuestion")}
-                          value={attr.question}
-                          onChange={(e) => updateAttribute(index, { question: e.target.value })}
+                          value={(attr as any).questionI18n ?? attr.question}
+                          onChange={(next) =>
+                            updateAttribute(index, {
+                              questionI18n: next as any,
+                              question: next.en?.trim() ? next.en : (next.ar ?? ""),
+                            })
+                          }
                           required
+                          variant="input"
                         />
                       </div>
 
@@ -225,31 +232,43 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         </div>
                       )}
 
-                      {/* Placeholder (optional) */}
+                      {/* Placeholder (optional, localized) */}
                       <div className="space-y-2">
                         <Label htmlFor={`placeholder-${index}`}>
                           {t("placeholderOptional")}{" "}
-                          <span className="text-muted-foreground">(optional)</span>
+                          <span className="text-muted-foreground">({t("optional")})</span>
                         </Label>
-                        <Input
+                        <LocalizedInput
                           id={`placeholder-${index}`}
                           placeholder={t("examplePlaceholder")}
-                          value={attr.placeholder || ""}
-                          onChange={(e) => updateAttribute(index, { placeholder: e.target.value })}
+                          value={(attr as any).placeholderI18n ?? attr.placeholder ?? ""}
+                          onChange={(next) =>
+                            updateAttribute(index, {
+                              placeholderI18n: next as any,
+                              placeholder: next.en?.trim() ? next.en : (next.ar ?? ""),
+                            })
+                          }
+                          variant="input"
                         />
                       </div>
 
-                      {/* Help Text (optional) */}
+                      {/* Help Text (optional, localized) */}
                       <div className="space-y-2">
                         <Label htmlFor={`helptext-${index}`}>
                           {t("helpTextOptional")}{" "}
-                          <span className="text-muted-foreground">(optional)</span>
+                          <span className="text-muted-foreground">({t("optional")})</span>
                         </Label>
-                        <Input
+                        <LocalizedInput
                           id={`helptext-${index}`}
                           placeholder={t("helpTextDescription")}
-                          value={attr.helpText || ""}
-                          onChange={(e) => updateAttribute(index, { helpText: e.target.value })}
+                          value={(attr as any).helpTextI18n ?? attr.helpText ?? ""}
+                          onChange={(next) =>
+                            updateAttribute(index, {
+                              helpTextI18n: next as any,
+                              helpText: next.en?.trim() ? next.en : (next.ar ?? ""),
+                            })
+                          }
+                          variant="textarea"
                         />
                       </div>
                     </div>

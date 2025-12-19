@@ -102,6 +102,8 @@ model ServiceType {
   id                        String            @id @default(cuid())
   name                      String            @unique
   description               String?
+  nameI18n                  Json?
+  descriptionI18n           Json?
   icon                      String?
   formFields                Json?
   attributes                Json? // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
@@ -128,6 +130,9 @@ model Package {
   id                        String               @id @default(cuid())
   name                      String
   description               String?
+  nameI18n                  Json?
+  descriptionI18n           Json?
+  featuresI18n              Json?
   credits                   Int
   price                     Float
   durationDays              Int                  @default(30)
@@ -209,6 +214,8 @@ model Request {
   id                   String           @id @default(cuid())
   title                String
   description          String
+  titleI18n            Json?
+  descriptionI18n      Json?
   clientId             String
   providerId           String?
   serviceTypeId        String

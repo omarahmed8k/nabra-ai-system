@@ -43,14 +43,19 @@ async function main() {
   const freePackage = await prisma.package.create({
     data: {
       name: "Free Plan",
+      nameI18n: { en: "Free Plan", ar: "الخطة المجانية" },
       description: "Basic free plan for all new users with 1 credit valid for 14 days",
+      descriptionI18n: {
+        en: "Basic free plan for all new users with 1 credit valid for 14 days",
+        ar: "خطة مجانية أساسية لجميع المستخدمين الجدد مع رصيد واحد صالح لمدة 14 يومًا",
+      },
       price: 0,
       credits: 1,
       durationDays: 14,
       isActive: true,
       isFreePackage: true,
       sortOrder: 0,
-    },
+    } as any,
   });
 
   console.log("📦 Created free package:", freePackage.name);
@@ -63,8 +68,8 @@ async function main() {
   console.log("\n📦 Free Package Created:");
   console.log("─".repeat(50));
   console.log("Name:         Free Plan");
-  console.log("Credits:      10");
-  console.log("Duration:     30 days");
+  console.log("Credits:      1");
+  console.log("Duration:     14 days");
   console.log("Price:        $0");
   console.log("─".repeat(50));
   console.log("\n💡 New clients will automatically receive the free plan upon registration.");

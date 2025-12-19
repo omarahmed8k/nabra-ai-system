@@ -475,6 +475,8 @@ export const adminRouter = router({
       z.object({
         name: z.string().min(2),
         description: z.string().optional(),
+        nameI18n: z.record(z.string()).optional(),
+        descriptionI18n: z.record(z.string()).optional(),
         icon: z.string().optional(),
         formFields: z.any().optional(),
         attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
@@ -504,6 +506,8 @@ export const adminRouter = router({
         data: {
           name: input.name,
           description: input.description,
+          nameI18n: input.nameI18n || null,
+          descriptionI18n: input.descriptionI18n || null,
           icon: input.icon,
           formFields: input.formFields,
           attributes: input.attributes,
@@ -515,7 +519,7 @@ export const adminRouter = router({
           priorityCostMedium: input.priorityCostMedium,
           priorityCostHigh: input.priorityCostHigh,
           sortOrder: input.sortOrder,
-        },
+        } as any,
       });
 
       return {
@@ -531,6 +535,8 @@ export const adminRouter = router({
         id: z.string(),
         name: z.string().min(2).optional(),
         description: z.string().optional(),
+        nameI18n: z.record(z.string()).optional(),
+        descriptionI18n: z.record(z.string()).optional(),
         icon: z.string().optional(),
         formFields: z.any().optional(),
         attributes: z.any().optional(), // Q&A attributes: [{question: string, required: boolean, type: string, options?: string[]}]
@@ -550,7 +556,13 @@ export const adminRouter = router({
 
       const serviceType = await ctx.db.serviceType.update({
         where: { id },
-        data,
+        data: {
+          ...data,
+          ...(input.nameI18n !== undefined && { nameI18n: input.nameI18n as any }),
+          ...(input.descriptionI18n !== undefined && {
+            descriptionI18n: input.descriptionI18n as any,
+          }),
+        },
       });
 
       return {
@@ -617,10 +629,14 @@ export const adminRouter = router({
     .input(
       z.object({
         name: z.string().min(2),
+        nameI18n: z.record(z.string()).optional(),
         price: z.number().min(0),
         credits: z.number().min(1),
         durationDays: z.number().min(1).default(30),
+        description: z.string().optional(),
+        descriptionI18n: z.record(z.string()).optional(),
         features: z.array(z.string()).default([]),
+        featuresI18n: z.record(z.array(z.string())).optional(),
         serviceIds: z.array(z.string()).default([]),
       })
     )
@@ -644,13 +660,21 @@ export const adminRouter = router({
 
       const pkg = await ctx.db.package.create({
         data: {
-          ...packageData,
+          name: packageData.name,
+          nameI18n: packageData.nameI18n || null,
+          description: packageData.description,
+          descriptionI18n: packageData.descriptionI18n || null,
+          credits: packageData.credits,
+          price: packageData.price,
+          durationDays: packageData.durationDays,
+          features: packageData.features,
+          featuresI18n: packageData.featuresI18n || null,
           services: {
             create: serviceIds.map((serviceId: string) => ({
               serviceId,
             })),
           },
-        },
+        } as any,
         include: {
           services: {
             include: {
@@ -669,9 +693,13 @@ export const adminRouter = router({
       z.object({
         id: z.string(),
         name: z.string().min(2).optional(),
+        nameI18n: z.record(z.string()).optional(),
+        description: z.string().optional(),
+        descriptionI18n: z.record(z.string()).optional(),
         price: z.number().min(0).optional(),
         credits: z.number().min(1).optional(),
         features: z.array(z.string()).optional(),
+        featuresI18n: z.record(z.array(z.string())).optional(),
         isActive: z.boolean().optional(),
         serviceIds: z.array(z.string()).optional(),
       })
@@ -699,6 +727,11 @@ export const adminRouter = router({
         where: { id },
         data: {
           ...data,
+          ...(input.nameI18n !== undefined && { nameI18n: input.nameI18n as any }),
+          ...(input.descriptionI18n !== undefined && {
+            descriptionI18n: input.descriptionI18n as any,
+          }),
+          ...(input.featuresI18n !== undefined && { featuresI18n: input.featuresI18n as any }),
           ...(serviceIds !== undefined && {
             services: {
               deleteMany: {},
@@ -805,19 +838,32 @@ export const adminRouter = router({
           ? { deletedAt: { not: null }, isFreePackage: false }
           : { deletedAt: null, isFreePackage: false },
         orderBy: { sortOrder: "asc" },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          nameI18n: true,
+          description: true,
+          descriptionI18n: true,
+          features: true,
+          featuresI18n: true,
+          price: true,
+          credits: true,
+          durationDays: true,
+          sortOrder: true,
+          isActive: true,
           services: {
-            include: {
+            select: {
               serviceType: {
                 select: {
                   id: true,
                   name: true,
+                  nameI18n: true,
                   icon: true,
-                },
+                } as any,
               },
             },
           },
-        },
+        } as any,
       });
     }),
 

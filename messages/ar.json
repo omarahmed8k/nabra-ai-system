@@ -519,9 +519,11 @@
         "name": "الاسم",
         "nameRequired": "الاسم *",
         "nameHint": "2-100 حرف",
+        "localizedName": "الاسم المترجم",
         "description": "الوصف",
         "descriptionRequired": "الوصف *",
         "descriptionHint": "10-500 حرف",
+        "localizedDescription": "الوصف المترجم",
         "creditCost": "تكلفة الاعتماد الأساسية",
         "creditCostRequired": "تكلفة الاعتماد الأساسية *",
         "creditCostHint": "عدد الاعتمادات المطلوبة لإنشاء طلب لهذه الخدمة",
@@ -569,6 +571,15 @@
         "restored": "تم استعادة الخدمة بنجاح",
         "deleteFailed": "فشل حذف الخدمة",
         "restoreFailed": "فشل استعادة الخدمة"
+      },
+      "display": {
+        "questionLabel": "سؤال",
+        "questionsLabel": "أسئلة",
+        "creditLabel": "اعتماد",
+        "creditsLabel": "اعتمادات",
+        "revisionInfo": "{freeRevisions} مجاني، ثم {paidCost} {creditLabel}/تعديل",
+        "resetsOnPaid": "يتم إعادة التعيين عند الدفع",
+        "noResetOnPaid": "لا يتم إعادة التعيين عند الدفع"
       }
     },
     "attributesManager": {
@@ -598,7 +609,8 @@
       "moveUp": "تحريك لأعلى",
       "moveDown": "تحريك لأسفل",
       "deleteQuestion": "حذف السؤال",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "optional": "اختياري"
     },
     "payments": {
       "title": "التحقق من الدفع",
@@ -1081,7 +1093,10 @@
         "ratingSubmittedDesc": "شكراً لملاحظاتك!",
         "invalidFeedback": "ملاحظات غير صالحة",
         "invalidFeedbackDesc": "يرجى تقديم {min} حرفاً على الأقل لوصف التغييرات المطلوبة."
-      }
+      },
+      "messagesTitle": "الرسائل",
+      "messagesDescription": "تواصل مع مقدم الخدمة",
+      "messagesPlaceholder": "اكتب رسالتك..."
     },
     "newRequest": {
       "title": "إنشاء طلب جديد",
@@ -1428,5 +1443,9 @@
       "COMPLETED": "مكتمل",
       "CANCELLED": "ملغى"
     }
+  },
+  "locales": {
+    "en": "الإنجليزية",
+    "ar": "العربية"
   }
 }

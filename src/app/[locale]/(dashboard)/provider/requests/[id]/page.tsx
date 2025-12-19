@@ -19,6 +19,7 @@ import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { formatDateTime, getInitials } from "@/lib/utils";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { Send, Upload, Play, CheckCircle } from "lucide-react";
 
 export default function ProviderRequestDetailPage() {
@@ -138,7 +139,7 @@ export default function ProviderRequestDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={request.title}
+        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
@@ -147,7 +148,11 @@ export default function ProviderRequestDetailPage() {
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}
-        serviceTypeName={request.serviceType.name}
+        serviceTypeName={resolveLocalizedText(
+          (request.serviceType as any).nameI18n,
+          locale,
+          request.serviceType.name
+        )}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/provider/my-requests"
@@ -163,7 +168,13 @@ export default function ProviderRequestDetailPage() {
               <CardTitle>{t("description")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="whitespace-pre-wrap">{request.description}</p>
+              <p className="whitespace-pre-wrap">
+                {resolveLocalizedText(
+                  (request as any).descriptionI18n,
+                  locale,
+                  request.description
+                )}
+              </p>
 
               {/* Request Attachments */}
               {request.attachments && request.attachments.length > 0 && (

@@ -9,6 +9,7 @@ import type { ComponentType } from "react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { ImageCarousel } from "@/components/landing/image-carousel";
 import {
   Card,
   CardContent,
@@ -252,6 +253,9 @@ export default function LandingPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Image Carousel Section */}
+        <ImageCarousel />
 
         {/* Pricing Section */}
         <section id="pricing" className="container py-24">

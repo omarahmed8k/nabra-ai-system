@@ -8,17 +8,32 @@ export const subscriptionRouter = router({
   getActive: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const subscription = await ctx.db.clientSubscription.findFirst({
+    const subscription = (await ctx.db.clientSubscription.findFirst({
       where: {
         userId,
         isActive: true,
         endDate: { gte: new Date() },
       },
       include: {
-        package: true,
+        package: {
+          include: {
+            services: {
+              include: {
+                serviceType: {
+                  select: {
+                    id: true,
+                    name: true,
+                    nameI18n: true,
+                    icon: true,
+                  } as any,
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
-    });
+    })) as any;
 
     if (!subscription) {
       return null;

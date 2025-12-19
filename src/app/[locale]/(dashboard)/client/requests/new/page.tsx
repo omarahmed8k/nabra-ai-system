@@ -2,13 +2,12 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -22,16 +21,23 @@ import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { ArrowLeft } from "lucide-react";
 import type { AttributeResponse } from "@/types/service-attributes";
+import { LocalizedInput } from "@/components/ui/localized-input";
 
 export default function NewRequestPage() {
   const t = useTranslations("client.newRequest");
   const router = useRouter();
   const [selectedServiceType, setSelectedServiceType] = useState("");
-  const [priority, setPriority] = useState("1");
+  const [priority] = useState("1");
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
   const [attributeResponses, setAttributeResponses] = useState<AttributeResponse[]>([]);
+  const [titleI18n, setTitleI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
+  const [descriptionI18n, setDescriptionI18n] = useState<{ en: string; ar: string }>({
+    en: "",
+    ar: "",
+  });
 
   const { data: serviceTypes } = trpc.request.getServiceTypes.useQuery();
+  const locale = useLocale();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
 
   const selectedService = useMemo(
@@ -81,8 +87,8 @@ export default function NewRequestPage() {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
+    const title = titleI18n.en || titleI18n.ar || "";
+    const description = descriptionI18n.en || descriptionI18n.ar || "";
     const formPriority = Number.parseInt(formData.get("priority") as string) || 1;
 
     if (!selectedServiceType) {
@@ -128,8 +134,8 @@ export default function NewRequestPage() {
     }
 
     createRequest.mutate({
-      title,
-      description,
+      titleI18n,
+      descriptionI18n,
       serviceTypeId: selectedServiceType,
       priority: formPriority,
       attachments: attachments.map((f) => f.url),
@@ -233,9 +239,9 @@ export default function NewRequestPage() {
                   <SelectValue placeholder={t("fields.serviceTypePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceTypes?.map((type: { id: string; name: string; icon: string | null }) => (
+                  {serviceTypes?.map((type: any) => (
                     <SelectItem key={type.id} value={type.id}>
-                      {type.icon} {type.name}
+                      {type.icon} {resolveLocalizedText(type.nameI18n, locale, type.name)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -244,29 +250,25 @@ export default function NewRequestPage() {
 
             <div className="space-y-2">
               <Label htmlFor="title">{t("fields.title")}</Label>
-              <Input
-                id="title"
-                name="title"
+              <LocalizedInput
+                value={titleI18n}
+                onChange={(next) => setTitleI18n({ en: next.en || "", ar: next.ar || "" })}
                 placeholder={t("fields.titlePlaceholder")}
                 required
-                minLength={5}
-                maxLength={200}
                 disabled={!hasCredits || createRequest.isPending}
+                variant="input"
               />
               <p className="text-xs text-muted-foreground">{t("fields.titleHint")}</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">{t("fields.description")}</Label>
-              <Textarea
-                id="description"
-                name="description"
+              <LocalizedInput
+                value={descriptionI18n}
+                onChange={(next) => setDescriptionI18n({ en: next.en || "", ar: next.ar || "" })}
                 placeholder={t("fields.descriptionPlaceholder")}
-                required
-                minLength={20}
-                maxLength={5000}
-                rows={6}
                 disabled={!hasCredits || createRequest.isPending}
+                variant="textarea"
               />
               <p className="text-xs text-muted-foreground">{t("fields.descriptionHint")}</p>
             </div>

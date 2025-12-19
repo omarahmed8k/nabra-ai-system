@@ -13,8 +13,10 @@ export const requestRouter = router({
   create: clientProcedure
     .input(
       z.object({
-        title: z.string().min(5, "Title must be at least 5 characters"),
-        description: z.string().min(20, "Description must be at least 20 characters"),
+        title: z.string().min(5, "Title must be at least 5 characters").optional(),
+        titleI18n: z.record(z.string()).optional(),
+        description: z.string().min(20, "Description must be at least 20 characters").optional(),
+        descriptionI18n: z.record(z.string()).optional(),
         serviceTypeId: z.string(),
         priority: z.number().min(1).max(3).default(1),
         formData: z.record(z.any()).optional(),
@@ -120,11 +122,38 @@ export const requestRouter = router({
         });
       }
 
+      // Derive plain title/description for backward compatibility and notifications
+      const deriveText = (i18n: Record<string, string> | undefined, plain?: string, minLen = 1) => {
+        const candidates = [plain, i18n?.en, i18n?.ar, ...(i18n ? Object.values(i18n) : [])];
+        const found = candidates.find((v) => typeof v === "string" && v.trim().length >= minLen);
+        return (found as string) || "";
+      };
+
+      const titlePlain = deriveText(input.titleI18n as any, input.title, 5);
+      const descriptionPlain = deriveText(input.descriptionI18n as any, input.description, 20);
+
+      // Basic validation: ensure at least one localized or plain value meets constraints
+      if (!titlePlain || titlePlain.trim().length < 5) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Title must be provided in at least one language and be at least 5 characters",
+        });
+      }
+      if (!descriptionPlain || descriptionPlain.trim().length < 20) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Description must be provided in at least one language and be at least 20 characters",
+        });
+      }
+
       // Create the request
       const request = await ctx.db.request.create({
         data: {
-          title: input.title,
-          description: input.description,
+          title: titlePlain,
+          description: descriptionPlain,
+          titleI18n: (input.titleI18n as any) || null,
+          descriptionI18n: (input.descriptionI18n as any) || null,
           clientId: userId,
           serviceTypeId: input.serviceTypeId,
           priority: input.priority,
@@ -177,7 +206,7 @@ export const requestRouter = router({
             createNotification({
               userId: provider.userId,
               title: "New Request Available",
-              message: `New ${serviceType.name} request: "${input.title}"`,
+              message: `New ${serviceType.name} request: "${titlePlain}"`,
               type: "general",
               link: `/provider/available`,
               sendEmail: false, // Don't send email for new request notifications
@@ -774,7 +803,7 @@ export const requestRouter = router({
     const userId = ctx.session.user.id;
 
     // Get user's active subscription with package services
-    const activeSubscription = await ctx.db.clientSubscription.findFirst({
+    const activeSubscription = (await ctx.db.clientSubscription.findFirst({
       where: {
         userId: userId,
         isActive: true,
@@ -789,7 +818,9 @@ export const requestRouter = router({
                   select: {
                     id: true,
                     name: true,
+                    nameI18n: true,
                     description: true,
+                    descriptionI18n: true,
                     icon: true,
                     attributes: true,
                     creditCost: true,
@@ -798,14 +829,14 @@ export const requestRouter = router({
                     priorityCostHigh: true,
                     isActive: true,
                     sortOrder: true,
-                  },
+                  } as any,
                 },
               },
             },
           },
         },
       },
-    });
+    })) as any;
 
     // If no active subscription, return empty array
     if (!activeSubscription) {

@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { showError } from "@/lib/error-handler";
+import { LocalizedInput } from "@/components/ui/localized-input";
 
 export default function AdminPackagesPage() {
   const t = useTranslations("admin.packages");
@@ -30,6 +31,17 @@ export default function AdminPackagesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
+  // Localized inputs state
+  const [createNameI18n, setCreateNameI18n] = useState<{ en: string; ar: string }>({
+    en: "",
+    ar: "",
+  });
+  const [createDescI18n, setCreateDescI18n] = useState<{ en: string; ar: string }>({
+    en: "",
+    ar: "",
+  });
+  const [editNameI18n, setEditNameI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
+  const [editDescI18n, setEditDescI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
 
   const { data: packages, isLoading } = trpc.admin.getPackages.useQuery({
     showDeleted: activeTab === "deleted",
@@ -84,12 +96,37 @@ export default function AdminPackagesPage() {
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const nameEn = (formData.get("name_en") as string) || "";
+    const nameAr = (formData.get("name_ar") as string) || "";
+    const descEn = (formData.get("description_en") as string) || "";
+    const descAr = (formData.get("description_ar") as string) || "";
+    const featuresEn = ((formData.get("features_en") as string) || "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const featuresAr = ((formData.get("features_ar") as string) || "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const nameI18n: Record<string, string> = {};
+    if (nameEn) nameI18n.en = nameEn;
+    if (nameAr) nameI18n.ar = nameAr;
+    const descriptionI18n: Record<string, string> = {};
+    if (descEn) descriptionI18n.en = descEn;
+    if (descAr) descriptionI18n.ar = descAr;
+    const featuresI18n: Record<string, string[]> = {};
+    if (featuresEn.length) featuresI18n.en = featuresEn;
+    if (featuresAr.length) featuresI18n.ar = featuresAr;
     createPackage.mutate({
-      name: formData.get("name") as string,
+      name: nameEn || nameAr,
+      nameI18n: Object.keys(nameI18n).length ? nameI18n : undefined,
       price: Number.parseFloat(formData.get("price") as string),
       credits: Number.parseInt(formData.get("credits") as string),
       durationDays: Number.parseInt(formData.get("durationDays") as string),
-      features: (formData.get("features") as string).split("\n").filter(Boolean),
+      description: descEn || descAr || undefined,
+      descriptionI18n: Object.keys(descriptionI18n).length ? descriptionI18n : undefined,
+      features: featuresEn,
+      featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
       serviceIds: selectedServiceIds,
     });
   };
@@ -97,12 +134,37 @@ export default function AdminPackagesPage() {
   const handleUpdate = (e: React.FormEvent<HTMLFormElement>, id: string) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const nameEn = (formData.get("name_en") as string) || "";
+    const nameAr = (formData.get("name_ar") as string) || "";
+    const descEn = (formData.get("description_en") as string) || "";
+    const descAr = (formData.get("description_ar") as string) || "";
+    const featuresEn = ((formData.get("features_en") as string) || "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const featuresAr = ((formData.get("features_ar") as string) || "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const nameI18n: Record<string, string> = {};
+    if (nameEn) nameI18n.en = nameEn;
+    if (nameAr) nameI18n.ar = nameAr;
+    const descriptionI18n: Record<string, string> = {};
+    if (descEn) descriptionI18n.en = descEn;
+    if (descAr) descriptionI18n.ar = descAr;
+    const featuresI18n: Record<string, string[]> = {};
+    if (featuresEn.length) featuresI18n.en = featuresEn;
+    if (featuresAr.length) featuresI18n.ar = featuresAr;
     updatePackage.mutate({
       id,
-      name: formData.get("name") as string,
+      name: nameEn || nameAr || undefined,
+      nameI18n: Object.keys(nameI18n).length ? nameI18n : undefined,
       price: Number.parseFloat(formData.get("price") as string),
       credits: Number.parseInt(formData.get("credits") as string),
-      features: (formData.get("features") as string).split("\n").filter(Boolean),
+      description: descEn || descAr || undefined,
+      descriptionI18n: Object.keys(descriptionI18n).length ? descriptionI18n : undefined,
+      features: featuresEn,
+      featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
       serviceIds: selectedServiceIds,
     });
   };
@@ -126,6 +188,14 @@ export default function AdminPackagesPage() {
   const handleEditPackage = useCallback((pkg: any) => {
     setEditingId(pkg.id);
     setSelectedServiceIds(pkg.services?.map((s: any) => s.serviceType.id) || []);
+    setEditNameI18n({
+      en: (pkg as any).nameI18n?.en || pkg.name || "",
+      ar: (pkg as any).nameI18n?.ar || "",
+    });
+    setEditDescI18n({
+      en: (pkg as any).descriptionI18n?.en || (pkg as any).description || "",
+      ar: (pkg as any).descriptionI18n?.ar || "",
+    });
   }, []);
 
   return (
@@ -150,9 +220,16 @@ export default function AdminPackagesPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t("fields.nameRequired")}</Label>
-                  <Input id="name" name="name" required minLength={2} maxLength={100} />
+                <div className="space-y-2 md:col-span-2">
+                  <Label>{t("fields.localizedName")}</Label>
+                  <LocalizedInput
+                    value={createNameI18n}
+                    onChange={setCreateNameI18n}
+                    required
+                    variant="input"
+                  />
+                  <input type="hidden" name="name_en" value={createNameI18n.en} />
+                  <input type="hidden" name="name_ar" value={createNameI18n.ar} />
                   <p className="text-xs text-muted-foreground">{t("fields.nameHint")}</p>
                 </div>
                 <div className="space-y-2">
@@ -178,17 +255,44 @@ export default function AdminPackagesPage() {
                   <p className="text-xs text-muted-foreground">{t("fields.durationHint")}</p>
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>{t("fields.localizedDescription")}</Label>
+                <LocalizedInput
+                  value={createDescI18n}
+                  onChange={setCreateDescI18n}
+                  variant="textarea"
+                />
+                <input type="hidden" name="description_en" value={createDescI18n.en} />
+                <input type="hidden" name="description_ar" value={createDescI18n.ar} />
+              </div>
 
               <div className="space-y-2">
-                <Label htmlFor="features">{t("fields.features")}</Label>
-                <textarea
-                  id="features"
-                  name="features"
-                  className="w-full min-h-[100px] p-2 border rounded-md"
-                  placeholder={t("fields.featuresPlaceholder")}
-                  maxLength={2000}
-                />
-                <p className="text-xs text-muted-foreground">{t("fields.featuresHint")}</p>
+                <Label>{t("fields.localizedFeatures")}</Label>
+                <Tabs defaultValue="en" className="w-full">
+                  <TabsList>
+                    <TabsTrigger value="en">EN</TabsTrigger>
+                    <TabsTrigger value="ar">AR</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="en">
+                    <textarea
+                      id="features_en"
+                      name="features_en"
+                      className="w-full min-h-[100px] p-2 border rounded-md"
+                      placeholder={t("fields.featuresPlaceholder")}
+                      maxLength={2000}
+                    />
+                    <p className="text-xs text-muted-foreground">{t("fields.featuresHint")}</p>
+                  </TabsContent>
+                  <TabsContent value="ar">
+                    <textarea
+                      id="features_ar"
+                      name="features_ar"
+                      className="w-full min-h-[100px] p-2 border rounded-md"
+                      placeholder={t("fields.featuresPlaceholder")}
+                      maxLength={2000}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="space-y-2">
@@ -277,9 +381,36 @@ export default function AdminPackagesPage() {
                         <Card key={pkg.id}>
                           <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
                             <CardHeader>
-                              <Input name="name" defaultValue={pkg.name} />
+                              <div className="space-y-2">
+                                <Label>{t("fields.localizedName")}</Label>
+                                <LocalizedInput
+                                  value={editNameI18n}
+                                  onChange={setEditNameI18n}
+                                  variant="input"
+                                />
+                                <input type="hidden" name="name_en" value={editNameI18n.en} />
+                                <input type="hidden" name="name_ar" value={editNameI18n.ar} />
+                              </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                              <div className="space-y-2">
+                                <Label>{t("fields.localizedDescription")}</Label>
+                                <LocalizedInput
+                                  value={editDescI18n}
+                                  onChange={setEditDescI18n}
+                                  variant="textarea"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="description_en"
+                                  value={editDescI18n.en}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="description_ar"
+                                  value={editDescI18n.ar}
+                                />
+                              </div>
                               <div className="space-y-2">
                                 <Label>{t("fields.price")}</Label>
                                 <Input
@@ -294,12 +425,30 @@ export default function AdminPackagesPage() {
                                 <Input name="credits" type="number" defaultValue={pkg.credits} />
                               </div>
                               <div className="space-y-2">
-                                <Label>{t("fields.features")}</Label>
-                                <textarea
-                                  name="features"
-                                  className="w-full min-h-[80px] p-2 border rounded-md text-sm"
-                                  defaultValue={pkg.features.join("\n")}
-                                />
+                                <Label>{t("fields.localizedFeatures")}</Label>
+                                <Tabs defaultValue="en" className="w-full">
+                                  <TabsList>
+                                    <TabsTrigger value="en">EN</TabsTrigger>
+                                    <TabsTrigger value="ar">AR</TabsTrigger>
+                                  </TabsList>
+                                  <TabsContent value="en">
+                                    <textarea
+                                      name="features_en"
+                                      className="w-full min-h-[80px] p-2 border rounded-md text-sm"
+                                      defaultValue={
+                                        (pkg as any).featuresI18n?.en?.join("\n") ||
+                                        pkg.features.join("\n")
+                                      }
+                                    />
+                                  </TabsContent>
+                                  <TabsContent value="ar">
+                                    <textarea
+                                      name="features_ar"
+                                      className="w-full min-h-[80px] p-2 border rounded-md text-sm"
+                                      defaultValue={(pkg as any).featuresI18n?.ar?.join("\n") || ""}
+                                    />
+                                  </TabsContent>
+                                </Tabs>
                               </div>
 
                               <div className="space-y-2">
