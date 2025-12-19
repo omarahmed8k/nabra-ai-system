@@ -456,6 +456,7 @@
         "name": "الاسم",
         "nameRequired": "الاسم *",
         "nameHint": "2-100 حرف",
+        "localizedName": "الاسم المترجم",
         "price": "السعر ($)",
         "priceRequired": "السعر ($) *",
         "priceHint": "السعر بالدولار الأمريكي (مثال: 29.99)",
@@ -468,6 +469,8 @@
         "features": "المزايا (واحدة في كل سطر)",
         "featuresHint": "اسرد المزايا الرئيسية، واحدة في كل سطر (بحد أقصى 2000 حرف)",
         "featuresPlaceholder": "ميزة 1\nميزة 2\nميزة 3",
+        "localizedDescription": "الوصف المترجم",
+        "localizedFeatures": "المزايا المترجمة",
         "includedServices": "الخدمات المتضمنة",
         "noServicesConfigured": "لم يتم تكوين خدمات"
       },

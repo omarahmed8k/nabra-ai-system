@@ -456,6 +456,7 @@
         "name": "Name",
         "nameRequired": "Name *",
         "nameHint": "2-100 characters",
+        "localizedName": "Localized Name",
         "price": "Price ($)",
         "priceRequired": "Price ($) *",
         "priceHint": "Price in USD (e.g., 29.99)",
@@ -468,6 +469,8 @@
         "features": "Features (one per line)",
         "featuresHint": "List key features, one per line (max 2000 characters)",
         "featuresPlaceholder": "Feature 1\nFeature 2\nFeature 3",
+        "localizedDescription": "Localized Description",
+        "localizedFeatures": "Localized Features",
         "includedServices": "Included Services",
         "noServicesConfigured": "No services configured"
       },
