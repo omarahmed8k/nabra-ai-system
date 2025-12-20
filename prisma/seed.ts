@@ -54,6 +54,7 @@ async function main() {
       durationDays: 14,
       isActive: true,
       isFreePackage: true,
+      supportAllServices: true,
       sortOrder: 0,
     } as any,
   });

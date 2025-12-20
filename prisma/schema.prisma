@@ -139,6 +139,7 @@ model Package {
   features                  String[]             @default([])
   isActive                  Boolean              @default(true)
   isFreePackage             Boolean              @default(false)
+  supportAllServices        Boolean              @default(false)
   sortOrder                 Int                  @default(0)
   version                   Int                  @default(1)
   createdAt                 DateTime             @default(now())

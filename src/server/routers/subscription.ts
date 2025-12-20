@@ -5,84 +5,130 @@ import { getCreditBalance } from "@/lib/credit-logic";
 
 export const subscriptionRouter = router({
   // Get active subscription for current user
-  getActive: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const subscription = (await ctx.db.clientSubscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        endDate: { gte: new Date() },
+  getActive: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/active",
+        tags: ["subscription"],
+        summary: "Get active subscription",
       },
-      include: {
-        package: {
-          include: {
-            services: {
-              include: {
-                serviceType: {
-                  select: {
-                    id: true,
-                    name: true,
-                    nameI18n: true,
-                    icon: true,
-                  } as any,
+    })
+    .output(z.any())
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+
+      const subscription = (await ctx.db.clientSubscription.findFirst({
+        where: {
+          userId,
+          isActive: true,
+          endDate: { gte: new Date() },
+        },
+        include: {
+          package: {
+            include: {
+              services: {
+                include: {
+                  serviceType: {
+                    select: {
+                      id: true,
+                      name: true,
+                      nameI18n: true,
+                      icon: true,
+                    } as any,
+                  },
                 },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    })) as any;
+        orderBy: { createdAt: "desc" },
+      })) as any;
 
-    if (!subscription) {
-      return null;
-    }
+      if (!subscription) {
+        return null;
+      }
 
-    // Calculate expiry info inline to avoid extra DB call
-    const now = Date.now();
-    const endDate = new Date(subscription.endDate).getTime();
-    const diffTime = endDate - now;
-    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      // Calculate expiry info inline to avoid extra DB call
+      const now = Date.now();
+      const endDate = new Date(subscription.endDate).getTime();
+      const diffTime = endDate - now;
+      const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-    return {
-      ...subscription,
-      isExpiring: daysRemaining <= 7,
-      daysRemaining,
-    };
-  }),
+      return {
+        ...subscription,
+        isExpiring: daysRemaining <= 7,
+        daysRemaining,
+      };
+    }),
 
   // Get pending subscription awaiting payment verification
-  getPending: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const subscription = await ctx.db.clientSubscription.findFirst({
-      where: {
-        userId,
-        isActive: false,
-        cancelledAt: null,
+  getPending: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/pending",
+        tags: ["subscription"],
+        summary: "Get pending subscription",
       },
-      include: {
-        package: true,
-        paymentProof: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    })
+    .output(z.any())
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    return subscription;
-  }),
+      const subscription = await ctx.db.clientSubscription.findFirst({
+        where: {
+          userId,
+          isActive: false,
+          cancelledAt: null,
+        },
+        include: {
+          package: true,
+          paymentProof: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return subscription;
+    }),
 
   // Get credit balance and stats
-  getBalance: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-    return getCreditBalance(userId);
-  }),
+  getBalance: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/balance",
+        tags: ["subscription"],
+        summary: "Get credit balance",
+      },
+    })
+    .output(z.any())
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+      return getCreditBalance(userId);
+    }),
 
   // Subscribe to a package (creates pending subscription awaiting payment)
   subscribe: clientProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/subscription/subscribe",
+        tags: ["subscription"],
+        summary: "Subscribe to a package",
+      },
+    })
     .input(
       z.object({
         packageId: z.string(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        subscription: z.any(),
+        requiresPayment: z.boolean(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -177,11 +223,20 @@ export const subscriptionRouter = router({
 
   // Cancel subscription
   cancel: clientProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/subscription/cancel",
+        tags: ["subscription"],
+        summary: "Cancel subscription",
+      },
+    })
     .input(
       z.object({
         subscriptionId: z.string(),
       })
     )
+    .output(z.object({ success: z.boolean(), subscription: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -230,120 +285,164 @@ export const subscriptionRouter = router({
     }),
 
   // Get usage statistics
-  getUsageStats: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const subscription = await ctx.db.clientSubscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
+  getUsageStats: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/usage",
+        tags: ["subscription"],
+        summary: "Get usage statistics",
       },
-      include: {
-        package: true,
-      },
-    });
+    })
+    .output(
+      z
+        .object({
+          totalRequests: z.number(),
+          completedRequests: z.number(),
+          activeRequests: z.number(),
+          creditsTotal: z.number(),
+          creditsUsed: z.number(),
+          creditsRemaining: z.number(),
+          subscriptionStartDate: z.date(),
+          subscriptionEndDate: z.date(),
+          packageName: z.string(),
+        })
+        .nullable()
+    )
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    if (!subscription) {
-      return null;
-    }
+      const subscription = await ctx.db.clientSubscription.findFirst({
+        where: {
+          userId,
+          isActive: true,
+        },
+        include: {
+          package: true,
+        },
+      });
 
-    // Get request stats for this user
-    const totalRequests = await ctx.db.request.count({
-      where: { clientId: userId },
-    });
+      if (!subscription) {
+        return null;
+      }
 
-    const completedRequests = await ctx.db.request.count({
-      where: { clientId: userId, status: "COMPLETED" },
-    });
+      // Get request stats for this user
+      const totalRequests = await ctx.db.request.count({
+        where: { clientId: userId },
+      });
 
-    const activeRequests = await ctx.db.request.count({
-      where: {
-        clientId: userId,
-        status: { in: ["PENDING", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
-      },
-    });
+      const completedRequests = await ctx.db.request.count({
+        where: { clientId: userId, status: "COMPLETED" },
+      });
 
-    const creditsUsed = subscription.package.credits - subscription.remainingCredits;
+      const activeRequests = await ctx.db.request.count({
+        where: {
+          clientId: userId,
+          status: { in: ["PENDING", "IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
+        },
+      });
 
-    return {
-      totalRequests,
-      completedRequests,
-      activeRequests,
-      creditsTotal: subscription.package.credits,
-      creditsUsed,
-      creditsRemaining: subscription.remainingCredits,
-      subscriptionStartDate: subscription.startDate,
-      subscriptionEndDate: subscription.endDate,
-      packageName: subscription.package.name,
-    };
-  }),
+      const creditsUsed = subscription.package.credits - subscription.remainingCredits;
+
+      return {
+        totalRequests,
+        completedRequests,
+        activeRequests,
+        creditsTotal: subscription.package.credits,
+        creditsUsed,
+        creditsRemaining: subscription.remainingCredits,
+        subscriptionStartDate: subscription.startDate,
+        subscriptionEndDate: subscription.endDate,
+        packageName: subscription.package.name,
+      };
+    }),
 
   // Get subscription history
-  getHistory: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const subscriptions = await ctx.db.clientSubscription.findMany({
-      where: { userId },
-      include: {
-        package: true,
+  getHistory: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/history",
+        tags: ["subscription"],
+        summary: "Get subscription history",
       },
-      orderBy: { createdAt: "desc" },
-    });
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    return subscriptions;
-  }),
+      const subscriptions = await ctx.db.clientSubscription.findMany({
+        where: { userId },
+        include: {
+          package: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return subscriptions;
+    }),
 
   // Get transaction history (subscriptions with payment proofs)
-  getTransactionHistory: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+  getTransactionHistory: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/subscription/transactions",
+        tags: ["subscription"],
+        summary: "Get transaction history",
+      },
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    const subscriptions = await ctx.db.clientSubscription.findMany({
-      where: { userId },
-      include: {
-        package: true,
-        paymentProof: {
-          include: {
-            reviewer: {
-              select: {
-                name: true,
-                email: true,
+      const subscriptions = await ctx.db.clientSubscription.findMany({
+        where: { userId },
+        include: {
+          package: true,
+          paymentProof: {
+            include: {
+              reviewer: {
+                select: {
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      });
 
-    return subscriptions.map((sub) => ({
-      id: sub.id,
-      type: "subscription" as const,
-      packageName: sub.package.name,
-      packagePrice: sub.package.price,
-      credits: sub.package.credits,
-      remainingCredits: sub.remainingCredits,
-      startDate: sub.startDate,
-      endDate: sub.endDate,
-      isActive: sub.isActive,
-      isFreePackage: sub.package.isFreePackage,
-      cancelledAt: sub.cancelledAt,
-      createdAt: sub.createdAt,
-      paymentProof: sub.paymentProof
-        ? {
-            id: sub.paymentProof.id,
-            amount: sub.paymentProof.amount,
-            currency: sub.paymentProof.currency,
-            status: sub.paymentProof.status,
-            transferDate: sub.paymentProof.transferDate,
-            senderName: sub.paymentProof.senderName,
-            senderBank: sub.paymentProof.senderBank,
-            senderCountry: sub.paymentProof.senderCountry,
-            referenceNumber: sub.paymentProof.referenceNumber,
-            reviewedAt: sub.paymentProof.reviewedAt,
-            reviewedBy: sub.paymentProof.reviewer?.name,
-            rejectionReason: sub.paymentProof.rejectionReason,
-          }
-        : null,
-    }));
-  }),
+      return subscriptions.map((sub) => ({
+        id: sub.id,
+        type: "subscription" as const,
+        packageName: sub.package.name,
+        packagePrice: sub.package.price,
+        credits: sub.package.credits,
+        remainingCredits: sub.remainingCredits,
+        startDate: sub.startDate,
+        endDate: sub.endDate,
+        isActive: sub.isActive,
+        isFreePackage: sub.package.isFreePackage,
+        cancelledAt: sub.cancelledAt,
+        createdAt: sub.createdAt,
+        paymentProof: sub.paymentProof
+          ? {
+              id: sub.paymentProof.id,
+              amount: sub.paymentProof.amount,
+              currency: sub.paymentProof.currency,
+              status: sub.paymentProof.status,
+              transferDate: sub.paymentProof.transferDate,
+              senderName: sub.paymentProof.senderName,
+              senderBank: sub.paymentProof.senderBank,
+              senderCountry: sub.paymentProof.senderCountry,
+              referenceNumber: sub.paymentProof.referenceNumber,
+              reviewedAt: sub.paymentProof.reviewedAt,
+              reviewedBy: sub.paymentProof.reviewer?.name,
+              rejectionReason: sub.paymentProof.rejectionReason,
+            }
+          : null,
+      }));
+    }),
 });

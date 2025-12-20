@@ -5,9 +5,20 @@ import { ZodError } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export const createTRPCContext = async (opts?: FetchCreateContextFnOptions) => {
-  const session = await getServerSession(authOptions);
+type NextApiCreateContextOpts = {
+  req: NextApiRequest;
+  res: NextApiResponse;
+};
+
+export const createTRPCContext = async (
+  opts?: FetchCreateContextFnOptions | NextApiCreateContextOpts
+) => {
+  const session =
+    opts && "res" in opts
+      ? await getServerSession(opts.req, opts.res, authOptions)
+      : await getServerSession(authOptions);
   return {
     db,
     session,
@@ -22,8 +33,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },

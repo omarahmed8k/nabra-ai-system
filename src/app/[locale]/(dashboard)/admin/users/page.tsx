@@ -48,7 +48,7 @@ import {
 
 type UserRole = "CLIENT" | "PROVIDER" | "SUPER_ADMIN";
 
-type ServiceType = { id: string; name: string };
+type ServiceType = { id: string; name: string; nameI18n?: Record<string, string> };
 
 type UserData = {
   id: string;
@@ -84,6 +84,7 @@ function ServiceCheckboxItem({
   onChange: (checked: boolean) => void;
   idPrefix: string;
 }): JSX.Element {
+  const locale = useLocale();
   return (
     <div className="flex items-center gap-2 space-x-2">
       <Checkbox
@@ -92,7 +93,7 @@ function ServiceCheckboxItem({
         onCheckedChange={(c) => onChange(c === true)}
       />
       <label htmlFor={`${idPrefix}-${service.id}`} className="text-sm cursor-pointer flex-1">
-        {service.name}
+        {service.nameI18n?.[locale] || service.name}
       </label>
     </div>
   );
@@ -100,6 +101,7 @@ function ServiceCheckboxItem({
 
 function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.Element {
   const t = useTranslations("admin.users");
+  const locale = useLocale();
   if (services.length === 0) {
     return (
       <span className="text-xs text-muted-foreground italic">{t("servicesBadge.noServices")}</span>
@@ -109,7 +111,7 @@ function ProviderServiceBadges({ services }: { services: ServiceType[] }): JSX.E
     <>
       {services.map((service) => (
         <Badge key={service.id} variant="outline" className="text-xs">
-          {service.name}
+          {service.nameI18n?.[locale] || service.name}
         </Badge>
       ))}
     </>
@@ -205,13 +207,23 @@ function UserListItem({
   isDeleted?: boolean;
 }): JSX.Element {
   const t = useTranslations("admin.users");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const providerServices = user.providerProfile?.supportedServices || [];
+
+  const getRoleLabel = (role: string): string => {
+    const roleMap: Record<string, string> = {
+      CLIENT: tCommon("roles.CLIENT"),
+      PROVIDER: tCommon("roles.PROVIDER"),
+      SUPER_ADMIN: tCommon("roles.SUPER_ADMIN"),
+    };
+    return roleMap[role] || role;
+  };
 
   // Strip non-digits/plus and remove leading '+' for wa.me links
   const whatsappHref = (() => {
     if (!user.hasWhatsapp || !user.phone) return null;
-    const normalized = user.phone.replace(/[^\d+]/g, "");
+    const normalized = user.phone.replaceAll(/[^\d+]/g, "");
     const withoutPlus = normalized.startsWith("+") ? normalized.slice(1) : normalized;
     return withoutPlus ? `https://wa.me/${withoutPlus}` : null;
   })();
@@ -247,7 +259,7 @@ function UserListItem({
             </div>
           )}
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
+            <Badge className={getRoleColor(user.role)}>{getRoleLabel(user.role)}</Badge>
             <span className="text-xs text-muted-foreground">
               {t("table.joined")} {formatDate(user.createdAt, locale)}
             </span>
@@ -544,14 +556,14 @@ export default function AdminUsersPage() {
                   onCheckedChange={(checked) =>
                     setNewUser((prev) => ({ ...prev, hasWhatsapp: checked === true }))
                   }
-                  disabled={!newUser.phone}
+                  disabled={newUser.phone === ""}
                 />
                 <label
                   htmlFor="hasWhatsapp"
                   className={`text-sm font-medium leading-none ${
-                    !newUser.phone
-                      ? "cursor-not-allowed opacity-50"
-                      : "peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    newUser.phone
+                      ? "peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      : "cursor-not-allowed opacity-50"
                   }`}
                 >
                   {t("dialog.fields.hasWhatsapp")}
@@ -604,7 +616,7 @@ export default function AdminUsersPage() {
                     {t("dialog.fields.selectServices")}
                   </p>
                   <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">
-                    {serviceTypes.map((service: ServiceType) => (
+                    {serviceTypes.map((service: any) => (
                       <ServiceCheckboxItem
                         key={service.id}
                         service={service}
@@ -808,7 +820,7 @@ export default function AdminUsersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="max-h-64 overflow-y-auto space-y-2 border rounded-md p-3">
-              {serviceTypes?.map((service: ServiceType) => (
+              {serviceTypes?.map((service: any) => (
                 <ServiceCheckboxItem
                   key={service.id}
                   service={service}

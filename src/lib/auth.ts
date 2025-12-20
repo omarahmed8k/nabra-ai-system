@@ -118,8 +118,8 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.image = token.picture as string | null;
-        session.user.phone = token.phone as string | null | undefined;
-        session.user.hasWhatsapp = token.hasWhatsapp as boolean | undefined;
+        session.user.phone = token.phone;
+        session.user.hasWhatsapp = token.hasWhatsapp;
       }
       return session;
     },

@@ -4,13 +4,24 @@ import { router, protectedProcedure } from "@/server/trpc";
 export const notificationRouter = router({
   // Get notifications for current user
   getAll: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/notification",
+        tags: ["notification"],
+        summary: "List notifications",
+      },
+    })
     .input(
-      z.object({
-        unreadOnly: z.boolean().default(false),
-        limit: z.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
-      }).optional()
+      z
+        .object({
+          unreadOnly: z.boolean().default(false),
+          limit: z.number().min(1).max(100).default(20),
+          cursor: z.string().optional(),
+        })
+        .optional()
     )
+    .output(z.object({ notifications: z.array(z.any()), nextCursor: z.string().nullable() }))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -30,29 +41,46 @@ export const notificationRouter = router({
       return {
         notifications,
         nextCursor:
-          notifications.length === (input?.limit || 20)
-            ? notifications.at(-1)?.id ?? null
-            : null,
+          notifications.length === (input?.limit || 20) ? (notifications.at(-1)?.id ?? null) : null,
       };
     }),
 
   // Get unread count
-  getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const count = await ctx.db.notification.count({
-      where: {
-        userId,
-        isRead: false,
+  getUnreadCount: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/notification/unread-count",
+        tags: ["notification"],
+        summary: "Get unread notification count",
       },
-    });
+    })
+    .output(z.object({ count: z.number() }))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    return { count };
-  }),
+      const count = await ctx.db.notification.count({
+        where: {
+          userId,
+          isRead: false,
+        },
+      });
+
+      return { count };
+    }),
 
   // Mark notification as read
   markAsRead: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/notification/mark-read",
+        tags: ["notification"],
+        summary: "Mark notification as read",
+      },
+    })
     .input(z.object({ id: z.string() }))
+    .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -68,23 +96,42 @@ export const notificationRouter = router({
     }),
 
   // Mark all as read
-  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    await ctx.db.notification.updateMany({
-      where: {
-        userId,
-        isRead: false,
+  markAllAsRead: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/notification/mark-all-read",
+        tags: ["notification"],
+        summary: "Mark all as read",
       },
-      data: { isRead: true },
-    });
+    })
+    .output(z.object({ success: z.boolean() }))
+    .mutation(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    return { success: true };
-  }),
+      await ctx.db.notification.updateMany({
+        where: {
+          userId,
+          isRead: false,
+        },
+        data: { isRead: true },
+      });
+
+      return { success: true };
+    }),
 
   // Delete notification
   delete: protectedProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: "/notification/{id}",
+        tags: ["notification"],
+        summary: "Delete notification",
+      },
+    })
     .input(z.object({ id: z.string() }))
+    .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -99,16 +146,26 @@ export const notificationRouter = router({
     }),
 
   // Delete all read notifications
-  deleteAllRead: protectedProcedure.mutation(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const result = await ctx.db.notification.deleteMany({
-      where: {
-        userId,
-        isRead: true,
+  deleteAllRead: protectedProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: "/notification/read",
+        tags: ["notification"],
+        summary: "Delete all read notifications",
       },
-    });
+    })
+    .output(z.object({ success: z.boolean(), deleted: z.number() }))
+    .mutation(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    return { success: true, deleted: result.count };
-  }),
+      const result = await ctx.db.notification.deleteMany({
+        where: {
+          userId,
+          isRead: true,
+        },
+      });
+
+      return { success: true, deleted: result.count };
+    }),
 });

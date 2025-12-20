@@ -200,7 +200,10 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-blue-800">{t("noServices.title")}</CardTitle>
             <CardDescription className="text-blue-700">
-              {t("noServices.description", { name: subscription.package?.name })}
+              {t("noServices.description", {
+                name:
+                  (subscription.package as any)?.nameI18n?.[locale] || subscription.package?.name,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>

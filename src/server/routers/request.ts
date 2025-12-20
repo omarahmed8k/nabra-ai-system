@@ -11,6 +11,14 @@ import type { ServiceAttribute, AttributeResponse } from "@/types/service-attrib
 export const requestRouter = router({
   // Create a new request (client only)
   create: clientProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/request",
+        tags: ["request"],
+        summary: "Create a new service request",
+      },
+    })
     .input(
       z.object({
         title: z.string().min(5, "Title must be at least 5 characters").optional(),
@@ -22,6 +30,14 @@ export const requestRouter = router({
         formData: z.record(z.any()).optional(),
         attributeResponses: z.any().optional(), // Client's answers to service Q&A: [{question: string, answer: string}]
         attachments: z.array(z.string()).optional(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        request: z.any(),
+        creditsRemaining: z.number(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -46,15 +62,10 @@ export const requestRouter = router({
           isActive: true,
           endDate: { gte: new Date() },
         },
-        select: {
+        include: {
           package: {
-            select: {
-              name: true,
-              services: {
-                select: {
-                  serviceId: true,
-                },
-              },
+            include: {
+              services: true,
             },
           },
         },
@@ -69,15 +80,18 @@ export const requestRouter = router({
       }
 
       // Check if the selected service is allowed by the user's package
-      const allowedServiceIds = activeSubscription.package.services.map(
-        (s: { serviceId: string }) => s.serviceId
-      );
-      if (!allowedServiceIds.includes(input.serviceTypeId)) {
-        const serviceName = serviceType.name;
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: `Your ${activeSubscription.package.name} package does not include ${serviceName} service. Please upgrade your subscription to access this service.`,
-        });
+      // If package supports all services, skip the check
+      if (!(activeSubscription.package as any).supportAllServices) {
+        const allowedServiceIds = activeSubscription.package.services.map(
+          (s: { serviceId: string }) => s.serviceId
+        );
+        if (!allowedServiceIds.includes(input.serviceTypeId)) {
+          const serviceName = serviceType.name;
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Your ${activeSubscription.package.name} package does not include ${serviceName} service. Please upgrade your subscription to access this service.`,
+          });
+        }
       }
 
       // Validate attribute responses if service has required attributes
@@ -225,6 +239,14 @@ export const requestRouter = router({
 
   // Get all requests for current user (role-based)
   getAll: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/request/list",
+        tags: ["request"],
+        summary: "List requests for current user",
+      },
+    })
     .input(
       z
         .object({
@@ -242,6 +264,12 @@ export const requestRouter = router({
           cursor: z.string().optional(),
         })
         .optional()
+    )
+    .output(
+      z.object({
+        requests: z.array(z.any()),
+        nextCursor: z.string().nullable(),
+      })
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -297,66 +325,77 @@ export const requestRouter = router({
     }),
 
   // Get single request by ID
-  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const userId = ctx.session.user.id;
-    const role = ctx.session.user.role;
-
-    const request = await ctx.db.request.findUnique({
-      where: { id: input.id },
-      include: {
-        client: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        provider: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-        serviceType: true,
-        comments: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true, image: true, role: true },
-            },
-          },
-          orderBy: { createdAt: "asc" },
-        },
-        rating: true,
+  getById: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/request/{id}",
+        tags: ["request"],
+        summary: "Get request by ID",
       },
-    });
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.any())
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const role = ctx.session.user.role;
 
-    if (!request) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Request not found",
+      const request = await ctx.db.request.findUnique({
+        where: { id: input.id },
+        include: {
+          client: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+          provider: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+          serviceType: true,
+          comments: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true, image: true, role: true },
+              },
+            },
+            orderBy: { createdAt: "asc" },
+          },
+          rating: true,
+        },
       });
-    }
 
-    // Access control
-    if (role === "CLIENT" && request.clientId !== userId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You don't have access to this request",
-      });
-    }
+      if (!request) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Request not found",
+        });
+      }
 
-    if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You don't have access to this request",
-      });
-    }
+      // Access control
+      if (role === "CLIENT" && request.clientId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this request",
+        });
+      }
 
-    // Get revision info if client
-    let revisionInfo = null;
-    if (role === "CLIENT" || role === "SUPER_ADMIN") {
-      revisionInfo = await getRevisionInfo(input.id, request.clientId);
-    }
+      if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have access to this request",
+        });
+      }
 
-    // Use stored credit cost (preserves cost at time of creation)
-    return {
-      ...request,
-      revisionInfo,
-    } as any;
-  }),
+      // Get revision info if client
+      let revisionInfo = null;
+      if (role === "CLIENT" || role === "SUPER_ADMIN") {
+        revisionInfo = await getRevisionInfo(input.id, request.clientId);
+      }
+
+      // Use stored credit cost (preserves cost at time of creation)
+      return {
+        ...request,
+        revisionInfo,
+      } as any;
+    }),
 
   // Provider accepts a request
   accept: protectedProcedure
@@ -809,28 +848,12 @@ export const requestRouter = router({
         isActive: true,
         endDate: { gte: new Date() },
       },
-      select: {
+      include: {
         package: {
-          select: {
+          include: {
             services: {
-              select: {
-                serviceType: {
-                  select: {
-                    id: true,
-                    name: true,
-                    nameI18n: true,
-                    description: true,
-                    descriptionI18n: true,
-                    icon: true,
-                    attributes: true,
-                    creditCost: true,
-                    priorityCostLow: true,
-                    priorityCostMedium: true,
-                    priorityCostHigh: true,
-                    isActive: true,
-                    sortOrder: true,
-                  } as any,
-                },
+              include: {
+                serviceType: true,
               },
             },
           },
@@ -841,6 +864,30 @@ export const requestRouter = router({
     // If no active subscription, return empty array
     if (!activeSubscription) {
       return [];
+    }
+
+    // If package supports all services, return all active services
+    if (activeSubscription.package.supportAllServices) {
+      const allServices = await ctx.db.serviceType.findMany({
+        where: { isActive: true, deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          nameI18n: true,
+          description: true,
+          descriptionI18n: true,
+          icon: true,
+          attributes: true,
+          creditCost: true,
+          priorityCostLow: true,
+          priorityCostMedium: true,
+          priorityCostHigh: true,
+          isActive: true,
+          sortOrder: true,
+        },
+        orderBy: { sortOrder: "asc" },
+      });
+      return allServices;
     }
 
     // Get only the service types allowed by the user's package

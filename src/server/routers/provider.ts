@@ -5,30 +5,48 @@ import { notifyStatusChange } from "@/lib/notifications";
 
 export const providerRouter = router({
   // Get provider profile
-  getProfile: providerProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
-
-    const profile = await ctx.db.providerProfile.findUnique({
-      where: { userId },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, image: true, createdAt: true },
-        },
+  getProfile: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/profile",
+        tags: ["provider"],
+        summary: "Get provider profile",
       },
-    });
+    })
+    .output(z.any())
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    if (!profile) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Provider profile not found",
+      const profile = await ctx.db.providerProfile.findUnique({
+        where: { userId },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, image: true, createdAt: true },
+          },
+        },
       });
-    }
 
-    return profile;
-  }),
+      if (!profile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider profile not found",
+        });
+      }
+
+      return profile;
+    }),
 
   // Update provider profile
   updateProfile: providerProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/provider/profile",
+        tags: ["provider"],
+        summary: "Update provider profile",
+      },
+    })
     .input(
       z.object({
         bio: z.string().optional(),
@@ -37,6 +55,7 @@ export const providerRouter = router({
         isActive: z.boolean().optional(),
       })
     )
+    .output(z.object({ success: z.boolean(), profile: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -56,41 +75,68 @@ export const providerRouter = router({
     }),
 
   // Get provider stats
-  getStats: providerProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.id;
+  getStats: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/stats",
+        tags: ["provider"],
+        summary: "Get provider stats",
+      },
+    })
+    .output(
+      z.object({
+        totalRequests: z.number(),
+        completedRequests: z.number(),
+        activeRequests: z.number(),
+        pendingRequests: z.number(),
+        averageRating: z.number(),
+        totalRatings: z.number(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
 
-    const [totalRequests, completedRequests, activeRequests, pendingRequests, ratings] =
-      await Promise.all([
-        ctx.db.request.count({ where: { providerId: userId } }),
-        ctx.db.request.count({ where: { providerId: userId, status: "COMPLETED" } }),
-        ctx.db.request.count({
-          where: {
-            providerId: userId,
-            status: { in: ["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
-          },
-        }),
-        ctx.db.request.count({
-          where: { providerId: null, status: "PENDING" },
-        }),
-        ctx.db.rating.aggregate({
-          where: { providerId: userId },
-          _avg: { rating: true },
-          _count: true,
-        }),
-      ]);
+      const [totalRequests, completedRequests, activeRequests, pendingRequests, ratings] =
+        await Promise.all([
+          ctx.db.request.count({ where: { providerId: userId } }),
+          ctx.db.request.count({ where: { providerId: userId, status: "COMPLETED" } }),
+          ctx.db.request.count({
+            where: {
+              providerId: userId,
+              status: { in: ["IN_PROGRESS", "DELIVERED", "REVISION_REQUESTED"] },
+            },
+          }),
+          ctx.db.request.count({
+            where: { providerId: null, status: "PENDING" },
+          }),
+          ctx.db.rating.aggregate({
+            where: { providerId: userId },
+            _avg: { rating: true },
+            _count: true,
+          }),
+        ]);
 
-    return {
-      totalRequests,
-      completedRequests,
-      activeRequests,
-      pendingRequests,
-      averageRating: ratings._avg.rating || 0,
-      totalRatings: ratings._count,
-    };
-  }),
+      return {
+        totalRequests,
+        completedRequests,
+        activeRequests,
+        pendingRequests,
+        averageRating: ratings._avg.rating || 0,
+        totalRatings: ratings._count,
+      };
+    }),
 
   // Get available requests (pending, matching provider's supported services)
   getAvailableRequests: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/available-requests",
+        tags: ["provider"],
+        summary: "List available requests",
+      },
+    })
     .input(
       z
         .object({
@@ -99,6 +145,7 @@ export const providerRouter = router({
         })
         .optional()
     )
+    .output(z.object({ requests: z.array(z.any()), nextCursor: z.string().nullable() }))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -154,6 +201,14 @@ export const providerRouter = router({
 
   // Get my requests (as provider)
   getMyRequests: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/my-requests",
+        tags: ["provider"],
+        summary: "List my requests",
+      },
+    })
     .input(
       z
         .object({
@@ -165,6 +220,7 @@ export const providerRouter = router({
         })
         .optional()
     )
+    .output(z.object({ requests: z.array(z.any()), nextCursor: z.string().nullable() }))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -200,6 +256,14 @@ export const providerRouter = router({
 
   // Get earnings summary
   getEarnings: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/earnings",
+        tags: ["provider"],
+        summary: "Get earnings summary",
+      },
+    })
     .input(
       z
         .object({
@@ -207,6 +271,14 @@ export const providerRouter = router({
           endDate: z.date().optional(),
         })
         .optional()
+    )
+    .output(
+      z.object({
+        totalEarnings: z.number(),
+        completedCount: z.number(),
+        period: z.object({ start: z.date(), end: z.date() }),
+        requests: z.array(z.any()),
+      })
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -245,6 +317,14 @@ export const providerRouter = router({
 
   // Get recent reviews
   getReviews: providerProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/provider/reviews",
+        tags: ["provider"],
+        summary: "List recent reviews",
+      },
+    })
     .input(
       z
         .object({
@@ -252,6 +332,7 @@ export const providerRouter = router({
         })
         .optional()
     )
+    .output(z.array(z.any()))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -274,7 +355,16 @@ export const providerRouter = router({
 
   // Claim a request
   claimRequest: providerProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/provider/claim-request",
+        tags: ["provider"],
+        summary: "Claim a pending request",
+      },
+    })
     .input(z.object({ requestId: z.string() }))
+    .output(z.object({ success: z.boolean(), request: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -323,6 +413,14 @@ export const providerRouter = router({
 
   // Start working on a request
   startWork: providerProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/provider/start-work",
+        tags: ["provider"],
+        summary: "Start working on a request",
+      },
+    })
     .input(
       z.object({
         requestId: z.string(),
@@ -332,6 +430,7 @@ export const providerRouter = router({
           .max(720, "Estimated delivery time cannot exceed 720 hours (30 days)"),
       })
     )
+    .output(z.object({ success: z.boolean(), request: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -405,6 +504,14 @@ export const providerRouter = router({
 
   // Deliver work
   deliverWork: providerProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/provider/deliver-work",
+        tags: ["provider"],
+        summary: "Deliver work for a request",
+      },
+    })
     .input(
       z.object({
         requestId: z.string(),
@@ -412,6 +519,7 @@ export const providerRouter = router({
         files: z.array(z.string()).optional(),
       })
     )
+    .output(z.object({ success: z.boolean(), request: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 

@@ -7,6 +7,14 @@ import { sendWelcomeEmail } from "@/lib/notifications";
 export const authRouter = router({
   // Register a new user
   register: publicProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/auth/register",
+        tags: ["auth"],
+        summary: "Register a new user",
+      },
+    })
     .input(
       z.object({
         name: z.string().min(2, "Name must be at least 2 characters"),
@@ -14,6 +22,13 @@ export const authRouter = router({
         password: z.string().min(6, "Password must be at least 6 characters"),
         phone: z.string().optional(),
         hasWhatsapp: z.boolean().optional(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
+        userId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -29,9 +44,19 @@ export const authRouter = router({
       }
 
       // Capture IP for audit, but do not restrict by IP
-      const forwarded = ctx.req?.headers.get("x-forwarded-for");
-      const realIp = ctx.req?.headers.get("x-real-ip");
-      const ip = forwarded?.split(",")[0] || realIp || null;
+      const forwarded =
+        ctx.req && "headers" in ctx.req && typeof (ctx.req as any).headers?.get === "function"
+          ? (ctx.req as any).headers.get("x-forwarded-for")
+          : (ctx.req as any)?.headers?.["x-forwarded-for"];
+
+      const realIp =
+        ctx.req && "headers" in ctx.req && typeof (ctx.req as any).headers?.get === "function"
+          ? (ctx.req as any).headers.get("x-real-ip")
+          : (ctx.req as any)?.headers?.["x-real-ip"];
+
+      const forwardedString = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+      const realIpString = Array.isArray(realIp) ? realIp[0] : realIp;
+      const ip = forwardedString?.split(",")[0] || realIpString || null;
 
       const hashedPassword = await bcrypt.hash(input.password, 12);
 
@@ -91,43 +116,107 @@ export const authRouter = router({
     }),
 
   // Get current session
-  getSession: publicProcedure.query(async ({ ctx }) => {
-    return ctx.session;
-  }),
+  getSession: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/auth/session",
+        tags: ["auth"],
+        summary: "Get current session",
+      },
+    })
+    .output(
+      z
+        .object({
+          user: z
+            .object({
+              id: z.string(),
+              name: z.string().nullable().optional(),
+              email: z.string().email().nullable().optional(),
+              role: z.string().nullable().optional(),
+              image: z.string().url().nullable().optional(),
+            })
+            .nullable()
+            .optional(),
+        })
+        .nullable()
+    )
+    .query(async ({ ctx }) => {
+      return ctx.session as any;
+    }),
 
   // Get current user profile
-  getProfile: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      include: {
-        providerProfile: true,
+  getProfile: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/auth/profile",
+        tags: ["auth"],
+        summary: "Get current user profile",
       },
-    });
-
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "User not found",
+    })
+    .output(
+      z.object({
+        id: z.string(),
+        name: z.string().nullable().optional(),
+        email: z.string().email(),
+        role: z.string(),
+        image: z.string().url().nullable().optional(),
+        createdAt: z.date(),
+        providerProfile: z.any().nullable().optional(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        include: {
+          providerProfile: true,
+        },
       });
-    }
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      image: user.image,
-      createdAt: user.createdAt,
-      providerProfile: user.providerProfile,
-    };
-  }),
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+        createdAt: user.createdAt,
+        providerProfile: user.providerProfile,
+      };
+    }),
 
   // Update user profile
   updateProfile: protectedProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/auth/profile",
+        tags: ["auth"],
+        summary: "Update current user profile",
+      },
+    })
     .input(
       z.object({
         name: z.string().min(2).optional(),
         image: z.string().url().optional(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        user: z.object({
+          id: z.string(),
+          name: z.string().nullable().optional(),
+          email: z.string().email(),
+          image: z.string().url().nullable().optional(),
+        }),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -152,10 +241,24 @@ export const authRouter = router({
 
   // Change password
   changePassword: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/auth/change-password",
+        tags: ["auth"],
+        summary: "Change current user password",
+      },
+    })
     .input(
       z.object({
         currentPassword: z.string(),
         newPassword: z.string().min(6, "Password must be at least 6 characters"),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {

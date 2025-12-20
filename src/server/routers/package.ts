@@ -4,59 +4,88 @@ import { TRPCError } from "@trpc/server";
 
 export const packageRouter = router({
   // Get all active packages (public) - excludes free package
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.package.findMany({
-      where: {
-        isActive: true,
-        isFreePackage: false, // Only show admin-created packages
+  getAll: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/package",
+        tags: ["package"],
+        summary: "List all active packages",
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        nameI18n: true,
-        descriptionI18n: true,
-        featuresI18n: true,
-        price: true,
-        credits: true,
-        durationDays: true,
-        features: true,
-        sortOrder: true,
-        services: {
-          select: {
-            serviceType: {
-              select: {
-                id: true,
-                name: true,
-                nameI18n: true,
-                icon: true,
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      return ctx.db.package.findMany({
+        where: {
+          isActive: true,
+          isFreePackage: false, // Only show admin-created packages
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          nameI18n: true,
+          descriptionI18n: true,
+          featuresI18n: true,
+          price: true,
+          credits: true,
+          durationDays: true,
+          features: true,
+          sortOrder: true,
+          services: {
+            select: {
+              serviceType: {
+                select: {
+                  id: true,
+                  name: true,
+                  nameI18n: true,
+                  icon: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: { sortOrder: "asc" },
-    });
-  }),
+        orderBy: { sortOrder: "asc" },
+      });
+    }),
 
   // Get single package by ID
-  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const pkg = await ctx.db.package.findUnique({
-      where: { id: input.id },
-    });
-
-    if (!pkg) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Package not found",
+  getById: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/package/{id}",
+        tags: ["package"],
+        summary: "Get package by ID",
+      },
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.any())
+    .query(async ({ ctx, input }) => {
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.id },
       });
-    }
 
-    return pkg;
-  }),
+      if (!pkg) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Package not found",
+        });
+      }
+
+      return pkg;
+    }),
 
   // Create package (admin only)
   create: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/package",
+        tags: ["package"],
+        summary: "Create package (admin)",
+      },
+    })
     .input(
       z.object({
         name: z.string().min(2),
@@ -68,6 +97,7 @@ export const packageRouter = router({
         sortOrder: z.number().default(0),
       })
     )
+    .output(z.object({ success: z.boolean(), package: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const pkg = await ctx.db.package.create({
         data: {
@@ -89,6 +119,14 @@ export const packageRouter = router({
 
   // Update package (admin only)
   update: adminProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/package",
+        tags: ["package"],
+        summary: "Update package (admin)",
+      },
+    })
     .input(
       z.object({
         id: z.string(),
@@ -102,6 +140,7 @@ export const packageRouter = router({
         isActive: z.boolean().optional(),
       })
     )
+    .output(z.object({ success: z.boolean(), package: z.any() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
@@ -117,43 +156,54 @@ export const packageRouter = router({
     }),
 
   // Delete package (admin only) - soft delete by setting isActive to false
-  delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    // Prevent deletion of free package
-    const pkg = await ctx.db.package.findUnique({
-      where: { id: input.id },
-    });
-
-    if (pkg?.isFreePackage) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Cannot delete the free package. It is required for all new user registrations.",
-      });
-    }
-
-    // Check if there are active subscriptions using this package
-    const activeSubscriptions = await ctx.db.clientSubscription.count({
-      where: {
-        packageId: input.id,
-        isActive: true,
-        endDate: { gte: new Date() },
+  delete: adminProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: "/package/{id}",
+        tags: ["package"],
+        summary: "Delete package (admin)",
       },
-    });
-
-    if (activeSubscriptions > 0) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: `Cannot delete package with ${activeSubscriptions} active subscriptions. Deactivate it instead.`,
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ success: z.boolean(), package: z.any() }))
+    .mutation(async ({ ctx, input }) => {
+      // Prevent deletion of free package
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.id },
       });
-    }
 
-    const updated = await ctx.db.package.update({
-      where: { id: input.id },
-      data: { isActive: false },
-    });
+      if (pkg?.isFreePackage) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete the free package. It is required for all new user registrations.",
+        });
+      }
 
-    return {
-      success: true,
-      package: updated,
-    };
-  }),
+      // Check if there are active subscriptions using this package
+      const activeSubscriptions = await ctx.db.clientSubscription.count({
+        where: {
+          packageId: input.id,
+          isActive: true,
+          endDate: { gte: new Date() },
+        },
+      });
+
+      if (activeSubscriptions > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Cannot delete package with ${activeSubscriptions} active subscriptions. Deactivate it instead.`,
+        });
+      }
+
+      const updated = await ctx.db.package.update({
+        where: { id: input.id },
+        data: { isActive: false },
+      });
+
+      return {
+        success: true,
+        package: updated,
+      };
+    }),
 });

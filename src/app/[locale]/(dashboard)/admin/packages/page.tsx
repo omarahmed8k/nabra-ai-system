@@ -30,6 +30,8 @@ export default function AdminPackagesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [createSupportAllServices, setCreateSupportAllServices] = useState(false);
+  const [editSupportAllServices, setEditSupportAllServices] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   // Localized inputs state
   const [createNameI18n, setCreateNameI18n] = useState<{ en: string; ar: string }>({
@@ -40,8 +42,16 @@ export default function AdminPackagesPage() {
     en: "",
     ar: "",
   });
+  const [createFeaturesI18n, setCreateFeaturesI18n] = useState<{ en: string; ar: string }>({
+    en: "",
+    ar: "",
+  });
   const [editNameI18n, setEditNameI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
   const [editDescI18n, setEditDescI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
+  const [editFeaturesI18n, setEditFeaturesI18n] = useState<{ en: string; ar: string }>({
+    en: "",
+    ar: "",
+  });
 
   const { data: packages, isLoading } = trpc.admin.getPackages.useQuery({
     showDeleted: activeTab === "deleted",
@@ -54,6 +64,10 @@ export default function AdminPackagesPage() {
       utils.admin.getPackages.invalidate();
       setShowCreate(false);
       setSelectedServiceIds([]);
+      setCreateSupportAllServices(false);
+      setCreateNameI18n({ en: "", ar: "" });
+      setCreateDescI18n({ en: "", ar: "" });
+      setCreateFeaturesI18n({ en: "", ar: "" });
       toast.success(t("toast.created"));
     },
     onError: (error) => {
@@ -66,6 +80,7 @@ export default function AdminPackagesPage() {
       utils.admin.getPackages.invalidate();
       setEditingId(null);
       setSelectedServiceIds([]);
+      setEditSupportAllServices(false);
       toast.success(t("toast.updated"));
     },
     onError: (error) => {
@@ -100,11 +115,11 @@ export default function AdminPackagesPage() {
     const nameAr = (formData.get("name_ar") as string) || "";
     const descEn = (formData.get("description_en") as string) || "";
     const descAr = (formData.get("description_ar") as string) || "";
-    const featuresEn = ((formData.get("features_en") as string) || "")
+    const featuresEn = (createFeaturesI18n.en || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
-    const featuresAr = ((formData.get("features_ar") as string) || "")
+    const featuresAr = (createFeaturesI18n.ar || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
@@ -127,6 +142,7 @@ export default function AdminPackagesPage() {
       descriptionI18n: Object.keys(descriptionI18n).length ? descriptionI18n : undefined,
       features: featuresEn,
       featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
+      supportAllServices: createSupportAllServices,
       serviceIds: selectedServiceIds,
     });
   };
@@ -138,11 +154,11 @@ export default function AdminPackagesPage() {
     const nameAr = (formData.get("name_ar") as string) || "";
     const descEn = (formData.get("description_en") as string) || "";
     const descAr = (formData.get("description_ar") as string) || "";
-    const featuresEn = ((formData.get("features_en") as string) || "")
+    const featuresEn = (editFeaturesI18n.en || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
-    const featuresAr = ((formData.get("features_ar") as string) || "")
+    const featuresAr = (editFeaturesI18n.ar || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
@@ -165,6 +181,7 @@ export default function AdminPackagesPage() {
       descriptionI18n: Object.keys(descriptionI18n).length ? descriptionI18n : undefined,
       features: featuresEn,
       featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
+      supportAllServices: editSupportAllServices,
       serviceIds: selectedServiceIds,
     });
   };
@@ -178,16 +195,22 @@ export default function AdminPackagesPage() {
   const handleCancelCreate = useCallback(() => {
     setShowCreate(false);
     setSelectedServiceIds([]);
+    setCreateSupportAllServices(false);
+    setCreateNameI18n({ en: "", ar: "" });
+    setCreateDescI18n({ en: "", ar: "" });
+    setCreateFeaturesI18n({ en: "", ar: "" });
   }, []);
 
   const handleCancelEdit = useCallback(() => {
     setEditingId(null);
     setSelectedServiceIds([]);
+    setEditSupportAllServices(false);
   }, []);
 
   const handleEditPackage = useCallback((pkg: any) => {
     setEditingId(pkg.id);
     setSelectedServiceIds(pkg.services?.map((s: any) => s.serviceType.id) || []);
+    setEditSupportAllServices(pkg.supportAllServices || false);
     setEditNameI18n({
       en: (pkg as any).nameI18n?.en || pkg.name || "",
       ar: (pkg as any).nameI18n?.ar || "",
@@ -195,6 +218,10 @@ export default function AdminPackagesPage() {
     setEditDescI18n({
       en: (pkg as any).descriptionI18n?.en || (pkg as any).description || "",
       ar: (pkg as any).descriptionI18n?.ar || "",
+    });
+    setEditFeaturesI18n({
+      en: (pkg as any).featuresI18n?.en?.join("\n") || pkg.features?.join("\n") || "",
+      ar: (pkg as any).featuresI18n?.ar?.join("\n") || "",
     });
   }, []);
 
@@ -219,12 +246,12 @@ export default function AdminPackagesPage() {
               <CardTitle>{t("createNewPackage")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2 md:col-span-2">
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
                   <Label>{t("fields.localizedName")}</Label>
                   <LocalizedInput
                     value={createNameI18n}
-                    onChange={setCreateNameI18n}
+                    onChange={(val) => setCreateNameI18n(val as { en: string; ar: string })}
                     required
                     variant="input"
                   />
@@ -259,7 +286,7 @@ export default function AdminPackagesPage() {
                 <Label>{t("fields.localizedDescription")}</Label>
                 <LocalizedInput
                   value={createDescI18n}
-                  onChange={setCreateDescI18n}
+                  onChange={(val) => setCreateDescI18n(val as { en: string; ar: string })}
                   variant="textarea"
                 />
                 <input type="hidden" name="description_en" value={createDescI18n.en} />
@@ -268,53 +295,49 @@ export default function AdminPackagesPage() {
 
               <div className="space-y-2">
                 <Label>{t("fields.localizedFeatures")}</Label>
-                <Tabs defaultValue="en" className="w-full">
-                  <TabsList>
-                    <TabsTrigger value="en">EN</TabsTrigger>
-                    <TabsTrigger value="ar">AR</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="en">
-                    <textarea
-                      id="features_en"
-                      name="features_en"
-                      className="w-full min-h-[100px] p-2 border rounded-md"
-                      placeholder={t("fields.featuresPlaceholder")}
-                      maxLength={2000}
-                    />
-                    <p className="text-xs text-muted-foreground">{t("fields.featuresHint")}</p>
-                  </TabsContent>
-                  <TabsContent value="ar">
-                    <textarea
-                      id="features_ar"
-                      name="features_ar"
-                      className="w-full min-h-[100px] p-2 border rounded-md"
-                      placeholder={t("fields.featuresPlaceholder")}
-                      maxLength={2000}
-                    />
-                  </TabsContent>
-                </Tabs>
+                <LocalizedInput
+                  value={createFeaturesI18n}
+                  onChange={(val) => setCreateFeaturesI18n(val as { en: string; ar: string })}
+                  variant="textarea"
+                  placeholder={t("fields.featuresPlaceholder")}
+                />
+                <input type="hidden" name="features_en" value={createFeaturesI18n.en} />
+                <input type="hidden" name="features_ar" value={createFeaturesI18n.ar} />
+                <p className="text-xs text-muted-foreground">{t("fields.featuresHint")}</p>
+              </div>
+
+              <div className="flex items-center gap-3 border rounded-lg p-4 bg-muted/50">
+                <Checkbox
+                  id="support-all-services"
+                  checked={createSupportAllServices}
+                  onCheckedChange={(checked) => setCreateSupportAllServices(checked as boolean)}
+                />
+                <Label htmlFor="support-all-services" className="cursor-pointer font-medium flex-1">
+                  {t("fields.supportAllServices") || "Support All Services"}
+                </Label>
               </div>
 
               <div className="space-y-2">
                 <Label>{t("fields.includedServices")}</Label>
-                <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
-                  {allServices?.map(
-                    (service: { id: string; name: string; icon: string | null }) => (
-                      <div key={service.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`service-${service.id}`}
-                          checked={selectedServiceIds.includes(service.id)}
-                          onCheckedChange={() => toggleService(service.id)}
-                        />
-                        <Label
-                          htmlFor={`service-${service.id}`}
-                          className="cursor-pointer font-normal"
-                        >
-                          {service.icon} {service.name}
-                        </Label>
-                      </div>
-                    )
-                  )}
+                <div
+                  className={`grid gap-3 md:grid-cols-2 border rounded-lg p-4 ${createSupportAllServices ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  {allServices?.map((service: any) => (
+                    <div key={service.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`service-${service.id}`}
+                        checked={selectedServiceIds.includes(service.id)}
+                        onCheckedChange={() => toggleService(service.id)}
+                        disabled={createSupportAllServices}
+                      />
+                      <Label
+                        htmlFor={`service-${service.id}`}
+                        className="cursor-pointer font-normal"
+                      >
+                        {service.icon} {service.nameI18n?.[locale] || service.name}
+                      </Label>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -365,231 +388,233 @@ export default function AdminPackagesPage() {
                 {!isLoading &&
                   packages &&
                   packages.length > 0 &&
-                  packages.map(
-                    (pkg: {
-                      id: string;
-                      name: string;
-                      price: number;
-                      credits: number;
-                      durationDays: number;
-                      features: string[];
-                      services?: Array<{
-                        serviceType: { id: string; name: string; icon: string | null };
-                      }>;
-                    }) =>
-                      editingId === pkg.id ? (
-                        <Card key={pkg.id}>
-                          <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
-                            <CardHeader>
-                              <div className="space-y-2">
-                                <Label>{t("fields.localizedName")}</Label>
-                                <LocalizedInput
-                                  value={editNameI18n}
-                                  onChange={setEditNameI18n}
-                                  variant="input"
-                                />
-                                <input type="hidden" name="name_en" value={editNameI18n.en} />
-                                <input type="hidden" name="name_ar" value={editNameI18n.ar} />
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              <div className="space-y-2">
-                                <Label>{t("fields.localizedDescription")}</Label>
-                                <LocalizedInput
-                                  value={editDescI18n}
-                                  onChange={setEditDescI18n}
-                                  variant="textarea"
-                                />
-                                <input
-                                  type="hidden"
-                                  name="description_en"
-                                  value={editDescI18n.en}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="description_ar"
-                                  value={editDescI18n.ar}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>{t("fields.price")}</Label>
-                                <Input
-                                  name="price"
-                                  type="number"
-                                  step="0.01"
-                                  defaultValue={pkg.price}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>{t("fields.credits")}</Label>
-                                <Input name="credits" type="number" defaultValue={pkg.credits} />
-                              </div>
-                              <div className="space-y-2">
-                                <Label>{t("fields.localizedFeatures")}</Label>
-                                <Tabs defaultValue="en" className="w-full">
-                                  <TabsList>
-                                    <TabsTrigger value="en">EN</TabsTrigger>
-                                    <TabsTrigger value="ar">AR</TabsTrigger>
-                                  </TabsList>
-                                  <TabsContent value="en">
-                                    <textarea
-                                      name="features_en"
-                                      className="w-full min-h-[80px] p-2 border rounded-md text-sm"
-                                      defaultValue={
-                                        (pkg as any).featuresI18n?.en?.join("\n") ||
-                                        pkg.features.join("\n")
-                                      }
-                                    />
-                                  </TabsContent>
-                                  <TabsContent value="ar">
-                                    <textarea
-                                      name="features_ar"
-                                      className="w-full min-h-[80px] p-2 border rounded-md text-sm"
-                                      defaultValue={(pkg as any).featuresI18n?.ar?.join("\n") || ""}
-                                    />
-                                  </TabsContent>
-                                </Tabs>
-                              </div>
-
-                              <div className="space-y-2">
-                                <Label>{t("fields.includedServices")}</Label>
-                                <div className="grid gap-3 md:grid-cols-2 border rounded-lg p-4">
-                                  {allServices?.map(
-                                    (service: {
-                                      id: string;
-                                      name: string;
-                                      icon: string | null;
-                                    }) => (
-                                      <div key={service.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                          id={`edit-service-${service.id}`}
-                                          checked={selectedServiceIds.includes(service.id)}
-                                          onCheckedChange={() => toggleService(service.id)}
-                                        />
-                                        <Label
-                                          htmlFor={`edit-service-${service.id}`}
-                                          className="cursor-pointer font-normal"
-                                        >
-                                          {service.icon} {service.name}
-                                        </Label>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                            <CardFooter className="gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={handleCancelEdit}
-                              >
-                                {t("buttons.cancel")}
-                              </Button>
-                              <Button type="submit" size="sm" disabled={updatePackage.isPending}>
-                                {t("buttons.save")}
-                              </Button>
-                            </CardFooter>
-                          </form>
-                        </Card>
-                      ) : (
-                        <Card key={pkg.id}>
+                  packages.map((pkg: any) =>
+                    editingId === pkg.id ? (
+                      <Card key={pkg.id}>
+                        <form onSubmit={(e) => handleUpdate(e, pkg.id)}>
                           <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <CardTitle>{pkg.name}</CardTitle>
-                              <Package className="h-5 w-5 text-muted-foreground" />
+                            <div className="space-y-2">
+                              <Label>{t("fields.localizedName")}</Label>
+                              <LocalizedInput
+                                value={editNameI18n}
+                                onChange={(val) =>
+                                  setEditNameI18n(val as { en: string; ar: string })
+                                }
+                                variant="input"
+                              />
+                              <input type="hidden" name="name_en" value={editNameI18n.en} />
+                              <input type="hidden" name="name_ar" value={editNameI18n.ar} />
                             </div>
-                            <CardDescription>
-                              <span className="text-2xl font-bold text-foreground">
-                                {formatCurrency(pkg.price, locale)}
-                              </span>{" "}
-                              / {pkg.durationDays} {t("info.dayDuration")}
-                            </CardDescription>
                           </CardHeader>
-                          <CardContent>
-                            <ul className="space-y-2 text-sm">
-                              <li>
-                                {pkg.credits} {t("info.credits")}
-                              </li>
-                              {pkg.features.map((feature: string, i: number) => (
+                          <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                              <Label>{t("fields.price")}</Label>
+                              <Input
+                                name="price"
+                                type="number"
+                                step="0.01"
+                                defaultValue={pkg.price}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{t("fields.credits")}</Label>
+                              <Input name="credits" type="number" defaultValue={pkg.credits} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{t("fields.localizedDescription")}</Label>
+                              <LocalizedInput
+                                value={editDescI18n}
+                                onChange={(val) =>
+                                  setEditDescI18n(val as { en: string; ar: string })
+                                }
+                                variant="textarea"
+                              />
+                              <input type="hidden" name="description_en" value={editDescI18n.en} />
+                              <input type="hidden" name="description_ar" value={editDescI18n.ar} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{t("fields.localizedFeatures")}</Label>
+                              <LocalizedInput
+                                value={editFeaturesI18n}
+                                onChange={(val) =>
+                                  setEditFeaturesI18n(val as { en: string; ar: string })
+                                }
+                                variant="textarea"
+                                placeholder={t("fields.featuresPlaceholder")}
+                              />
+                              <input type="hidden" name="features_en" value={editFeaturesI18n.en} />
+                              <input type="hidden" name="features_ar" value={editFeaturesI18n.ar} />
+                              <p className="text-xs text-muted-foreground">
+                                {t("fields.featuresHint")}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 border rounded-lg p-4 bg-muted/50">
+                              <Checkbox
+                                id="edit-support-all-services"
+                                checked={editSupportAllServices}
+                                onCheckedChange={(checked) =>
+                                  setEditSupportAllServices(checked as boolean)
+                                }
+                              />
+                              <Label
+                                htmlFor="edit-support-all-services"
+                                className="cursor-pointer font-medium flex-1"
+                              >
+                                {t("fields.supportAllServices") || "Support All Services"}
+                              </Label>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>{t("fields.includedServices")}</Label>
+                              <div
+                                className={`grid gap-3 md:grid-cols-2 border rounded-lg p-4 ${editSupportAllServices ? "opacity-50 pointer-events-none" : ""}`}
+                              >
+                                {allServices?.map((service: any) => (
+                                  <div key={service.id} className="flex items-center gap-2">
+                                    <Checkbox
+                                      id={`edit-service-${service.id}`}
+                                      checked={selectedServiceIds.includes(service.id)}
+                                      onCheckedChange={() => toggleService(service.id)}
+                                      disabled={editSupportAllServices}
+                                    />
+                                    <Label
+                                      htmlFor={`edit-service-${service.id}`}
+                                      className="cursor-pointer font-normal"
+                                    >
+                                      {service.icon}{" "}
+                                      {(service as any).nameI18n?.[locale] || service.name}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCancelEdit}
+                            >
+                              {t("buttons.cancel")}
+                            </Button>
+                            <Button type="submit" size="sm" disabled={updatePackage.isPending}>
+                              {t("buttons.save")}
+                            </Button>
+                          </CardFooter>
+                        </form>
+                      </Card>
+                    ) : (
+                      <Card key={pkg.id}>
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle>{pkg.nameI18n?.[locale] || pkg.name}</CardTitle>
+                            <Package className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <CardDescription>
+                            <span className="text-2xl font-bold text-foreground">
+                              {formatCurrency(pkg.price, locale)}
+                            </span>{" "}
+                            / {pkg.durationDays} {t("info.dayDuration")}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2 text-sm">
+                            <li>
+                              {pkg.credits} {t("info.credits")}
+                            </li>
+                            {(pkg.featuresI18n?.[locale] || pkg.features).map(
+                              (feature: string, i: number) => (
                                 <li
                                   key={`${pkg.id}-feature-${i}`}
                                   className="text-muted-foreground"
                                 >
                                   • {feature}
                                 </li>
-                              ))}
-                            </ul>
-
-                            {pkg.services && pkg.services.length > 0 && (
-                              <div className="mt-4 pt-4 border-t">
-                                <p className="text-sm font-medium mb-2">
-                                  {t("info.includedServicesLabel")}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {pkg.services.map((ps) => (
-                                    <Badge
-                                      key={ps.serviceType.id}
-                                      variant="secondary"
-                                      className="text-xs"
-                                    >
-                                      {ps.serviceType.icon} {ps.serviceType.name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
+                              )
                             )}
+                          </ul>
 
-                            {(!pkg.services || pkg.services.length === 0) && (
+                          {pkg.supportAllServices && (
+                            <div className="mt-4 pt-4 border-t">
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                ✓ {t("fields.supportsAllServices") || "Supports All Services"}
+                              </Badge>
+                            </div>
+                          )}
+
+                          {pkg.services && pkg.services.length > 0 && !pkg.supportAllServices && (
+                            <div className="mt-4 pt-4 border-t">
+                              <p className="text-sm font-medium mb-2">
+                                {t("info.includedServicesLabel")}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {pkg.services.map((ps: any) => (
+                                  <Badge
+                                    key={ps.serviceType.id}
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
+                                    {ps.serviceType.icon}{" "}
+                                    {(ps.serviceType as any).nameI18n?.[locale] ||
+                                      ps.serviceType.name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(!pkg.services || pkg.services.length === 0) &&
+                            !pkg.supportAllServices && (
                               <div className="mt-4 pt-4 border-t">
                                 <p className="text-sm text-muted-foreground italic">
                                   {t("fields.noServicesConfigured")}
                                 </p>
                               </div>
                             )}
-                          </CardContent>
-                          <CardFooter className="gap-2">
-                            {activeTab === "active" && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditPackage(pkg)}
-                                className="flex items-center gap-1"
-                              >
-                                <Edit className="h-3 w-3" />
-                                {t("buttons.edit")}
-                              </Button>
-                            )}
+                        </CardContent>
+                        <CardFooter className="gap-2">
+                          {activeTab === "active" && (
                             <Button
-                              variant={activeTab === "active" ? "destructive" : "default"}
+                              variant="outline"
                               size="sm"
-                              onClick={() => {
-                                if (activeTab === "active") {
-                                  if (confirm(t("confirmations.delete"))) {
-                                    deletePackage.mutate({ id: pkg.id });
-                                  }
-                                } else if (confirm(t("confirmations.restore"))) {
-                                  restorePackage.mutate({ id: pkg.id });
-                                }
-                              }}
+                              onClick={() => handleEditPackage(pkg)}
                               className="flex items-center gap-1"
                             >
-                              {activeTab === "active" ? (
-                                <>
-                                  <Trash className="h-3 w-3" />
-                                  {t("buttons.delete")}
-                                </>
-                              ) : (
-                                <>
-                                  <RotateCcw className="h-3 w-3" />
-                                  {t("buttons.restore")}
-                                </>
-                              )}
+                              <Edit className="h-3 w-3" />
+                              {t("buttons.edit")}
                             </Button>
-                          </CardFooter>
-                        </Card>
-                      )
+                          )}
+                          <Button
+                            variant={activeTab === "active" ? "destructive" : "default"}
+                            size="sm"
+                            onClick={() => {
+                              if (activeTab === "active") {
+                                if (confirm(t("confirmations.delete"))) {
+                                  deletePackage.mutate({ id: pkg.id });
+                                }
+                              } else if (confirm(t("confirmations.restore"))) {
+                                restorePackage.mutate({ id: pkg.id });
+                              }
+                            }}
+                            className="flex items-center gap-1"
+                          >
+                            {activeTab === "active" ? (
+                              <>
+                                <Trash className="h-3 w-3" />
+                                {t("buttons.delete")}
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="h-3 w-3" />
+                                {t("buttons.restore")}
+                              </>
+                            )}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    )
                   )}
               </div>
             </TabsContent>

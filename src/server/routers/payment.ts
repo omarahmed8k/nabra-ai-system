@@ -6,20 +6,47 @@ import { notifyAdminsNewPendingPayment } from "@/lib/notifications";
 
 export const paymentRouter = router({
   // Get IBAN info for payment (public info clients need)
-  getPaymentInfo: protectedProcedure.query(async () => {
-    // In production, this could come from database settings
-    return {
-      bankName: "International Bank",
-      accountName: "Nabra AI System",
-      iban: "DE89 3704 0044 0532 0130 00", // Example IBAN
-      swiftCode: "COBADEFFXXX",
-      currency: "USD",
-      note: "Please include your email address in the transfer reference for faster verification.",
-    };
-  }),
+  getPaymentInfo: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/payment/info",
+        tags: ["payment"],
+        summary: "Get payment info",
+      },
+    })
+    .output(
+      z.object({
+        bankName: z.string(),
+        accountName: z.string(),
+        iban: z.string(),
+        swiftCode: z.string(),
+        currency: z.string(),
+        note: z.string(),
+      })
+    )
+    .query(async () => {
+      // In production, this could come from database settings
+      return {
+        bankName: "International Bank",
+        accountName: "Nabra AI System",
+        iban: "DE89 3704 0044 0532 0130 00", // Example IBAN
+        swiftCode: "COBADEFFXXX",
+        currency: "USD",
+        note: "Please include your email address in the transfer reference for faster verification.",
+      };
+    }),
 
   // Client submits payment proof
   submitProof: clientProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/payment/submit-proof",
+        tags: ["payment"],
+        summary: "Submit payment proof",
+      },
+    })
     .input(
       z.object({
         subscriptionId: z.string(),
@@ -34,6 +61,7 @@ export const paymentRouter = router({
         notes: z.string().optional(),
       })
     )
+    .output(z.any())
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -92,7 +120,16 @@ export const paymentRouter = router({
 
   // Get payment proof for a subscription (client)
   getMyPaymentProof: clientProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/payment/my-proof",
+        tags: ["payment"],
+        summary: "Get my payment proof",
+      },
+    })
     .input(z.object({ subscriptionId: z.string() }))
+    .output(z.any())
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -105,31 +142,49 @@ export const paymentRouter = router({
     }),
 
   // Get all pending payments (admin)
-  getPendingPayments: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.paymentProof.findMany({
-      where: {
-        status: PaymentStatus.PENDING,
+  getPendingPayments: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/payment/pending",
+        tags: ["payment"],
+        summary: "List pending payments (admin)",
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      return ctx.db.paymentProof.findMany({
+        where: {
+          status: PaymentStatus.PENDING,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          subscription: {
+            include: {
+              package: true,
+            },
           },
         },
-        subscription: {
-          include: {
-            package: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "asc" },
-    });
-  }),
+        orderBy: { createdAt: "asc" },
+      });
+    }),
 
   // Get all payments with filters (admin)
   getAllPayments: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/payment",
+        tags: ["payment"],
+        summary: "List payments (admin)",
+      },
+    })
     .input(
       z.object({
         status: z.nativeEnum(PaymentStatus).optional(),
@@ -137,6 +192,7 @@ export const paymentRouter = router({
         cursor: z.string().optional(),
       })
     )
+    .output(z.object({ payments: z.array(z.any()), nextCursor: z.string().nullable() }))
     .query(async ({ ctx, input }) => {
       const payments = await ctx.db.paymentProof.findMany({
         where: input.status ? { status: input.status } : undefined,
@@ -174,13 +230,22 @@ export const paymentRouter = router({
 
       return {
         payments,
-        nextCursor,
+        nextCursor: nextCursor ?? null,
       };
     }),
 
   // Approve payment (admin)
   approvePayment: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/payment/approve",
+        tags: ["payment"],
+        summary: "Approve payment (admin)",
+      },
+    })
     .input(z.object({ paymentId: z.string() }))
+    .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const adminId = ctx.session.user.id;
 
@@ -248,12 +313,21 @@ export const paymentRouter = router({
 
   // Reject payment (admin)
   rejectPayment: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/payment/reject",
+        tags: ["payment"],
+        summary: "Reject payment (admin)",
+      },
+    })
     .input(
       z.object({
         paymentId: z.string(),
         reason: z.string().min(10, "Please provide a detailed reason for rejection"),
       })
     )
+    .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const adminId = ctx.session.user.id;
 
@@ -318,14 +392,31 @@ export const paymentRouter = router({
     }),
 
   // Get payment stats for admin dashboard
-  getStats: adminProcedure.query(async ({ ctx }) => {
-    const [pending, approved, rejected, total] = await Promise.all([
-      ctx.db.paymentProof.count({ where: { status: PaymentStatus.PENDING } }),
-      ctx.db.paymentProof.count({ where: { status: PaymentStatus.APPROVED } }),
-      ctx.db.paymentProof.count({ where: { status: PaymentStatus.REJECTED } }),
-      ctx.db.paymentProof.count(),
-    ]);
+  getStats: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/payment/stats",
+        tags: ["payment"],
+        summary: "Get payment stats (admin)",
+      },
+    })
+    .output(
+      z.object({
+        pending: z.number(),
+        approved: z.number(),
+        rejected: z.number(),
+        total: z.number(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const [pending, approved, rejected, total] = await Promise.all([
+        ctx.db.paymentProof.count({ where: { status: PaymentStatus.PENDING } }),
+        ctx.db.paymentProof.count({ where: { status: PaymentStatus.APPROVED } }),
+        ctx.db.paymentProof.count({ where: { status: PaymentStatus.REJECTED } }),
+        ctx.db.paymentProof.count(),
+      ]);
 
-    return { pending, approved, rejected, total };
-  }),
+      return { pending, approved, rejected, total };
+    }),
 });

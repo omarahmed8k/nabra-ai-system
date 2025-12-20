@@ -5,41 +5,79 @@ import { TRPCError } from "@trpc/server";
 
 export const userRouter = router({
   // Get current user profile
-  getProfile: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        hasWhatsapp: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        providerProfile: {
-          select: {
-            bio: true,
-            portfolio: true,
-            skillsTags: true,
-            isActive: true,
+  getProfile: protectedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/user/me",
+        tags: ["user"],
+        summary: "Get current user profile",
+      },
+    })
+    .output(
+      z.object({
+        id: z.string(),
+        name: z.string().nullable().optional(),
+        email: z.string().email(),
+        phone: z.string().nullable().optional(),
+        hasWhatsapp: z.boolean().nullable().optional(),
+        image: z.string().nullable().optional(),
+        role: z.string(),
+        createdAt: z.date(),
+        providerProfile: z
+          .object({
+            bio: z.string().nullable().optional(),
+            portfolio: z.string().url().nullable().optional(),
+            skillsTags: z.array(z.string()).nullable().optional(),
+            isActive: z.boolean().nullable().optional(),
+          })
+          .nullable()
+          .optional(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          hasWhatsapp: true,
+          image: true,
+          role: true,
+          createdAt: true,
+          providerProfile: {
+            select: {
+              bio: true,
+              portfolio: true,
+              skillsTags: true,
+              isActive: true,
+            },
           },
         },
-      },
-    });
-
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "User not found",
       });
-    }
 
-    return user;
-  }),
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      return user;
+    }),
 
   // Update user profile
   updateProfile: protectedProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/user/me",
+        tags: ["user"],
+        summary: "Update current user profile",
+      },
+    })
     .input(
       z.object({
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
@@ -47,6 +85,21 @@ export const userRouter = router({
         image: z.string().nullable().optional(),
         phone: z.string().optional(),
         hasWhatsapp: z.boolean().optional(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
+        user: z.object({
+          id: z.string(),
+          name: z.string().nullable().optional(),
+          email: z.string().email(),
+          phone: z.string().nullable().optional(),
+          hasWhatsapp: z.boolean().nullable().optional(),
+          image: z.string().nullable().optional(),
+          role: z.string(),
+        }),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -98,12 +151,27 @@ export const userRouter = router({
 
   // Update provider profile (bio, portfolio, skills)
   updateProviderProfile: protectedProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/user/provider-profile",
+        tags: ["user"],
+        summary: "Update provider profile",
+      },
+    })
     .input(
       z.object({
         bio: z.string().max(1000, "Bio must be less than 1000 characters").optional(),
         portfolio: z.string().url("Invalid portfolio URL").nullable().optional(),
         skillsTags: z.array(z.string()).optional(),
         isActive: z.boolean().optional(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
+        profile: z.any(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -148,6 +216,14 @@ export const userRouter = router({
 
   // Change password
   changePassword: protectedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/user/change-password",
+        tags: ["user"],
+        summary: "Change current user password",
+      },
+    })
     .input(
       z.object({
         currentPassword: z.string().min(1, "Current password is required"),
@@ -158,6 +234,12 @@ export const userRouter = router({
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
             "Password must contain at least one uppercase letter, one lowercase letter, and one number"
           ),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -212,9 +294,23 @@ export const userRouter = router({
 
   // Delete account
   deleteAccount: protectedProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: "/user/account",
+        tags: ["user"],
+        summary: "Delete current user account",
+      },
+    })
     .input(
       z.object({
         password: z.string().min(1, "Password is required"),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        message: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
