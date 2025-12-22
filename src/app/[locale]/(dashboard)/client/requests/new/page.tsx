@@ -20,8 +20,10 @@ import { ServiceAttributesForm } from "@/components/client/service-attributes-fo
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { ArrowLeft } from "lucide-react";
-import type { AttributeResponse } from "@/types/service-attributes";
-import { LocalizedInput } from "@/components/ui/localized-input";
+import type { AttributeResponse, ServiceAttribute } from "@/types/service-attributes";
+import { calculateAttributeCredits } from "@/lib/attribute-validation";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function NewRequestPage() {
   const t = useTranslations("client.newRequest");
@@ -30,11 +32,8 @@ export default function NewRequestPage() {
   const [priority] = useState("1");
   const [attachments, setAttachments] = useState<UploadedFile[]>([]);
   const [attributeResponses, setAttributeResponses] = useState<AttributeResponse[]>([]);
-  const [titleI18n, setTitleI18n] = useState<{ en: string; ar: string }>({ en: "", ar: "" });
-  const [descriptionI18n, setDescriptionI18n] = useState<{ en: string; ar: string }>({
-    en: "",
-    ar: "",
-  });
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
   const { data: serviceTypes } = trpc.request.getServiceTypes.useQuery();
   const locale = useLocale();
@@ -65,6 +64,14 @@ export default function NewRequestPage() {
   const hasCredits = subscription && subscription.remainingCredits > 0;
   const baseCreditCost = (selectedService as { creditCost?: number })?.creditCost || 1;
 
+  // Calculate attribute credits dynamically
+  const attributeCredits = useMemo(() => {
+    if (!selectedService || !attributeResponses.length) return 0;
+    const attributes = (selectedService as any).attributes as ServiceAttribute[] | undefined;
+    if (!attributes) return 0;
+    return calculateAttributeCredits(attributes, attributeResponses);
+  }, [selectedService, attributeResponses]);
+
   // Priority costs from the selected service type
   const lowCost = (selectedService as { priorityCostLow?: number })?.priorityCostLow ?? 0;
   const mediumCost = (selectedService as { priorityCostMedium?: number })?.priorityCostMedium ?? 1;
@@ -72,7 +79,7 @@ export default function NewRequestPage() {
 
   const priorityCostsMap: Record<string, number> = { "1": lowCost, "2": mediumCost, "3": highCost };
   const priorityCost = priorityCostsMap[priority] ?? lowCost;
-  const totalCreditCost = baseCreditCost + priorityCost;
+  const totalCreditCost = baseCreditCost + attributeCredits + priorityCost;
 
   const canAffordService = subscription && subscription.remainingCredits >= totalCreditCost;
 
@@ -87,8 +94,6 @@ export default function NewRequestPage() {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const title = titleI18n.en || titleI18n.ar || "";
-    const description = descriptionI18n.en || descriptionI18n.ar || "";
     const formPriority = Number.parseInt(formData.get("priority") as string) || 1;
 
     if (!selectedServiceType) {
@@ -134,8 +139,8 @@ export default function NewRequestPage() {
     }
 
     createRequest.mutate({
-      titleI18n,
-      descriptionI18n,
+      title,
+      description,
       serviceTypeId: selectedServiceType,
       priority: formPriority,
       attachments: attachments.map((f) => f.url),
@@ -219,13 +224,43 @@ export default function NewRequestPage() {
           <CardTitle>{t("requestDetails")}</CardTitle>
           <CardDescription>
             {selectedServiceType
-              ? t("costInfo", {
-                  baseCost: baseCreditCost,
-                  credit: baseCreditCost === 1 ? t("credit") : t("credits"),
-                  priorityCost,
-                  totalCost: totalCreditCost,
-                  available: subscription?.remainingCredits || 0,
-                })
+              ? (() => {
+                  const hasAttributes = attributeCredits > 0;
+                  const hasPriority = priorityCost > 0;
+
+                  if (hasAttributes && hasPriority) {
+                    return t("costInfoWithAttributes", {
+                      baseCost: baseCreditCost,
+                      credit: baseCreditCost === 1 ? t("credit") : t("credits"),
+                      attributeCost: attributeCredits,
+                      priorityCost,
+                      totalCost: totalCreditCost,
+                      available: subscription?.remainingCredits || 0,
+                    });
+                  } else if (hasAttributes) {
+                    return t("costInfoNoPriorityWithAttributes", {
+                      baseCost: baseCreditCost,
+                      credit: baseCreditCost === 1 ? t("credit") : t("credits"),
+                      attributeCost: attributeCredits,
+                      totalCost: totalCreditCost,
+                      available: subscription?.remainingCredits || 0,
+                    });
+                  } else if (hasPriority) {
+                    return t("costInfo", {
+                      baseCost: baseCreditCost,
+                      credit: baseCreditCost === 1 ? t("credit") : t("credits"),
+                      priorityCost,
+                      totalCost: totalCreditCost,
+                      available: subscription?.remainingCredits || 0,
+                    });
+                  } else {
+                    return t("costInfoNoPriority", {
+                      baseCost: baseCreditCost,
+                      credit: baseCreditCost === 1 ? t("credit") : t("credits"),
+                      available: subscription?.remainingCredits || 0,
+                    });
+                  }
+                })()
               : t("costInfoNoService", { available: subscription?.remainingCredits || 0 })}
           </CardDescription>
         </CardHeader>
@@ -253,25 +288,26 @@ export default function NewRequestPage() {
 
             <div className="space-y-2">
               <Label htmlFor="title">{t("fields.title")}</Label>
-              <LocalizedInput
-                value={titleI18n}
-                onChange={(next) => setTitleI18n({ en: next.en || "", ar: next.ar || "" })}
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("fields.titlePlaceholder")}
                 required
                 disabled={!hasCredits || createRequest.isPending}
-                variant="input"
               />
               <p className="text-xs text-muted-foreground">{t("fields.titleHint")}</p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">{t("fields.description")}</Label>
-              <LocalizedInput
-                value={descriptionI18n}
-                onChange={(next) => setDescriptionI18n({ en: next.en || "", ar: next.ar || "" })}
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder={t("fields.descriptionPlaceholder")}
                 disabled={!hasCredits || createRequest.isPending}
-                variant="textarea"
+                rows={4}
               />
               <p className="text-xs text-muted-foreground">{t("fields.descriptionHint")}</p>
             </div>

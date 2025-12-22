@@ -94,6 +94,7 @@ const nextConfig = {
   reactStrictMode: false,
   // Use webpack since next-pwa requires it
   turbopack: {},
+  outputFileTracingRoot: require("node:path").join(__dirname),
   images: {
     remotePatterns: [
       {

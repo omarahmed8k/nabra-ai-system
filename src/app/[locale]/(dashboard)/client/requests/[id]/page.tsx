@@ -24,7 +24,7 @@ export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
   const locale = useLocale();
   const params = useParams();
-  const requestId = params.id as string;
+  const requestId = params?.id as string;
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [revisionFeedback, setRevisionFeedback] = useState("");
@@ -124,11 +124,12 @@ export default function RequestDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
+        title={request.title}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
         baseCreditCost={(request as any).baseCreditCost}
+        attributeCredits={(request as any).attributeCredits}
         priorityCreditCost={(request as any).priorityCreditCost}
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
@@ -147,14 +148,7 @@ export default function RequestDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}
-          <RequestDescription
-            description={resolveLocalizedText(
-              (request as any).descriptionI18n,
-              locale,
-              request.description
-            )}
-            attachments={request.attachments}
-          />
+          <RequestDescription description={request.description} attachments={request.attachments} />
 
           {/* Service-Specific Q&A Responses */}
           {(request as any).attributeResponses &&

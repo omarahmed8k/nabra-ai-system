@@ -64,6 +64,25 @@ export function ServiceAttributesForm({
     updateResponse(question, newArray);
   };
 
+  const getCreditCostLabel = (attr: ServiceAttribute): string | null => {
+    if (!attr.creditImpact || attr.creditImpact === 0) return null;
+
+    const unit = attr.type === "select" ? "selection" : "unit";
+
+    if (attr.type === "number" && attr.includedQuantity !== undefined) {
+      return t("extraCostWithIncluded", {
+        cost: attr.creditImpact,
+        unit,
+        included: attr.includedQuantity,
+      });
+    }
+
+    return t("extraCost", {
+      cost: attr.creditImpact,
+      unit,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="border-t pt-6">
@@ -71,99 +90,129 @@ export function ServiceAttributesForm({
         <p className="text-sm text-muted-foreground mb-6">{t("description")}</p>
 
         <div className="space-y-6">
-          {attributes.map((attr, index) => (
-            <div key={`${attr.question}-${index}`} className="space-y-2">
-              <Label htmlFor={`attr-${index}`} className="flex items-center gap-1">
-                {resolveLocalizedText((attr as any).questionI18n, locale, attr.question)}
-                {attr.required && <span className="text-destructive">*</span>}
-              </Label>
+          {attributes.map((attr, index) => {
+            const creditCostLabel = getCreditCostLabel(attr);
 
-              {(attr.helpText || (attr as any).helpTextI18n) && (
-                <p className="text-xs text-muted-foreground">
-                  {resolveLocalizedText((attr as any).helpTextI18n, locale, attr.helpText)}
-                </p>
-              )}
-
-              {/* Text Input */}
-              {attr.type === "text" && (
-                <Input
-                  id={`attr-${index}`}
-                  placeholder={resolveLocalizedText(
-                    (attr as any).placeholderI18n,
-                    locale,
-                    attr.placeholder
+            return (
+              <div key={`${attr.question}-${index}`} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`attr-${index}`} className="flex items-center gap-1">
+                    {resolveLocalizedText((attr as any).questionI18n, locale, attr.question)}
+                    {attr.required && <span className="text-destructive">*</span>}
+                  </Label>
+                  {creditCostLabel && (
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                      {creditCostLabel}
+                    </span>
                   )}
-                  value={(getResponse(attr.question) as string) || ""}
-                  onChange={(e) => updateResponse(attr.question, e.target.value)}
-                  required={attr.required}
-                  disabled={disabled}
-                />
-              )}
-
-              {/* Textarea Input */}
-              {attr.type === "textarea" && (
-                <Textarea
-                  id={`attr-${index}`}
-                  placeholder={resolveLocalizedText(
-                    (attr as any).placeholderI18n,
-                    locale,
-                    attr.placeholder
-                  )}
-                  value={(getResponse(attr.question) as string) || ""}
-                  onChange={(e) => updateResponse(attr.question, e.target.value)}
-                  required={attr.required}
-                  disabled={disabled}
-                  rows={4}
-                />
-              )}
-
-              {/* Select Input */}
-              {attr.type === "select" && (
-                <Select
-                  value={(getResponse(attr.question) as string) || ""}
-                  onValueChange={(value) => updateResponse(attr.question, value)}
-                  disabled={disabled}
-                  required={attr.required}
-                >
-                  <SelectTrigger id={`attr-${index}`}>
-                    <SelectValue placeholder={t("selectOption")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {attr.options?.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {/* Multiselect Input */}
-              {attr.type === "multiselect" && (
-                <div className="space-y-2 border rounded-md p-4">
-                  {attr.options?.map((option) => (
-                    <div key={option} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${attr.question}-${option}`}
-                        checked={
-                          Array.isArray(getResponse(attr.question)) &&
-                          (getResponse(attr.question) as string[]).includes(option)
-                        }
-                        onCheckedChange={() => toggleMultiselectOption(attr.question, option)}
-                        disabled={disabled}
-                      />
-                      <label
-                        htmlFor={`${attr.question}-${option}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      >
-                        {option}
-                      </label>
-                    </div>
-                  ))}
                 </div>
-              )}
-            </div>
-          ))}
+
+                {(attr.helpText || (attr as any).helpTextI18n) && (
+                  <p className="text-xs text-muted-foreground">
+                    {resolveLocalizedText((attr as any).helpTextI18n, locale, attr.helpText)}
+                  </p>
+                )}
+
+                {/* Text Input */}
+                {attr.type === "text" && (
+                  <Input
+                    id={`attr-${index}`}
+                    placeholder={resolveLocalizedText(
+                      (attr as any).placeholderI18n,
+                      locale,
+                      attr.placeholder
+                    )}
+                    value={(getResponse(attr.question) as string) || ""}
+                    onChange={(e) => updateResponse(attr.question, e.target.value)}
+                    required={attr.required}
+                    disabled={disabled}
+                  />
+                )}
+
+                {/* Textarea Input */}
+                {attr.type === "textarea" && (
+                  <Textarea
+                    id={`attr-${index}`}
+                    placeholder={resolveLocalizedText(
+                      (attr as any).placeholderI18n,
+                      locale,
+                      attr.placeholder
+                    )}
+                    value={(getResponse(attr.question) as string) || ""}
+                    onChange={(e) => updateResponse(attr.question, e.target.value)}
+                    required={attr.required}
+                    disabled={disabled}
+                    rows={4}
+                  />
+                )}
+
+                {/* Number Input */}
+                {attr.type === "number" && (
+                  <Input
+                    id={`attr-${index}`}
+                    type="number"
+                    placeholder={resolveLocalizedText(
+                      (attr as any).placeholderI18n,
+                      locale,
+                      attr.placeholder
+                    )}
+                    value={(getResponse(attr.question) as string) || ""}
+                    onChange={(e) => updateResponse(attr.question, e.target.value)}
+                    required={attr.required}
+                    disabled={disabled}
+                    min={attr.min}
+                    max={attr.max}
+                  />
+                )}
+
+                {/* Select Input */}
+                {attr.type === "select" && (
+                  <Select
+                    value={(getResponse(attr.question) as string) || ""}
+                    onValueChange={(value) => updateResponse(attr.question, value)}
+                    disabled={disabled}
+                    required={attr.required}
+                  >
+                    <SelectTrigger id={`attr-${index}`}>
+                      <SelectValue placeholder={t("selectOption")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {attr.options?.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* Multiselect Input */}
+                {attr.type === "multiselect" && (
+                  <div className="space-y-2 border rounded-md p-4">
+                    {attr.options?.map((option) => (
+                      <div key={option} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`${attr.question}-${option}`}
+                          checked={
+                            Array.isArray(getResponse(attr.question)) &&
+                            (getResponse(attr.question) as string[]).includes(option)
+                          }
+                          onCheckedChange={() => toggleMultiselectOption(attr.question, option)}
+                          disabled={disabled}
+                        />
+                        <label
+                          htmlFor={`${attr.question}-${option}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {option}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

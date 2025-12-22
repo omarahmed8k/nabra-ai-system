@@ -15,7 +15,7 @@ import { trpc } from "@/lib/trpc/client";
 export default function AdminRequestDetailPage() {
   const t = useTranslations("admin.requests");
   const params = useParams();
-  const requestId = params.id as string;
+  const requestId = params?.id as string;
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({ id: requestId });
 
@@ -52,6 +52,7 @@ export default function AdminRequestDetailPage() {
         priority={request.priority}
         creditCost={(request as any).creditCost}
         baseCreditCost={request.baseCreditCost}
+        attributeCredits={(request as any).attributeCredits}
         priorityCreditCost={request.priorityCreditCost}
         isRevision={request.isRevision}
         revisionType={request.revisionType}

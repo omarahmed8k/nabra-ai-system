@@ -25,8 +25,9 @@ import { Send, Upload, Play, CheckCircle } from "lucide-react";
 export default function ProviderRequestDetailPage() {
   const params = useParams();
   const t = useTranslations("provider.requestDetail");
+  const tMessages = useTranslations("requests.messages");
   const locale = useLocale();
-  const requestId = params.id as string;
+  const requestId = params?.id as string;
   const [comment, setComment] = useState("");
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
   const [deliverable, setDeliverable] = useState("");
@@ -139,11 +140,12 @@ export default function ProviderRequestDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
+        title={request.title}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
         baseCreditCost={(request as any).baseCreditCost}
+        attributeCredits={(request as any).attributeCredits}
         priorityCreditCost={(request as any).priorityCreditCost}
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
@@ -168,13 +170,7 @@ export default function ProviderRequestDetailPage() {
               <CardTitle>{t("description")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="whitespace-pre-wrap">
-                {resolveLocalizedText(
-                  (request as any).descriptionI18n,
-                  locale,
-                  request.description
-                )}
-              </p>
+              <p className="whitespace-pre-wrap">{request.description}</p>
 
               {/* Request Attachments */}
               {request.attachments && request.attachments.length > 0 && (
@@ -406,17 +402,104 @@ export default function ProviderRequestDetailPage() {
                           <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
                           {comment.files && comment.files.length > 0 && (
                             <div className="mt-2 space-y-1">
-                              {comment.files.map((file: string, i: number) => (
-                                <a
-                                  key={`${comment.id}-file-${i}`}
-                                  href={file}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:underline block"
-                                >
-                                  {t("messages.attachment", { number: i + 1 })}
-                                </a>
-                              ))}
+                              {comment.files.map((file: string, i: number) => {
+                                // Helper functions (inline for provider page)
+                                const getExtension = (url: string) => {
+                                  try {
+                                    const clean = url.split("?")[0];
+                                    const parts = clean.split(".");
+                                    return parts.length > 1 ? parts.pop()!.toLowerCase() : "";
+                                  } catch {
+                                    return "";
+                                  }
+                                };
+
+                                const isAudioUrl = (url: string) => {
+                                  const ext = getExtension(url);
+                                  return ["webm", "mp3", "ogg", "wav", "m4a", "aac"].includes(ext);
+                                };
+
+                                const isImageUrl = (url: string) => {
+                                  const ext = getExtension(url);
+                                  return ["png", "jpg", "jpeg", "gif", "webp", "avif"].includes(
+                                    ext
+                                  );
+                                };
+
+                                const getFileNameFromUrl = (url: string) => {
+                                  const clean = url.split("?")[0];
+                                  const parts = clean.split("/");
+                                  return parts.length > 0 ? parts.pop() || url : url;
+                                };
+
+                                const prettyFilename = (name: string = "") => {
+                                  let result = name;
+                                  result = result.replace(/^\d{8,}-/, "");
+                                  if (result.length > 60 && result.includes("-")) {
+                                    const parts = result.split("-");
+                                    result = parts.slice(1).join("-");
+                                  }
+                                  return result;
+                                };
+
+                                const audio = isAudioUrl(file);
+                                const image = isImageUrl(file);
+                                const rawFilename = getFileNameFromUrl(file);
+                                const displayName = prettyFilename(rawFilename);
+                                const audioKey = `${comment.id}-audio-${i}`;
+                                const imageKey = `${comment.id}-image-${i}`;
+                                const fileKey = `${comment.id}-file-${i}`;
+
+                                if (audio) {
+                                  return (
+                                    <div key={audioKey} className="space-y-1">
+                                      <audio controls src={file} className="w-full">
+                                        <track kind="captions" />
+                                      </audio>
+                                      <div className="text-xs text-muted-foreground">
+                                        {tMessages("voiceNote")}
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                if (image) {
+                                  return (
+                                    <a
+                                      key={imageKey}
+                                      href={file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block"
+                                    >
+                                      <img
+                                        src={file}
+                                        alt={displayName}
+                                        className="max-h-48 rounded border object-contain"
+                                      />
+                                      <span className="text-xs text-muted-foreground block mt-1">
+                                        {tMessages("image")} • {displayName}
+                                      </span>
+                                    </a>
+                                  );
+                                }
+
+                                return (
+                                  <div key={fileKey} className="space-y-1">
+                                    <a
+                                      href={file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-600 hover:underline block"
+                                    >
+                                      {tMessages("file")}
+                                    </a>
+                                    <span className="text-xs text-muted-foreground block">
+                                      {displayName}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>

@@ -113,14 +113,6 @@ export default function SubscriptionPage() {
                   })}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("currentSubscription.monthlyPrice")}
-                </p>
-                <p className="text-3xl font-bold">
-                  {formatCurrency(subscription.package.price, locale)}
-                </p>
-              </div>
             </div>
 
             {subscription.isExpiring && (
@@ -195,7 +187,9 @@ export default function SubscriptionPage() {
                     <ul className="space-y-3">
                       <li className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4 text-primary" />
-                        <span>{pkg.credits} credits</span>
+                        <span>
+                          {pkg.credits} {t("info.credits")}
+                        </span>
                       </li>
 
                       {pkgData.services && pkgData.services.length > 0 && (

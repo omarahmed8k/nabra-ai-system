@@ -23,6 +23,11 @@ const ALLOWED_TYPES = new Set([
   "application/pdf",
   "application/zip",
   "application/x-zip-compressed",
+  // Audio types for voice notes
+  "audio/webm",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/mp4",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -44,10 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: "File too large. Maximum size is 10MB" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "File too large. Maximum size is 10MB" }, { status: 400 });
     }
 
     const timestamp = Date.now();

@@ -215,8 +215,6 @@ model Request {
   id                   String           @id @default(cuid())
   title                String
   description          String
-  titleI18n            Json?
-  descriptionI18n      Json?
   clientId             String
   providerId           String?
   serviceTypeId        String
@@ -224,7 +222,8 @@ model Request {
   priority             Int              @default(1)
   creditCost           Int              @default(1) // Total credit cost at time of creation
   baseCreditCost       Int              @default(1) // Base cost from service type
-  priorityCreditCost   Int              @default(0) // Additional cost from priority
+    attributeCredits     Int              @default(0) // Additional cost from service attributes
+    priorityCreditCost   Int              @default(0) // Additional cost from priority
   isRevision           Boolean          @default(false) // Whether this is a revision request
   revisionType         String?          // "free" or "paid"
   formData             Json?

@@ -3,10 +3,175 @@ import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { checkAndDeductCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
-import { validateAttributeResponses } from "@/lib/attribute-validation";
+import { validateAttributeResponses, calculateAttributeCredits } from "@/lib/attribute-validation";
 import { getPriorityCostsForService } from "@/lib/priority-costs";
 import { notifyNewMessage, notifyStatusChange } from "@/lib/notifications";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
+
+/**
+ * Validates that the user's subscription package allows access to the requested service
+ */
+async function validateServiceAccess(
+  db: any,
+  userId: string,
+  serviceTypeId: string,
+  serviceName: string
+) {
+  const activeSubscription = await db.clientSubscription.findFirst({
+    where: {
+      userId: userId,
+      isActive: true,
+      endDate: { gte: new Date() },
+    },
+    include: {
+      package: {
+        include: {
+          services: true,
+        },
+      },
+    },
+  });
+
+  if (!activeSubscription) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "No active subscription found. Please subscribe to a package to create requests.",
+    });
+  }
+
+  // Check if the selected service is allowed by the user's package
+  const hasAllServicesSupport = Boolean(
+    (activeSubscription.package as { supportAllServices?: boolean }).supportAllServices
+  );
+  if (!hasAllServicesSupport) {
+    const allowedServiceIds = activeSubscription.package.services.map(
+      (s: { serviceId: string }) => s.serviceId
+    );
+    if (!allowedServiceIds.includes(serviceTypeId)) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: `Your ${activeSubscription.package.name} package does not include ${serviceName} service. Please upgrade your subscription to access this service.`,
+      });
+    }
+  }
+}
+
+/**
+ * Validates attribute responses against service type attributes
+ */
+function validateServiceAttributes(serviceType: any, attributeResponses: any) {
+  if (serviceType.attributes && attributeResponses) {
+    const validation = validateAttributeResponses(
+      serviceType.attributes as ServiceAttribute[],
+      attributeResponses as AttributeResponse[]
+    );
+
+    if (!validation.valid) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `Invalid attribute responses: ${validation.errors.join(", ")}`,
+      });
+    }
+  }
+}
+
+/**
+ * Calculates total credit cost including base, attributes, and priority
+ */
+async function calculateTotalCreditCost(
+  serviceType: any,
+  attributeResponses: any,
+  priority: number,
+  serviceTypeId: string
+) {
+  const baseCreditCost = serviceType.creditCost || 1;
+
+  const attributeCredits =
+    serviceType.attributes && attributeResponses
+      ? calculateAttributeCredits(
+          serviceType.attributes as ServiceAttribute[],
+          attributeResponses as AttributeResponse[]
+        )
+      : 0;
+
+  const costs = await getPriorityCostsForService(serviceTypeId);
+  const priorityCosts: Record<number, number> = {
+    1: costs.low,
+    2: costs.medium,
+    3: costs.high,
+  };
+  const priorityCost = priorityCosts[priority] ?? costs.medium;
+
+  return {
+    baseCreditCost,
+    attributeCredits,
+    priorityCost,
+    totalCreditCost: baseCreditCost + attributeCredits + priorityCost,
+  };
+}
+
+/**
+ * Notifies providers who support the requested service type
+ */
+async function notifyMatchingProviders(
+  db: any,
+  serviceTypeId: string,
+  serviceName: string,
+  requestTitle: string
+) {
+  const providersWithService = await db.providerProfile.findMany({
+    where: {
+      isActive: true,
+      supportedServices: {
+        some: {
+          id: serviceTypeId,
+        },
+      },
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  if (providersWithService.length > 0) {
+    const { createNotification } = await import("@/lib/notifications");
+
+    await Promise.all(
+      providersWithService.map((provider: { userId: string }) =>
+        createNotification({
+          userId: provider.userId,
+          title: "New Request Available",
+          message: `New ${serviceName} request: "${requestTitle}"`,
+          type: "general",
+          link: `/provider/available`,
+          sendEmail: false,
+        })
+      )
+    );
+  }
+}
+
+/**
+ * Builds cost breakdown message for the response
+ */
+function buildCostBreakdownMessage(
+  baseCreditCost: number,
+  attributeCredits: number,
+  priorityCost: number,
+  totalCreditCost: number
+): string {
+  const costBreakdown = [];
+  costBreakdown.push(`Base: ${baseCreditCost}`);
+  if (attributeCredits > 0) {
+    costBreakdown.push(`Attributes: ${attributeCredits}`);
+  }
+  if (priorityCost > 0) {
+    costBreakdown.push(`Priority: ${priorityCost}`);
+  }
+  const breakdownMessage = costBreakdown.length > 1 ? ` (${costBreakdown.join(" + ")})` : "";
+
+  return `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? "" : "s"} ${totalCreditCost === 1 ? "has" : "have"} been deducted${breakdownMessage}.`;
+}
 
 export const requestRouter = router({
   // Create a new request (client only)
@@ -21,10 +186,8 @@ export const requestRouter = router({
     })
     .input(
       z.object({
-        title: z.string().min(5, "Title must be at least 5 characters").optional(),
-        titleI18n: z.record(z.string()).optional(),
-        description: z.string().min(20, "Description must be at least 20 characters").optional(),
-        descriptionI18n: z.record(z.string()).optional(),
+        title: z.string().min(5, "Title must be at least 5 characters"),
+        description: z.string().min(20, "Description must be at least 20 characters"),
         serviceTypeId: z.string(),
         priority: z.number().min(1).max(3).default(1),
         formData: z.record(z.any()).optional(),
@@ -43,10 +206,10 @@ export const requestRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Get service type to validate attributes and credit cost
+      // Get service type
       const serviceType = (await ctx.db.serviceType.findUnique({
         where: { id: input.serviceTypeId },
-      })) as any; // Cast to any to avoid type issues with Json fields
+      })) as any;
 
       if (!serviceType) {
         throw new TRPCError({
@@ -55,77 +218,24 @@ export const requestRouter = router({
         });
       }
 
-      // Check if user's subscription package allows access to this service
-      const activeSubscription = await ctx.db.clientSubscription.findFirst({
-        where: {
-          userId: userId,
-          isActive: true,
-          endDate: { gte: new Date() },
-        },
-        include: {
-          package: {
-            include: {
-              services: true,
-            },
-          },
-        },
-      });
+      // Validate subscription and service access
+      await validateServiceAccess(ctx.db, userId, input.serviceTypeId, serviceType.name);
 
-      if (!activeSubscription) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message:
-            "No active subscription found. Please subscribe to a package to create requests.",
-        });
-      }
+      // Validate attribute responses
+      validateServiceAttributes(serviceType, input.attributeResponses);
 
-      // Check if the selected service is allowed by the user's package
-      // If package supports all services, skip the check
-      if (!(activeSubscription.package as any).supportAllServices) {
-        const allowedServiceIds = activeSubscription.package.services.map(
-          (s: { serviceId: string }) => s.serviceId
-        );
-        if (!allowedServiceIds.includes(input.serviceTypeId)) {
-          const serviceName = serviceType.name;
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: `Your ${activeSubscription.package.name} package does not include ${serviceName} service. Please upgrade your subscription to access this service.`,
-          });
-        }
-      }
+      // Calculate total credit cost
+      const costDetails = await calculateTotalCreditCost(
+        serviceType,
+        input.attributeResponses,
+        input.priority,
+        input.serviceTypeId
+      );
 
-      // Validate attribute responses if service has required attributes
-      if (serviceType.attributes && input.attributeResponses) {
-        const validation = validateAttributeResponses(
-          serviceType.attributes as ServiceAttribute[],
-          input.attributeResponses as AttributeResponse[]
-        );
-
-        if (!validation.valid) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Invalid attribute responses: ${validation.errors.join(", ")}`,
-          });
-        }
-      }
-
-      // Get credit cost from service type (default to 1 if not set)
-      const baseCreditCost = serviceType.creditCost || 1;
-
-      // Apply priority cost from service type
-      const costs = await getPriorityCostsForService(input.serviceTypeId);
-      const priorityCosts: Record<number, number> = {
-        1: costs.low,
-        2: costs.medium,
-        3: costs.high,
-      };
-      const priorityCost = priorityCosts[input.priority] ?? costs.medium;
-      const totalCreditCost = baseCreditCost + priorityCost;
-
-      // Check and deduct credits in a single optimized operation
+      // Check and deduct credits
       const creditResult = await checkAndDeductCredits(
         userId,
-        totalCreditCost,
+        costDetails.totalCreditCost,
         `New request: ${input.title} (Priority ${input.priority})`
       );
 
@@ -136,45 +246,19 @@ export const requestRouter = router({
         });
       }
 
-      // Derive plain title/description for backward compatibility and notifications
-      const deriveText = (i18n: Record<string, string> | undefined, plain?: string, minLen = 1) => {
-        const candidates = [plain, i18n?.en, i18n?.ar, ...(i18n ? Object.values(i18n) : [])];
-        const found = candidates.find((v) => typeof v === "string" && v.trim().length >= minLen);
-        return (found as string) || "";
-      };
-
-      const titlePlain = deriveText(input.titleI18n as any, input.title, 5);
-      const descriptionPlain = deriveText(input.descriptionI18n as any, input.description, 20);
-
-      // Basic validation: ensure at least one localized or plain value meets constraints
-      if (!titlePlain || titlePlain.trim().length < 5) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Title must be provided in at least one language and be at least 5 characters",
-        });
-      }
-      if (!descriptionPlain || descriptionPlain.trim().length < 20) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message:
-            "Description must be provided in at least one language and be at least 20 characters",
-        });
-      }
-
       // Create the request
       const request = await ctx.db.request.create({
         data: {
-          title: titlePlain,
-          description: descriptionPlain,
-          titleI18n: (input.titleI18n as any) || null,
-          descriptionI18n: (input.descriptionI18n as any) || null,
+          title: input.title,
+          description: input.description,
           clientId: userId,
           serviceTypeId: input.serviceTypeId,
           priority: input.priority,
-          creditCost: totalCreditCost, // Store the total credit cost at creation time
-          baseCreditCost, // Store base cost from service type
-          priorityCreditCost: priorityCost, // Store priority cost
-          isRevision: false, // Initial request, not a revision
+          creditCost: costDetails.totalCreditCost,
+          baseCreditCost: costDetails.baseCreditCost,
+          attributeCredits: costDetails.attributeCredits,
+          priorityCreditCost: costDetails.priorityCost,
+          isRevision: false,
           formData: input.formData || {},
           attributeResponses: input.attributeResponses || null,
           attachments: input.attachments || [],
@@ -195,45 +279,22 @@ export const requestRouter = router({
         },
       });
 
-      // Notify all providers who support this service type
-      const providersWithService = await ctx.db.providerProfile.findMany({
-        where: {
-          isActive: true,
-          supportedServices: {
-            some: {
-              id: input.serviceTypeId,
-            },
-          },
-        },
-        select: {
-          userId: true,
-        },
-      });
+      // Notify matching providers
+      await notifyMatchingProviders(ctx.db, input.serviceTypeId, serviceType.name, input.title);
 
-      // Send real-time notifications to all matching providers
-      if (providersWithService.length > 0) {
-        const { createNotification } = await import("@/lib/notifications");
-
-        // Send notifications in parallel
-        await Promise.all(
-          providersWithService.map((provider) =>
-            createNotification({
-              userId: provider.userId,
-              title: "New Request Available",
-              message: `New ${serviceType.name} request: "${titlePlain}"`,
-              type: "general",
-              link: `/provider/available`,
-              sendEmail: false, // Don't send email for new request notifications
-            })
-          )
-        );
-      }
+      // Build success message with cost breakdown
+      const message = buildCostBreakdownMessage(
+        costDetails.baseCreditCost,
+        costDetails.attributeCredits,
+        costDetails.priorityCost,
+        costDetails.totalCreditCost
+      );
 
       return {
         success: true,
         request,
         creditsRemaining: creditResult.newBalance,
-        message: `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? "" : "s"} ${totalCreditCost === 1 ? "has" : "have"} been deducted.`,
+        message,
       };
     }),
 
@@ -390,9 +451,33 @@ export const requestRouter = router({
         revisionInfo = await getRevisionInfo(input.id, request.clientId);
       }
 
-      // Use stored credit cost (preserves cost at time of creation)
+      // Use stored credit cost and attribute credits (preserves cost at time of creation)
+      // For backward compatibility with old requests: if attributeCredits is 0/null and we have attributeResponses,
+      // attempt to calculate it
+      let attributeCredits = (request as any).attributeCredits ?? 0;
+
+      if (attributeCredits === 0) {
+        const rawAttributeResponses = (request as any).attributeResponses;
+        const serviceAttributes = (request.serviceType as any)?.attributes;
+
+        if (serviceAttributes && rawAttributeResponses) {
+          try {
+            const calculated = calculateAttributeCredits(
+              serviceAttributes as ServiceAttribute[],
+              rawAttributeResponses as AttributeResponse[]
+            );
+            if (calculated > 0) {
+              attributeCredits = calculated;
+            }
+          } catch (e) {
+            // Ignore calculation errors, keep as 0
+          }
+        }
+      }
+
       return {
         ...request,
+        attributeCredits,
         revisionInfo,
       } as any;
     }),

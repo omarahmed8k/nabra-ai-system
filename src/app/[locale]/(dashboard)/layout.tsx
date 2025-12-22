@@ -181,9 +181,9 @@ export default function DashboardLayout({
           <div className="p-3 sm:p-4">
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                <AvatarImage src={session?.user?.image || ""} />
+                <AvatarImage src={session?.user?.image || ""} className="object-cover" />
                 <AvatarFallback className="text-xs sm:text-sm">
-                  {getInitials(session?.user?.name || "U")}
+                  {getInitials(session?.user?.name || "U")}Ï
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">

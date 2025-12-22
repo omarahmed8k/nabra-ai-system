@@ -31,11 +31,16 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
   const t = useTranslations("admin.attributesManager");
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Add stable IDs to attributes if they don't have them
-  const attributesWithIds: AttributeWithId[] = attributes.map((attr, idx) => ({
-    ...attr,
-    _id: (attr as AttributeWithId)._id || `attr-${Date.now()}-${idx}`,
-  }));
+  // Add stable IDs to attributes if they don't have them (only once, not on every render)
+  const attributesWithIds: AttributeWithId[] = attributes.map((attr, idx) => {
+    if ((attr as AttributeWithId)._id) {
+      return attr as AttributeWithId;
+    }
+    return {
+      ...attr,
+      _id: `attr-${idx}-${attr.question || "new"}`,
+    };
+  });
 
   const addAttribute = () => {
     const newAttribute: AttributeWithId = {
@@ -188,6 +193,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                             <SelectContent>
                               <SelectItem value="text">{t("text")}</SelectItem>
                               <SelectItem value="textarea">{t("textarea")}</SelectItem>
+                              <SelectItem value="number">{t("number")}</SelectItem>
                               <SelectItem value="select">{t("select")}</SelectItem>
                               <SelectItem value="multiselect">{t("multiselect")}</SelectItem>
                             </SelectContent>
@@ -228,6 +234,94 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                           />
                           <p className="text-xs text-muted-foreground">
                             {t("optionsCount", { count: attr.options?.length || 0 })}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Min/Max for Number Type */}
+                      {attr.type === "number" && (
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="space-y-2">
+                            <Label htmlFor={`min-${index}`}>
+                              {t("minValue")}{" "}
+                              <span className="text-muted-foreground">({t("optional")})</span>
+                            </Label>
+                            <Input
+                              id={`min-${index}`}
+                              type="number"
+                              placeholder="e.g., 1"
+                              value={attr.min ?? ""}
+                              onChange={(e) =>
+                                updateAttribute(index, {
+                                  min: e.target.value ? Number(e.target.value) : undefined,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`max-${index}`}>
+                              {t("maxValue")}{" "}
+                              <span className="text-muted-foreground">({t("optional")})</span>
+                            </Label>
+                            <Input
+                              id={`max-${index}`}
+                              type="number"
+                              placeholder="e.g., 100"
+                              value={attr.max ?? ""}
+                              onChange={(e) =>
+                                updateAttribute(index, {
+                                  max: e.target.value ? Number(e.target.value) : undefined,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Credit Impact (for select and number types) */}
+                      {(attr.type === "select" || attr.type === "number") && (
+                        <div className="space-y-2">
+                          <Label htmlFor={`creditImpact-${index}`}>
+                            {t("creditImpact")}{" "}
+                            <span className="text-muted-foreground">({t("optional")})</span>
+                          </Label>
+                          <Input
+                            id={`creditImpact-${index}`}
+                            type="number"
+                            placeholder="e.g., 5"
+                            value={attr.creditImpact ?? ""}
+                            onChange={(e) =>
+                              updateAttribute(index, {
+                                creditImpact: e.target.value ? Number(e.target.value) : undefined,
+                              })
+                            }
+                          />
+                          <p className="text-xs text-muted-foreground">{t("creditImpactHelp")}</p>
+                        </div>
+                      )}
+
+                      {/* Included Quantity (for number type only) */}
+                      {attr.type === "number" && attr.creditImpact && (
+                        <div className="space-y-2">
+                          <Label htmlFor={`includedQuantity-${index}`}>
+                            {t("includedQuantity")}{" "}
+                            <span className="text-muted-foreground">({t("optional")})</span>
+                          </Label>
+                          <Input
+                            id={`includedQuantity-${index}`}
+                            type="number"
+                            placeholder="e.g., 20"
+                            value={attr.includedQuantity ?? ""}
+                            onChange={(e) =>
+                              updateAttribute(index, {
+                                includedQuantity: e.target.value
+                                  ? Number(e.target.value)
+                                  : undefined,
+                              })
+                            }
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            {t("includedQuantityHelp")}
                           </p>
                         </div>
                       )}

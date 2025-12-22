@@ -3,7 +3,7 @@
  * These types define the structure for custom questions and answers per service
  */
 
-export type AttributeType = "text" | "select" | "multiselect" | "textarea";
+export type AttributeType = "text" | "select" | "multiselect" | "textarea" | "number";
 
 export interface ServiceAttribute {
   question: string;
@@ -15,6 +15,10 @@ export interface ServiceAttribute {
   placeholderI18n?: { [locale: string]: string };
   helpText?: string;
   helpTextI18n?: { [locale: string]: string };
+  min?: number; // For number type
+  max?: number; // For number type
+  creditImpact?: number; // Credits per unit (e.g., 5 credits per additional segment)
+  includedQuantity?: number; // Free quantity included in base price (e.g., first 20 products)
 }
 
 export interface AttributeResponse {
@@ -28,28 +32,31 @@ export interface AttributeResponse {
  * Service Attributes (stored in ServiceType.attributes):
  * [
  *   {
- *     question: "Do you need it as an offer post?",
- *     required: true,
+ *     question: "How many additional 10-second segments?",
+ *     required: false,
  *     type: "select",
- *     options: ["Yes", "No"]
+ *     options: ["0", "1", "2", "3"],
+ *     creditImpact: 5  // 5 credits per segment (selecting "2" = 2 × 5 = 10 credits)
  *   },
  *   {
- *     question: "What are the dimensions you need?",
+ *     question: "Total number of products in menu",
  *     required: true,
- *     type: "text",
- *     placeholder: "e.g., 1920x1080"
+ *     type: "number",
+ *     min: 1,
+ *     includedQuantity: 20,  // First 20 products included in base price
+ *     creditImpact: 1  // 1 credit per product after the first 20
  *   }
  * ]
  *
  * Client Responses (stored in Request.attributeResponses):
  * [
  *   {
- *     question: "Do you need it as an offer post?",
- *     answer: "Yes"
+ *     question: "How many additional 10-second segments?",
+ *     answer: "2"
  *   },
  *   {
- *     question: "What are the dimensions you need?",
- *     answer: "1920x1080"
+ *     question: "Total number of products in menu",
+ *     answer: "25"
  *   }
  * ]
  */

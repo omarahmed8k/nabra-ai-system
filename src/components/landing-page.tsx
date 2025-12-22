@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, Zap, Shield, Clock, Star, Users } from "lucide-react";
+import { Check, Zap, Shield, Clock, Star, Users, Sparkles, ArrowRight } from "lucide-react";
 
 type FeatureKey = "credit" | "quality" | "speed" | "revisions" | "experts";
 
@@ -84,16 +84,23 @@ export default function LandingPage() {
     (t.raw(`pricing.packages.${pkgKey}.features`) as string[]) || [];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-background via-background/50 to-background overflow-hidden">
+      {/* Animated Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-pink-500/10 rounded-full blur-2xl animate-pulse delay-500" />
+      </div>
+
       {/* Navigation */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/50 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/30"
       >
         <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 relative z-10">
             <motion.div whileHover={{ scale: 1.1, rotate: 5 }}>
               <Image
                 src="/images/logo.svg"
@@ -105,95 +112,127 @@ export default function LandingPage() {
             </motion.div>
           </Link>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="#features"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              {t("nav.features")}
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              {t("nav.pricing")}
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              {t("nav.how")}
-            </Link>
+            {[
+              { href: "#features", label: t("nav.features") },
+              { href: "#pricing", label: t("nav.pricing") },
+              { href: "#how-it-works", label: t("nav.how") },
+            ].map((item) => (
+              <Link key={item.href} href={item.href}>
+                <motion.span
+                  className="text-sm font-medium hover:text-primary transition-colors cursor-pointer"
+                  whileHover={{ y: -2 }}
+                >
+                  {item.label}
+                </motion.span>
+              </Link>
+            ))}
           </nav>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 relative z-10">
             <LanguageSwitcher />
             <Link href="/auth/login">
-              <Button variant="ghost">{tCommon("buttons.signIn")}</Button>
+              <Button variant="ghost" className="hover:bg-white/5">
+                {tCommon("buttons.signIn")}
+              </Button>
             </Link>
             <Link href="/auth/register">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button>{tCommon("buttons.getStarted")}</Button>
+                <Button className="bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90">
+                  {tCommon("buttons.getStarted")}
+                </Button>
               </motion.div>
             </Link>
           </div>
         </div>
       </motion.header>
 
-      <main>
+      <main className="relative z-10">
         {/* Hero Section */}
-        <section className="container py-24 md:py-32">
+        <section className="container py-32 md:py-48 relative">
+          {/* Hero Background Glow */}
+          <motion.div
+            className="absolute inset-0 -z-10 mx-auto w-[90%] h-[80%] bg-gradient-to-b from-primary/20 via-purple-500/10 to-transparent rounded-3xl blur-3xl"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
           <motion.div
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
-            className="mx-auto flex max-w-[980px] flex-col items-center gap-4 text-center"
+            className="mx-auto flex max-w-[980px] flex-col items-center gap-6 text-center"
           >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl"
+            >
+              <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+              <span className="text-sm font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Creative Solutions Platform
+              </span>
+            </motion.div>
+
             <motion.h1
               variants={fadeInUp}
-              transition={{ duration: 0.6 }}
-              className="text-4xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]"
+              transition={{ duration: 0.8 }}
+              className="text-5xl md:text-7xl lg:text-8xl font-black leading-none"
             >
-              {t("hero.title")}{" "}
-              <motion.span
-                className="bg-gradient-to-r from-white to-[#f900fe] bg-clip-text text-transparent"
-                animate={{
-                  backgroundPosition: ["0%", "100%", "0%"],
-                }}
-                transition={{ duration: 5, repeat: Infinity }}
-              >
+              <span className="block mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {t("hero.title")}
+              </span>
+              <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
                 {t("hero.accent")}
-              </motion.span>
+              </span>
             </motion.h1>
+
             <motion.p
               variants={fadeInUp}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="max-w-[750px] text-lg text-muted-foreground sm:text-xl"
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="max-w-[750px] text-xl text-muted-foreground leading-relaxed"
             >
               {t("hero.subtitle")}
             </motion.p>
+
             <motion.div
               variants={fadeInUp}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-wrap items-center justify-center gap-4 pt-4"
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center gap-4 pt-6"
             >
               <Link href="/auth/register">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button size="lg" className="h-12 px-8">
-                    {tCommon("buttons.startFreeTrial")}
+                  <Button
+                    size="lg"
+                    className="h-13 px-8 bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 font-semibold"
+                  >
+                    {tCommon("buttons.startFreeTrial")} <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </motion.div>
               </Link>
               <Link href="#how-it-works">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button size="lg" variant="outline" className="h-12 px-8">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-13 px-8 border-white/20 hover:bg-white/5"
+                  >
                     {tCommon("buttons.learnMore")}
                   </Button>
                 </motion.div>
               </Link>
             </motion.div>
+
             <motion.p
               variants={fadeInUp}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-sm text-muted-foreground"
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="text-sm text-muted-foreground italic"
             >
               {t("hero.note")}
             </motion.p>
@@ -201,211 +240,327 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="container py-24 bg-muted/50">
-          <div className="mx-auto max-w-[980px]">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-              transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <section id="features" className="container py-24 relative">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.6 }}
+            className="mb-16 text-center"
+          >
+            <motion.div className="inline-flex items-center gap-2 mb-6 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Key Features</span>
+            </motion.div>
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 {t("features.heading")}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">{t("features.subheading")}</p>
-            </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={staggerContainer}
-              className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-            >
-              {featureItems.map((feature) => (
-                <motion.div
-                  key={feature.key}
-                  variants={fadeInUp}
-                  transition={{ duration: 0.5 }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                >
-                  <Card className="border-0 bg-background h-full">
-                    <CardHeader>
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10"
-                      >
-                        <feature.icon className="h-6 w-6 text-primary" />
-                      </motion.div>
-                      <CardTitle className="text-xl">
-                        {t(`features.items.${feature.key}.title`)}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">
-                        {t(`features.items.${feature.key}.description`)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+              </span>
+            </h2>
+            <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t("features.subheading")}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
+          >
+            {featureItems.map((feature) => (
+              <motion.div
+                key={feature.key}
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                className="group relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Card className="relative border border-white/10 bg-background/50 backdrop-blur-xl hover:border-primary/30 transition-all h-full">
+                  <CardHeader>
+                    <motion.div
+                      whileHover={{ scale: 1.15, rotate: 5 }}
+                      className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary/30 to-purple-500/30 border border-primary/20"
+                    >
+                      <feature.icon className="h-7 w-7 text-primary" />
+                    </motion.div>
+                    <CardTitle className="text-2xl font-bold">
+                      {t(`features.items.${feature.key}.title`)}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {t(`features.items.${feature.key}.description`)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </section>
 
         {/* Image Carousel Section */}
         <ImageCarousel />
 
         {/* Pricing Section */}
-        <section id="pricing" className="container py-24">
-          <div className="mx-auto max-w-[1200px]">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-              transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        <section id="pricing" className="container py-24 relative">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.6 }}
+            className="mb-16 text-center"
+          >
+            <motion.div className="inline-flex items-center gap-2 mb-6 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Flexible Pricing</span>
+            </motion.div>
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 {t("pricing.heading")}
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">{t("pricing.subheading")}</p>
-            </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={staggerContainer}
-              className="grid gap-8 md:grid-cols-3"
-            >
-              {packageItems.map((pkg) => (
-                <motion.div
-                  key={pkg.key}
-                  variants={scaleIn}
-                  whileHover={{
-                    y: -10,
-                    boxShadow: "0 20px 40px -20px rgba(0,0,0,0.2)",
-                    transition: { duration: 0.3 },
-                  }}
+              </span>
+            </h2>
+            <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t("pricing.subheading")}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto"
+          >
+            {packageItems.map((pkg, idx) => (
+              <motion.div
+                key={pkg.key}
+                variants={scaleIn}
+                whileHover={{
+                  y: -12,
+                  transition: { duration: 0.3 },
+                }}
+                className={`relative group ${pkg.popular ? "md:scale-105" : ""}`}
+              >
+                {/* Card Glow */}
+                <div
+                  className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all ${
+                    pkg.popular
+                      ? "bg-gradient-to-br from-primary/40 via-purple-500/40 to-pink-500/40"
+                      : "bg-gradient-to-br from-primary/20 to-purple-500/20"
+                  }`}
+                />
+
+                <Card
+                  className={`relative border backdrop-blur-xl bg-background/50 transition-all h-full ${
+                    pkg.popular
+                      ? "border-primary/50 shadow-2xl shadow-primary/20"
+                      : "border-white/10 group-hover:border-primary/30"
+                  }`}
                 >
-                  <Card
-                    className={`relative h-full ${
-                      pkg.popular ? "border-primary shadow-lg scale-105" : ""
-                    }`}
-                  >
-                    {pkg.popular && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.5, type: "spring" }}
-                        className="absolute -top-3 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                      >
-                        {t("pricing.mostPopular")}
+                  {pkg.popular && (
+                    <motion.div
+                      initial={{ scale: 0, y: -20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                      className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-primary via-purple-500 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-lg"
+                    >
+                      🌟 {t("pricing.mostPopular")}
+                    </motion.div>
+                  )}
+
+                  <CardHeader className="text-center pt-8">
+                    <CardTitle className="text-3xl font-black">
+                      {t(`pricing.packages.${pkg.key}.name`)}
+                    </CardTitle>
+                    <CardDescription className="mt-4">
+                      <span className="text-5xl font-black bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                        ${pkg.price}
+                      </span>
+                      <span className="text-muted-foreground block mt-1">
+                        {t("pricing.perMonth")}
+                      </span>
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    <ul className="space-y-4">
+                      {packageFeatures(pkg.key).map((feature, featureIndex) => (
+                        <motion.li
+                          key={feature}
+                          className="flex items-start gap-3"
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: featureIndex * 0.08 }}
+                        >
+                          <motion.div className="mt-1 flex-shrink-0" whileHover={{ scale: 1.2 }}>
+                            <Check className="h-5 w-5 text-green-400 font-bold" />
+                          </motion.div>
+                          <span className="text-sm leading-relaxed">{feature}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Link href="/auth/register" className="w-full">
+                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          className={`w-full font-semibold h-12 ${
+                            pkg.popular
+                              ? "bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90"
+                              : "border border-white/20 hover:bg-white/5"
+                          }`}
+                          variant={pkg.popular ? "default" : "outline"}
+                        >
+                          {tCommon("buttons.getStarted")} <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
                       </motion.div>
-                    )}
-                    <CardHeader className="text-center">
-                      <CardTitle className="text-2xl">
-                        {t(`pricing.packages.${pkg.key}.name`)}
-                      </CardTitle>
-                      <CardDescription>
-                        <span className="text-4xl font-bold text-foreground">${pkg.price}</span>
-                        <span className="text-muted-foreground">{t("pricing.perMonth")}</span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {packageFeatures(pkg.key).map((feature, featureIndex) => (
-                          <motion.li
-                            key={feature}
-                            className="flex items-center gap-2"
-                            initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: featureIndex * 0.1 }}
-                          >
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{feature}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <CardFooter>
-                      <Link href="/auth/register" className="w-full">
-                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                          <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
-                            {tCommon("buttons.getStarted")}
-                          </Button>
-                        </motion.div>
-                      </Link>
-                    </CardFooter>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="container py-24 bg-muted/50">
-          <div className="mx-auto max-w-[980px]">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-              transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("how.heading")}</h2>
-              <p className="mt-4 text-lg text-muted-foreground">{t("how.subheading")}</p>
+        <section id="how-it-works" className="container py-24 relative">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.6 }}
+            className="mb-16 text-center"
+          >
+            <motion.div className="inline-flex items-center gap-2 mb-6 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-primary">Simple Process</span>
             </motion.div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={staggerContainer}
-              className="grid gap-8 md:grid-cols-3"
-            >
-              {howSteps.map((item) => (
-                <motion.div
-                  key={item.key}
-                  variants={fadeInUp}
-                  transition={{ duration: 0.5 }}
-                  className="text-center"
-                >
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {t("how.heading")}
+              </span>
+            </h2>
+            <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
+              {t("how.subheading")}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto"
+          >
+            {howSteps.map((item, idx) => (
+              <motion.div
+                key={item.key}
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="relative text-center group"
+              >
+                {/* Connection Line */}
+                {idx < howSteps.length - 1 && (
                   <motion.div
-                    whileHover={{ scale: 1.1, rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground"
-                  >
-                    {item.step}
-                  </motion.div>
-                  <h3 className="mb-2 text-xl font-semibold">{t(`how.steps.${item.key}.title`)}</h3>
-                  <p className="text-muted-foreground">{t(`how.steps.${item.key}.description`)}</p>
+                    className="hidden md:block absolute top-24 left-[60%] w-[80%] h-1 bg-gradient-to-r from-primary via-purple-500 to-transparent"
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                  />
+                )}
+
+                <motion.div
+                  whileHover={{ scale: 1.15 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-r from-primary via-purple-500 to-pink-500 border border-primary/30 text-4xl font-black bg-clip-text text-transparent group-hover:shadow-2xl group-hover:shadow-primary/20 transition-all"
+                >
+                  {item.step}
                 </motion.div>
-              ))}
-            </motion.div>
-          </div>
+
+                <h3 className="mb-4 text-2xl font-bold">{t(`how.steps.${item.key}.title`)}</h3>
+                <p className="text-muted-foreground leading-relaxed text-base">
+                  {t(`how.steps.${item.key}.description`)}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
         </section>
 
         {/* CTA Section */}
-        <section className="container py-24">
+        <section className="container py-32 relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={scaleIn}
-            className="mx-auto max-w-[600px] text-center"
+            className="relative mx-auto max-w-2xl text-center"
           >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("cta.heading")}</h2>
-            <p className="mt-4 text-lg text-muted-foreground">{t("cta.subheading")}</p>
-            <motion.div className="mt-8" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {/* CTA Background Glow */}
+            <motion.div
+              className="absolute inset-0 -z-10 mx-auto w-[100%] h-[150%] bg-gradient-to-b from-primary/30 via-purple-500/20 to-transparent rounded-3xl blur-3xl"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.5, 0.3],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-6">
+                <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  {t("cta.heading")}
+                </span>
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed mb-10">
+                {t("cta.subheading")}
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
               <Link href="/auth/register">
-                <Button size="lg" className="h-12 px-8">
-                  {t("cta.button")}
-                </Button>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    className="h-14 px-10 text-lg font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 shadow-lg shadow-primary/20"
+                  >
+                    {t("cta.button")} <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </motion.div>
+              </Link>
+              <Link href="#features">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-14 px-10 text-lg border-white/20 hover:bg-white/5"
+                  >
+                    {tCommon("buttons.learnMore")}
+                  </Button>
+                </motion.div>
               </Link>
             </motion.div>
           </motion.div>
@@ -414,13 +569,13 @@ export default function LandingPage() {
 
       {/* Footer */}
       <motion.footer
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="border-t py-12"
+        transition={{ duration: 0.6 }}
+        className="border-t border-white/10 py-12 relative z-10 mt-12"
       >
-        <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="container flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center space-x-2">
             <Image
               src="/images/logo.svg"
@@ -429,27 +584,24 @@ export default function LandingPage() {
               height={32}
               className="h-8 w-auto"
             />
+            <span className="font-bold hidden sm:inline">Nabra</span>
           </div>
           <p className="text-sm text-muted-foreground">{tCommon("footer.copyright")}</p>
-          <div className="flex items-center space-x-4">
-            <Link
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {tCommon("footer.privacy")}
-            </Link>
-            <Link
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {tCommon("footer.terms")}
-            </Link>
-            <Link
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {tCommon("footer.contact")}
-            </Link>
+          <div className="flex items-center space-x-6">
+            {[
+              { label: tCommon("footer.privacy"), href: "#" },
+              { label: tCommon("footer.terms"), href: "#" },
+              { label: tCommon("footer.contact"), href: "#" },
+            ].map((link) => (
+              <Link key={link.label} href={link.href}>
+                <motion.span
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                  whileHover={{ y: -2 }}
+                >
+                  {link.label}
+                </motion.span>
+              </Link>
+            ))}
           </div>
         </div>
       </motion.footer>

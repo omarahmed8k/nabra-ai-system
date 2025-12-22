@@ -596,6 +596,7 @@
       "answerType": "Answer Type",
       "text": "Text (short answer)",
       "textarea": "Textarea (long answer)",
+      "number": "Number (numeric input)",
       "select": "Select (single choice)",
       "multiselect": "Multiselect (multiple choices)",
       "required": "Required",
@@ -605,6 +606,12 @@
       "optionsCount": "{count} option(s) defined",
       "placeholder": "Placeholder",
       "placeholderOptional": "Placeholder (optional)",
+      "minValue": "Minimum Value",
+      "maxValue": "Maximum Value",
+      "creditImpact": "Credit Impact (per unit)",
+      "creditImpactHelp": "Additional credits charged per selected value or number entered",
+      "includedQuantity": "Included Quantity",
+      "includedQuantityHelp": "First N units included in base price (for number inputs only)",
       "examplePlaceholder": "e.g., Enter dimensions like 1920x1080",
       "helpText": "Help Text",
       "helpTextOptional": "Help Text (optional)",
@@ -763,6 +770,7 @@
       "created": "Created",
       "creditBreakdown": "Credit Cost Breakdown:",
       "baseCost": "Base Cost:",
+      "attributesCost": "Attributes Cost:",
       "priorityCost": "Priority ({priority}):",
       "revisionCost": "Revision Cost:",
       "freeRevision": "Free Revision:",
@@ -803,6 +811,11 @@
       "deliverable": "Deliverable",
       "attachment": "📎 Attachment {number}",
       "attachmentFallback": "(Attachment)",
+      "attachmentsPending": "{count, plural, one {# attachment pending} other {# attachments pending}}",
+      "attachmentsSendHint": "Press Send to include attachments",
+      "voiceNote": "Voice note",
+      "image": "Image",
+      "file": "File",
       "recordVoice": "Record voice note",
       "send": "Send",
       "messageSent": "Message Sent",
@@ -1106,6 +1119,9 @@
       "subtitle": "Describe what you need and we'll match you with a provider",
       "requestDetails": "Request Details",
       "costInfo": "Base cost: {baseCost} {credit} + Priority cost ({priorityCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
+      "costInfoWithAttributes": "Base cost: {baseCost} {credit} + Attributes ({attributeCost} {credit}) + Priority ({priorityCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
+      "costInfoNoPriority": "Base cost: {baseCost} {credit}. You have {available} credits available.",
+      "costInfoNoPriorityWithAttributes": "Base cost: {baseCost} {credit} + Attributes ({attributeCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
       "costInfoNoService": "Select a service to see the credit cost. You have {available} credits available.",
       "credit": "credit",
       "credits": "credits",
@@ -1143,7 +1159,9 @@
       "serviceQuestions": {
         "title": "Service-Specific Questions",
         "description": "Please provide additional information about your request",
-        "selectOption": "Select an option"
+        "selectOption": "Select an option",
+        "extraCost": "+{cost} credits per {unit}",
+        "extraCostWithIncluded": "+{cost} credits per {unit} (first {included} included)"
       },
       "actions": {
         "cancel": "Cancel",
@@ -1174,7 +1192,6 @@
         "ofTotal": "of {total} total",
         "daysRemaining": "Days Remaining",
         "expires": "Expires {date}",
-        "monthlyPrice": "Monthly Price",
         "expiringWarning": "Your subscription expires in {days} days",
         "cancelSubscription": "Cancel Subscription"
       },
@@ -1196,7 +1213,8 @@
       },
       "info": {
         "dayDuration": "days",
-        "servicesIncluded": "Services Included"
+        "servicesIncluded": "Services Included",
+        "credits": "credits"
       },
       "usageStats": {
         "title": "Usage Statistics",

@@ -11,6 +11,7 @@ interface RequestHeaderProps {
   readonly priority: number;
   readonly creditCost: number;
   readonly baseCreditCost?: number;
+  readonly attributeCredits?: number;
   readonly priorityCreditCost?: number;
   readonly isRevision?: boolean;
   readonly revisionType?: string | null;
@@ -39,6 +40,7 @@ interface CreditBreakdownData {
 function calculateCreditBreakdown(
   creditCost: number,
   baseCreditCost?: number,
+  attributeCredits?: number,
   priorityCreditCost?: number,
   paidRevisionCost?: number,
   isRevision?: boolean,
@@ -46,9 +48,10 @@ function calculateCreditBreakdown(
 ): CreditBreakdownData {
   const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
   const base = baseCreditCost ?? 0;
+  const attrs = attributeCredits ?? 0;
   const prio = priorityCreditCost ?? 0;
   const paidUnit = paidRevisionCost ?? 0;
-  const paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - prio) : 0;
+  const paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - attrs - prio) : 0;
   const hasPaidRevisions = paidRevisionTotal > 0;
   const canDeriveMultiplier = paidUnit > 0;
   const paidRevisionMultiplier = canDeriveMultiplier ? Math.floor(paidRevisionTotal / paidUnit) : 0;
@@ -56,6 +59,9 @@ function calculateCreditBreakdown(
 
   let creditBreakdown: string | undefined;
   if (hasCreditBreakdown) {
+    const parts = [`Base: ${baseCreditCost}`];
+    if (attrs > 0) parts.push(`Attributes: ${attrs}`);
+    parts.push(`Priority: ${priorityCreditCost}`);
     const revisionInfo = getRevisionInfo(
       hasPaidRevisions,
       canDeriveMultiplier,
@@ -64,7 +70,7 @@ function calculateCreditBreakdown(
       paidUnit,
       showFreeRevision
     );
-    creditBreakdown = `Base: ${baseCreditCost} + Priority: ${priorityCreditCost}${revisionInfo}`;
+    creditBreakdown = parts.join(" + ") + revisionInfo;
   }
 
   return {
@@ -135,6 +141,7 @@ export function RequestHeader({
   priority,
   creditCost,
   baseCreditCost,
+  attributeCredits,
   priorityCreditCost,
   isRevision,
   revisionType,
@@ -159,6 +166,7 @@ export function RequestHeader({
   const breakdown = calculateCreditBreakdown(
     creditCost,
     baseCreditCost,
+    attributeCredits,
     priorityCreditCost,
     paidRevisionCost,
     isRevision,
@@ -216,6 +224,14 @@ export function RequestHeader({
                 </span>
                 <span className="font-medium">
                   +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}
+                </span>
+              </div>
+            )}
+            {attributeCredits !== undefined && attributeCredits > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t("attributesCost")}</span>
+                <span className="font-medium">
+                  +{attributeCredits} {attributeCredits === 1 ? t("credit") : t("credits")}
                 </span>
               </div>
             )}

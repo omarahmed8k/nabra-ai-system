@@ -18,7 +18,7 @@ export default function AvailableJobDetailPage() {
   const router = useRouter();
   const t = useTranslations("provider.availableDetail");
   const locale = useLocale();
-  const requestId = params.id as string;
+  const requestId = params?.id as string;
 
   const { data: request, isLoading } = trpc.request.getById.useQuery({
     id: requestId,
@@ -72,7 +72,7 @@ export default function AvailableJobDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <RequestHeader
-        title={resolveLocalizedText((request as any).titleI18n, locale, request.title)}
+        title={request.title}
         status={request.status}
         priority={request.priority}
         creditCost={(request as any).creditCost}
@@ -99,14 +99,7 @@ export default function AvailableJobDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          <RequestDescription
-            description={resolveLocalizedText(
-              (request as any).descriptionI18n,
-              locale,
-              request.description
-            )}
-            attachments={request.attachments}
-          />
+          <RequestDescription description={request.description} attachments={request.attachments} />
 
           {/* Service-Specific Q&A Responses */}
           {(request as any).attributeResponses &&
