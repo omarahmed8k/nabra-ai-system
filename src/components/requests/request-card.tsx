@@ -1,6 +1,7 @@
 import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, getStatusColor, getPriorityColor } from "@/lib/utils";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { Clock } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -18,6 +19,7 @@ interface RequestCardProps {
   readonly createdAt: Date;
   readonly serviceType: {
     name: string;
+    nameI18n?: Record<string, string> | null;
     icon?: string | null;
   };
   readonly client?: {
@@ -32,6 +34,7 @@ interface RequestCardProps {
   readonly href: string;
   readonly actions?: React.ReactNode;
   readonly variant?: "compact" | "detailed";
+  readonly showProviderAsBrand?: boolean;
 }
 
 export function RequestCard({
@@ -53,10 +56,16 @@ export function RequestCard({
   href,
   actions,
   variant = "compact",
+  showProviderAsBrand = false,
 }: RequestCardProps) {
   const tCommon = useTranslations("common");
   const tCard = useTranslations("requests.card");
+  const tSidebar = useTranslations("requests.sidebar");
   const locale = useLocale();
+  const serviceName = resolveLocalizedText(serviceType.nameI18n, locale, serviceType.name);
+  const providerDisplayName = showProviderAsBrand
+    ? tSidebar("brandProviderName")
+    : provider?.name || provider?.email;
 
   const getPriorityKey = (priority: number): "LOW" | "MEDIUM" | "HIGH" => {
     if (priority === 1) return "LOW";
@@ -113,7 +122,7 @@ export function RequestCard({
         <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             {serviceType.icon && `${serviceType.icon} `}
-            <span className="truncate">{serviceType.name}</span>
+            <span className="truncate">{serviceName}</span>
           </span>
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -126,7 +135,7 @@ export function RequestCard({
           )}
           {provider && (
             <span className="truncate">
-              <strong>{tCard("provider")}:</strong> {provider.name || provider.email}
+              <strong>{tCard("provider")}:</strong> {providerDisplayName}
             </span>
           )}
           {commentCount !== undefined && <span>{tCard("messages", { count: commentCount })}</span>}

@@ -453,7 +453,20 @@ export const requestRouter = router({
           provider: {
             select: { id: true, name: true, email: true, image: true },
           },
-          serviceType: true,
+          serviceType: {
+            select: {
+              id: true,
+              name: true,
+              nameI18n: true,
+              descriptionI18n: true,
+              icon: true,
+              creditCost: true,
+              attributes: true,
+              maxFreeRevisions: true,
+              paidRevisionCost: true,
+              deletedAt: true,
+            },
+          },
           comments: {
             include: {
               user: {

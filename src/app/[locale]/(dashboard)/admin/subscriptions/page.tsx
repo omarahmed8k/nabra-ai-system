@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { trpc } from "@/lib/trpc/client";
 import { formatDate } from "@/lib/utils";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -230,7 +231,13 @@ export default function AdminSubscriptionsPage() {
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{sub.package.name}</p>
+                          <p className="font-medium">
+                            {resolveLocalizedText(
+                              (sub.package as any).nameI18n,
+                              locale,
+                              sub.package.name
+                            )}
+                          </p>
                           <p className="text-muted-foreground">${sub.package.price}</p>
                         </div>
                       </div>

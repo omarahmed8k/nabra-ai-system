@@ -4,7 +4,8 @@ import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import {
   Users,
   FileText,
@@ -50,6 +51,7 @@ export default function AdminDashboard() {
   const { data: subscriptionsData, isLoading: subsLoading } =
     trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
   const t = useTranslations("admin.dashboard");
+  const locale = useLocale();
 
   const renderTopProviders = () => {
     if (analyticsLoading) {
@@ -112,13 +114,15 @@ export default function AdminDashboard() {
           (sub: {
             id: string;
             user: { name: string | null; email: string };
-            package: { name: string; price: number };
+            package: { name: string; price: number; nameI18n?: any };
             remainingCredits: number;
           }) => (
             <div key={sub.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div>
                 <p className="font-medium">{sub.user.name || sub.user.email}</p>
-                <p className="text-sm text-muted-foreground">{sub.package.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {resolveLocalizedText(sub.package.nameI18n, locale, sub.package.name)}
+                </p>
               </div>
               <div className="text-end">
                 <p className="font-bold">${sub.package.price}</p>

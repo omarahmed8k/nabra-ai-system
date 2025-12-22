@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import { FileText, CheckCircle, Star, TrendingUp } from "lucide-react";
 export default function ProviderDashboard() {
   const { data: session } = useSession();
   const t = useTranslations("provider.dashboard");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
 
   const { data: myRequests, isLoading: myReqLoading } = trpc.provider.getMyRequests.useQuery({
@@ -138,14 +140,13 @@ export default function ProviderDashboard() {
             )}
             {!isLoading && (myRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
-                {myRequests?.requests.map(
-                  (request: {
-                    id: string;
-                    title: string;
-                    status: string;
-                    createdAt: Date;
-                    serviceType: { name: string };
-                  }) => (
+                {myRequests?.requests.map((request: any) => {
+                  const serviceName = resolveLocalizedText(
+                    request.serviceType?.nameI18n,
+                    locale,
+                    request.serviceType?.name
+                  );
+                  return (
                     <Link
                       key={request.id}
                       href={`/provider/requests/${request.id}`}
@@ -155,16 +156,16 @@ export default function ProviderDashboard() {
                         <div className="space-y-1">
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {request.serviceType.name} • {formatDate(request.createdAt, locale)}
+                            {serviceName} • {formatDate(request.createdAt, locale)}
                           </p>
                         </div>
                         <Badge variant={null} className={getStatusColor(request.status)}>
-                          {request.status.replace("_", " ")}
+                          {tCommon(`requestStatus.${request.status}` as any)}
                         </Badge>
                       </div>
                     </Link>
-                  )
-                )}
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -199,14 +200,13 @@ export default function ProviderDashboard() {
             )}
             {!isLoading && (availableRequests?.requests.length ?? 0) > 0 && (
               <div className="space-y-4">
-                {availableRequests?.requests.map(
-                  (request: {
-                    id: string;
-                    title: string;
-                    status: string;
-                    createdAt: Date;
-                    serviceType: { name: string };
-                  }) => (
+                {availableRequests?.requests.map((request: any) => {
+                  const serviceName = resolveLocalizedText(
+                    request.serviceType?.nameI18n,
+                    locale,
+                    request.serviceType?.name
+                  );
+                  return (
                     <Link
                       key={request.id}
                       href={`/provider/available/${request.id}`}
@@ -216,14 +216,14 @@ export default function ProviderDashboard() {
                         <div className="space-y-1">
                           <p className="font-medium">{request.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {request.serviceType.name} • {formatDate(request.createdAt, locale)}
+                            {serviceName} • {formatDate(request.createdAt, locale)}
                           </p>
                         </div>
                         <Badge variant="secondary">{t("availableJobs.new")}</Badge>
                       </div>
                     </Link>
-                  )
-                )}
+                  );
+                })}
               </div>
             )}
           </CardContent>

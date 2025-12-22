@@ -1128,6 +1128,7 @@
       "insufficientCredits": {
         "title": "Insufficient Credits",
         "description": "This request requires {required} {credit} ({baseCost} base + {priorityCost} priority) but you only have {available}. Please subscribe to a plan or purchase more credits.",
+        "descriptionNoPriority": "This request requires {required} {credit} ({baseCost} base) but you only have {available}. Please subscribe to a plan or purchase more credits.",
         "viewPlans": "View Plans"
       },
       "noSubscription": {
@@ -1161,7 +1162,9 @@
         "description": "Please provide additional information about your request",
         "selectOption": "Select an option",
         "extraCost": "+{cost} credits per {unit}",
-        "extraCostWithIncluded": "+{cost} credits per {unit} (first {included} included)"
+        "extraCostWithIncluded": "+{cost} credits per {unit} (first {included} included)",
+        "selection": "selection",
+        "unit": "unit"
       },
       "actions": {
         "cancel": "Cancel",
@@ -1306,7 +1309,9 @@
       "subtitle": "Browse and claim new service requests",
       "openRequests": "Open Requests",
       "jobsAvailable": "{count} jobs available",
-      "viewDetails": "View Details"
+      "viewDetails": "View Details",
+      "noJobsTitle": "No available jobs",
+      "noJobsDescription": "Check back later for new opportunities"
     },
     "availableDetail": {
       "notFound": "Request not found",

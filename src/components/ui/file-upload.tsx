@@ -209,6 +209,7 @@ export function FileUpload({
               <Upload className="h-8 w-8 text-muted-foreground" />
               <div>
                 <Button
+                  className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-black focus:ring-2 focus:ring-primary/30"
                   type="button"
                   variant="ghost"
                   size="sm"

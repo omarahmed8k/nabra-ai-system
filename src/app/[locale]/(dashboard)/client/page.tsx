@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { Plus, CreditCard, FileText, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
   const t = useTranslations("client.dashboard");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const { data: session } = useSession();
   const { data: subscription, isLoading: subLoading } = trpc.subscription.getActive.useQuery();
@@ -56,7 +58,13 @@ export default function ClientDashboard() {
                 <div className="text-2xl font-bold">{subscription?.remainingCredits || 0}</div>
                 <p className="text-xs text-muted-foreground">
                   {subscription
-                    ? t("stats.plan", { name: subscription.package.name })
+                    ? t("stats.plan", {
+                        name: resolveLocalizedText(
+                          subscription.package?.nameI18n,
+                          locale,
+                          subscription.package?.name
+                        ),
+                      })
                     : t("stats.noActivePlan")}
                 </p>
               </>
@@ -168,31 +176,31 @@ export default function ClientDashboard() {
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">
-              {requestsData?.requests.map(
-                (request: {
-                  id: string;
-                  title: string;
-                  status: string;
-                  createdAt: Date;
-                  serviceType: { name: string };
-                }) => (
+              {requestsData?.requests.map((request: any) => {
+                const serviceName = resolveLocalizedText(
+                  request.serviceType?.nameI18n,
+                  locale,
+                  request.serviceType?.name
+                );
+
+                return (
                   <Link key={request.id} href={`/client/requests/${request.id}`} className="block">
                     <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                       <div className="space-y-1">
                         <p className="font-medium">{request.title}</p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{request.serviceType.name}</span>
+                          <span>{serviceName}</span>
                           <span>•</span>
                           <span>{formatDate(request.createdAt, locale)}</span>
                         </div>
                       </div>
                       <Badge variant={null} className={getStatusColor(request.status)}>
-                        {request.status.replace("_", " ")}
+                        {tCommon(`requestStatus.${request.status}` as any)}
                       </Badge>
                     </div>
                   </Link>
-                )
-              )}
+                );
+              })}
             </div>
           )}
         </CardContent>

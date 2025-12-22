@@ -43,7 +43,7 @@
     "hero": {
       "title": "الخدمات الرقمية،",
       "accent": "ببساطة",
-      "subtitle": "تواصل مع المصممين والمطورين وصناع المحتوى عبر نظام اعتمادات مرن. بدون مفاوضات أو مفاجآت – عمل عالي الجودة بسرعة.",
+      "subtitle": "تواصل مع المصممين والمطورين وصناع المحتوى عبر نظام كريدت مرن. بدون مفاوضات أو مفاجآت – عمل عالي الجودة بسرعة.",
       "note": "لا تحتاج بطاقة ائتمانية • إلغاء في أي وقت"
     },
     "features": {
@@ -51,8 +51,8 @@
       "subheading": "منصة واحدة لكل احتياجاتك الرقمية",
       "items": {
         "credit": {
-          "title": "نظام قائم على الاعتمادات",
-          "description": "اشترِ الاعتمادات واستخدمها لأي خدمة. دون تفاوض على كل مشروع."
+          "title": "نظام قائم على الكريدت",
+          "description": "اشترِ الكريدت واستخدمها لأي خدمة. دون تفاوض على كل مشروع."
         },
         "quality": {
           "title": "جودة مضمونة",
@@ -81,7 +81,7 @@
         "starter": {
           "name": "Starter",
           "features": [
-            "5 اعتمادات للطلبات",
+            "5 كريدت للطلبات",
             "مراجعتان مجاناً لكل طلب",
             "دعم عبر البريد الإلكتروني",
             "وقت استجابة 48 ساعة"
@@ -90,7 +90,7 @@
         "professional": {
           "name": "Professional",
           "features": [
-            "20 اعتماداً للطلبات",
+            "20 كريدت للطلبات",
             "3 مراجعات مجانية لكل طلب",
             "دعم أولوية",
             "وقت استجابة 24 ساعة",
@@ -100,7 +100,7 @@
         "enterprise": {
           "name": "Enterprise",
           "features": [
-            "50 اعتماداً للطلبات",
+            "50 كريدت للطلبات",
             "5 مراجعات مجانية لكل طلب",
             "دعم أولوية على مدار الساعة",
             "وقت استجابة 12 ساعة",
@@ -117,7 +117,7 @@
       "steps": {
         "subscribe": {
           "title": "اشترك",
-          "description": "اختر الخطة المناسبة واحصل على اعتماداتك فوراً."
+          "description": "اختر الخطة المناسبة واحصل على كريدتك فوراً."
         },
         "create": {
           "title": "أنشئ طلبك",
@@ -460,9 +460,9 @@
         "price": "السعر ($)",
         "priceRequired": "السعر ($) *",
         "priceHint": "السعر بالدولار الأمريكي (مثال: 29.99)",
-        "credits": "الاعتمادات",
-        "creditsRequired": "الاعتمادات *",
-        "creditsHint": "عدد الاعتمادات المتضمنة",
+        "credits": "الكريدت",
+        "creditsRequired": "الكريدت *",
+        "creditsHint": "عدد الكريدت المتضمنة",
         "duration": "المدة (أيام)",
         "durationRequired": "المدة (أيام) *",
         "durationHint": "فترة صلاحية الباقة",
@@ -475,7 +475,7 @@
         "noServicesConfigured": "لم يتم تكوين خدمات"
       },
       "info": {
-        "credits": "اعتمادات",
+        "credits": "كريدت",
         "dayDuration": "مدة يوم",
         "perMonth": "/شهرياً",
         "includedServicesLabel": "الخدمات المتضمنة:",
@@ -527,27 +527,27 @@
         "descriptionRequired": "الوصف *",
         "descriptionHint": "10-500 حرف",
         "localizedDescription": "الوصف المترجم",
-        "creditCost": "تكلفة الاعتماد الأساسية",
-        "creditCostRequired": "تكلفة الاعتماد الأساسية *",
-        "creditCostHint": "عدد الاعتمادات المطلوبة لإنشاء طلب لهذه الخدمة",
+        "creditCost": "تكلفة الكريدت الأساسية",
+        "creditCostRequired": "تكلفة الكريدت الأساسية *",
+        "creditCostHint": "عدد الكريدت المطلوبة لإنشاء طلب لهذه الخدمة",
         "priorityCostLow": "تكلفة الأولوية المنخفضة",
-        "priorityCostLowHint": "اعتمادات إضافية للأولوية المنخفضة (+0)",
+        "priorityCostLowHint": "كريدت إضافية للأولوية المنخفضة (+0)",
         "priorityCostMedium": "تكلفة الأولوية المتوسطة",
-        "priorityCostMediumHint": "اعتمادات إضافية للأولوية المتوسطة (+1)",
+        "priorityCostMediumHint": "كريدت إضافية للأولوية المتوسطة (+1)",
         "priorityCostHigh": "تكلفة الأولوية العالية",
-        "priorityCostHighHint": "اعتمادات إضافية للأولوية العالية (+2)",
+        "priorityCostHighHint": "كريدت إضافية للأولوية العالية (+2)",
         "maxFreeRevisions": "الحد الأقصى للمراجعات المجانية",
         "maxFreeRevisionsHint": "عدد المراجعات المجانية المسموح بها",
-        "paidRevisionCost": "تكلفة المراجعة المدفوعة (اعتمادات)",
-        "paidRevisionCostHint": "الاعتمادات المحملة للمراجعات المدفوعة",
+        "paidRevisionCost": "تكلفة المراجعة المدفوعة (كريدت)",
+        "paidRevisionCostHint": "الكريدت المحملة للمراجعات المدفوعة",
         "resetFreeRevisionsOnPaid": "إعادة تعيين المراجعات المجانية عند الدفع",
         "resetFreeRevisionsOnPaidHint": "إعادة تعيين عدد المراجعات المجانية بعد مراجعة مدفوعة"
       },
       "info": {
         "questions": "سؤال",
         "questionsPlural": "أسئلة",
-        "credit": "اعتماد",
-        "creditsPlural": "اعتمادات",
+        "credit": "كريدت",
+        "creditsPlural": "كريدت",
         "freeRevisions": "مجاناً، ثم",
         "perRevision": "/مراجعة",
         "resetsOnPaid": "يعيد التعيين عند الدفع",
@@ -578,8 +578,8 @@
       "display": {
         "questionLabel": "سؤال",
         "questionsLabel": "أسئلة",
-        "creditLabel": "اعتماد",
-        "creditsLabel": "اعتمادات",
+        "creditLabel": "كريدت",
+        "creditsLabel": "كريدت",
         "revisionInfo": "{freeRevisions} مجاني، ثم {paidCost} {creditLabel}/تعديل",
         "resetsOnPaid": "يتم إعادة التعيين عند الدفع",
         "noResetOnPaid": "لا يتم إعادة التعيين عند الدفع"
@@ -765,10 +765,10 @@
     "header": {
       "back": "رجوع",
       "priority": "الأولوية",
-      "credit": "اعتماد",
-      "credits": "اعتمادات",
+      "credit": "كريدت",
+      "credits": "كريدت",
       "created": "تم الإنشاء",
-      "creditBreakdown": "تفاصيل تكلفة الاعتمادات:",
+      "creditBreakdown": "تفاصيل تكلفة الكريدت:",
       "baseCost": "التكلفة الأساسية:",
       "attributesCost": "تكلفة الإضافات:",
       "priorityCost": "الأولوية ({priority}):",
@@ -1128,6 +1128,7 @@
       "insufficientCredits": {
         "title": "كريدت غير كافٍ",
         "description": "يتطلب هذا الطلب {required} {credit} ({baseCost} أساسي + {priorityCost} أولوية) ولكن لديك {available} فقط. يرجى الاشتراك في باقة أو شراء المزيد من الكريدت.",
+        "descriptionNoPriority": "يتطلب هذا الطلب {required} {credit} ({baseCost} أساسي) ولكن لديك {available} فقط. يرجى الاشتراك في باقة أو شراء المزيد من الكريدت.",
         "viewPlans": "عرض الباقات"
       },
       "noSubscription": {
@@ -1161,7 +1162,9 @@
         "description": "يرجى تقديم معلومات إضافية حول طلبك",
         "selectOption": "اختر خياراً",
         "extraCost": "+{cost} كريدت لكل {unit}",
-        "extraCostWithIncluded": "+{cost} كريدت لكل {unit} (أول {included} مشمول)"
+        "extraCostWithIncluded": "+{cost} كريدت لكل {unit} (أول {included} مشمول)",
+        "selection": "اختيار",
+        "unit": "وحدة"
       },
       "actions": {
         "cancel": "إلغاء",
@@ -1306,7 +1309,9 @@
       "subtitle": "تصفح واستلم طلبات خدمة جديدة",
       "openRequests": "الطلبات المفتوحة",
       "jobsAvailable": "{count} وظيفة متاحة",
-      "viewDetails": "عرض التفاصيل"
+      "viewDetails": "عرض التفاصيل",
+      "noJobsTitle": "لا توجد وظائف متاحة",
+      "noJobsDescription": "تحقق لاحقاً من الفرص الجديدة"
     },
     "availableDetail": {
       "notFound": "الطلب غير موجود",

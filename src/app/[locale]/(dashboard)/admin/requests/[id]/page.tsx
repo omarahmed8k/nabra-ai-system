@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileText } from "lucide-react";
@@ -11,9 +11,11 @@ import { RequestDescription } from "@/components/requests/request-description";
 import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
+import { resolveLocalizedText } from "@/lib/i18n";
 
 export default function AdminRequestDetailPage() {
   const t = useTranslations("admin.requests");
+  const locale = useLocale();
   const params = useParams();
   const requestId = params?.id as string;
 
@@ -57,7 +59,11 @@ export default function AdminRequestDetailPage() {
         isRevision={request.isRevision}
         revisionType={request.revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}
-        serviceTypeName={request.serviceType.name}
+        serviceTypeName={resolveLocalizedText(
+          (request.serviceType as any).nameI18n,
+          locale,
+          request.serviceType.name
+        )}
         serviceTypeIcon={request.serviceType.icon || undefined}
         createdAt={request.createdAt}
         backUrl="/admin/requests"
@@ -74,7 +80,10 @@ export default function AdminRequestDetailPage() {
           {(request as any).attributeResponses &&
             Array.isArray((request as any).attributeResponses) &&
             (request as any).attributeResponses.length > 0 && (
-              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+              <AttributeResponsesDisplay
+                responses={(request as any).attributeResponses}
+                serviceAttributes={(request.serviceType as any).attributes}
+              />
             )}
 
           {/* Messages */}
@@ -92,7 +101,11 @@ export default function AdminRequestDetailPage() {
         <RequestSidebar
           client={request.client}
           provider={request.provider || null}
-          serviceTypeName={request.serviceType.name}
+          serviceTypeName={resolveLocalizedText(
+            (request.serviceType as any).nameI18n,
+            locale,
+            request.serviceType.name
+          )}
           serviceTypeIcon={request.serviceType.icon || undefined}
           createdAt={request.createdAt}
           updatedAt={request.updatedAt}

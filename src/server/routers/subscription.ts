@@ -83,7 +83,18 @@ export const subscriptionRouter = router({
           cancelledAt: null,
         },
         include: {
-          package: true,
+          package: {
+            select: {
+              id: true,
+              name: true,
+              nameI18n: true,
+              descriptionI18n: true,
+              price: true,
+              credits: true,
+              durationDays: true,
+              isFreePackage: true,
+            },
+          },
           paymentProof: true,
         },
         orderBy: { createdAt: "desc" },
@@ -418,6 +429,7 @@ export const subscriptionRouter = router({
         id: sub.id,
         type: "subscription" as const,
         packageName: sub.package.name,
+        packageNameI18n: (sub.package as any).nameI18n,
         packagePrice: sub.package.price,
         credits: sub.package.credits,
         remainingCredits: sub.remainingCredits,

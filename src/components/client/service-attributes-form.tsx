@@ -67,7 +67,7 @@ export function ServiceAttributesForm({
   const getCreditCostLabel = (attr: ServiceAttribute): string | null => {
     if (!attr.creditImpact || attr.creditImpact === 0) return null;
 
-    const unit = attr.type === "select" ? "selection" : "unit";
+    const unit = attr.type === "select" ? t("selection") : t("unit");
 
     if (attr.type === "number" && attr.includedQuantity !== undefined) {
       return t("extraCostWithIncluded", {

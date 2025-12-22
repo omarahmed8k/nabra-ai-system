@@ -69,6 +69,7 @@ export default function RequestsPage() {
                   commentCount={request._count.comments}
                   href={`/client/requests/${request.id}`}
                   variant="compact"
+                  showProviderAsBrand
                 />
               ))}
             </div>

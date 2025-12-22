@@ -219,7 +219,10 @@ export default function ProviderRequestDetailPage() {
           {(request as any).attributeResponses &&
             Array.isArray((request as any).attributeResponses) &&
             (request as any).attributeResponses.length > 0 && (
-              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+              <AttributeResponsesDisplay
+                responses={(request as any).attributeResponses}
+                serviceAttributes={(request.serviceType as any).attributes}
+              />
             )}
 
           {/* Action Card */}
@@ -234,7 +237,7 @@ export default function ProviderRequestDetailPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="estimatedHours" className="text-sm font-medium text-blue-800">
-                    Estimated Delivery Time
+                    {t("startWork.estimatedDeliveryTime")}
                   </label>
                   <div className="flex gap-2 items-center">
                     <input
@@ -247,26 +250,24 @@ export default function ProviderRequestDetailPage() {
                       className="flex text-black h-10 w-24 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       placeholder="24"
                     />
-                    <span className="text-sm text-blue-700">hours</span>
+                    <span className="text-sm text-blue-700">{t("startWork.hours")}</span>
                     <span className="text-xs text-blue-600 flex items-center gap-2">
                       (
                       {(() => {
                         const hours = Number.parseInt(estimatedHours, 10);
                         if (Number.isNaN(hours) || hours <= 0) {
-                          return "Enter hours";
+                          return t("startWork.enterHours");
                         }
                         if (hours < 24) {
-                          return `${hours} hour${hours === 1 ? "" : "s"}`;
+                          return `${hours} ${hours === 1 ? t("startWork.hour") : t("startWork.hoursPlural")}`;
                         }
                         const days = Math.round(hours / 24);
-                        return `~${days} day${days === 1 ? "" : "s"}`;
+                        return `~${days} ${days === 1 ? t("startWork.day") : t("startWork.daysPlural")}`;
                       })()}
                       )
                     </span>
                   </div>
-                  <p className="text-xs text-blue-600">
-                    Estimate between 1-720 hours (up to 30 days)
-                  </p>
+                  <p className="text-xs text-blue-600">{t("startWork.estimateRange")}</p>
                 </div>
                 <Button
                   onClick={handleStartWork}
@@ -274,7 +275,7 @@ export default function ProviderRequestDetailPage() {
                   className="flex items-center gap-2"
                 >
                   <Play className="h-4 w-4" />
-                  {startWork.isPending ? "Starting..." : "Start Work"}
+                  {startWork.isPending ? t("startWork.starting") : t("startWork.button")}
                 </Button>
               </CardContent>
             </Card>
@@ -550,7 +551,11 @@ export default function ProviderRequestDetailPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           <RequestSidebar
-            serviceTypeName={request.serviceType.name}
+            serviceTypeName={resolveLocalizedText(
+              (request.serviceType as any).nameI18n,
+              locale,
+              request.serviceType.name
+            )}
             serviceTypeIcon={request.serviceType.icon || undefined}
             createdAt={request.createdAt}
             updatedAt={request.updatedAt}

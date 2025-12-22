@@ -167,13 +167,18 @@ export default function NewRequestPage() {
           <CardHeader>
             <CardTitle className="text-orange-800">{t("insufficientCredits.title")}</CardTitle>
             <CardDescription className="text-orange-700">
-              {t("insufficientCredits.description", {
-                required: totalCreditCost,
-                credit: totalCreditCost === 1 ? t("credit") : t("credits"),
-                baseCost: baseCreditCost,
-                priorityCost,
-                available: subscription?.remainingCredits || 0,
-              })}
+              {t(
+                priorityCost > 0
+                  ? "insufficientCredits.description"
+                  : "insufficientCredits.descriptionNoPriority",
+                {
+                  required: totalCreditCost,
+                  credit: totalCreditCost === 1 ? t("credit") : t("credits"),
+                  baseCost: baseCreditCost,
+                  priorityCost,
+                  available: subscription?.remainingCredits || 0,
+                }
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>

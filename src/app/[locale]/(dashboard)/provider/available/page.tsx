@@ -39,10 +39,7 @@ export default function AvailableJobsPage() {
             </div>
           )}
           {!isLoading && requestsData?.requests.length === 0 && (
-            <EmptyRequestsState
-              title="No available jobs"
-              description="Check back later for new opportunities"
-            />
+            <EmptyRequestsState title={t("noJobsTitle")} description={t("noJobsDescription")} />
           )}
           {!isLoading && (requestsData?.requests.length ?? 0) > 0 && (
             <div className="space-y-4">

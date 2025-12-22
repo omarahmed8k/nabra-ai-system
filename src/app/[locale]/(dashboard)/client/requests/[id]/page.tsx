@@ -17,8 +17,8 @@ import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
-import { CheckCircle, RotateCcw, Star } from "lucide-react";
 import { resolveLocalizedText } from "@/lib/i18n";
+import { CheckCircle, RotateCcw, Star } from "lucide-react";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
@@ -154,7 +154,10 @@ export default function RequestDetailPage() {
           {(request as any).attributeResponses &&
             Array.isArray((request as any).attributeResponses) &&
             (request as any).attributeResponses.length > 0 && (
-              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+              <AttributeResponsesDisplay
+                responses={(request as any).attributeResponses}
+                serviceAttributes={(request.serviceType as any).attributes}
+              />
             )}
 
           {/* Actions for DELIVERED status */}
@@ -344,7 +347,11 @@ export default function RequestDetailPage() {
         {/* Sidebar */}
         <RequestSidebar
           provider={request.provider}
-          serviceTypeName={request.serviceType.name}
+          serviceTypeName={resolveLocalizedText(
+            (request.serviceType as any).nameI18n,
+            locale,
+            request.serviceType.name
+          )}
           serviceTypeIcon={request.serviceType.icon || undefined}
           createdAt={request.createdAt}
           estimatedDelivery={request.estimatedDelivery}

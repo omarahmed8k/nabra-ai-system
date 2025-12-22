@@ -105,7 +105,10 @@ export default function AvailableJobDetailPage() {
           {(request as any).attributeResponses &&
             Array.isArray((request as any).attributeResponses) &&
             (request as any).attributeResponses.length > 0 && (
-              <AttributeResponsesDisplay responses={(request as any).attributeResponses} />
+              <AttributeResponsesDisplay
+                responses={(request as any).attributeResponses}
+                serviceAttributes={(request.serviceType as any).attributes}
+              />
             )}
 
           {/* Messages */}
@@ -121,7 +124,11 @@ export default function AvailableJobDetailPage() {
 
         {/* Sidebar */}
         <RequestSidebar
-          serviceTypeName={request.serviceType.name}
+          serviceTypeName={resolveLocalizedText(
+            (request.serviceType as any).nameI18n,
+            locale,
+            request.serviceType.name
+          )}
           serviceTypeIcon={request.serviceType.icon || undefined}
           createdAt={request.createdAt}
         />

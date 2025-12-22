@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { resolveLocalizedText } from "@/lib/i18n";
 import { showError, showSuccess } from "@/lib/error-handler";
 import {
   Check,
@@ -158,7 +159,13 @@ export default function AdminPaymentsPage() {
         </TableCell>
         <TableCell>
           <div>
-            <p className="font-medium">{payment.subscription.package.name}</p>
+            <p className="font-medium">
+              {resolveLocalizedText(
+                (payment.subscription.package as any).nameI18n,
+                locale,
+                payment.subscription.package.name
+              )}
+            </p>
             <p className="text-sm text-muted-foreground">
               {formatCurrency(payment.subscription.package.price, locale)}
             </p>
@@ -391,7 +398,13 @@ export default function AdminPaymentsPage() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground">{t("details.package")}</Label>
-                  <p className="font-medium">{selectedPayment.subscription.package.name}</p>
+                  <p className="font-medium">
+                    {resolveLocalizedText(
+                      (selectedPayment.subscription.package as any).nameI18n,
+                      locale,
+                      selectedPayment.subscription.package.name
+                    )}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {formatCurrency(selectedPayment.subscription.package.price, locale)} -{" "}
                     {selectedPayment.subscription.package.credits} credits

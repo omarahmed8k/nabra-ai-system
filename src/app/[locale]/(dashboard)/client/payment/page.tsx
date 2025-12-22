@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { resolveLocalizedText } from "@/lib/i18n";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./datepicker.css";
@@ -138,6 +139,7 @@ function PaymentStatus({
 }) {
   const router = useRouter();
   const t = useTranslations("client.payment");
+  const tAdmin = useTranslations("admin.payments");
   const proof = subscription.paymentProof!;
   const badgeVariant = getStatusBadgeVariant(proof.status);
 
@@ -152,7 +154,13 @@ function PaymentStatus({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{subscription.package.name} Plan</CardTitle>
+              <CardTitle>
+                {resolveLocalizedText(
+                  (subscription.package as any).nameI18n,
+                  locale,
+                  subscription.package.name
+                )}
+              </CardTitle>
               <CardDescription>
                 {formatCurrency(subscription.package.price, locale)}
               </CardDescription>
@@ -161,7 +169,7 @@ function PaymentStatus({
               {proof.status === "PENDING" && <Clock className="h-3 w-3" />}
               {proof.status === "APPROVED" && <CheckCircle2 className="h-3 w-3" />}
               {proof.status === "REJECTED" && <XCircle className="h-3 w-3" />}
-              {proof.status}
+              {tAdmin(`status.${proof.status}`)}
             </Badge>
           </div>
         </CardHeader>
@@ -251,6 +259,7 @@ function CopyButton({
 // Transactions section embedded in payment page
 function TransactionsSection({ locale }: { locale: string }) {
   const t = useTranslations("client.transactions");
+  const tAdmin = useTranslations("admin.payments");
   const { data: transactions, isLoading } = trpc.subscription.getTransactionHistory.useQuery();
 
   if (isLoading) {
@@ -278,13 +287,15 @@ function TransactionsSection({ locale }: { locale: string }) {
                   <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2">
                       <Receipt className="h-5 w-5" />
-                      {tx.packageName}
+                      {resolveLocalizedText(tx.packageNameI18n, locale, tx.packageName)}
                     </CardTitle>
                     <CardDescription>{formatDate(tx.createdAt, locale)}</CardDescription>
                   </div>
                   {(() => {
-                    let statusLabel = tx.paymentProof?.status || null;
-                    if (!statusLabel) {
+                    let statusLabel: string;
+                    if (tx.paymentProof?.status) {
+                      statusLabel = tAdmin(`status.${tx.paymentProof.status}`);
+                    } else {
                       statusLabel = tx.isActive ? t("status.active") : t("status.expired");
                     }
 
@@ -387,7 +398,13 @@ function BankDetailsCard({
         {/* Package Info */}
         <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-semibold">{subscription.package.name}</span>
+            <span className="font-semibold">
+              {resolveLocalizedText(
+                (subscription.package as any).nameI18n,
+                locale,
+                subscription.package.name
+              )}
+            </span>
             <Badge>
               {subscription.package.credits} {t("badges.credits")}
             </Badge>

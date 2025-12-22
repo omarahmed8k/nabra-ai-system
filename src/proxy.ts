@@ -1,7 +1,7 @@
 import createMiddleware from "next-intl/middleware";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { routing } from "@/i18n/routing";
+import { routing } from "./i18n/routing";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -22,12 +22,34 @@ function isProtected(pathname: string) {
 export default withAuth(
   function middleware(req) {
     const pathname = req.nextUrl.pathname;
-    const segments = pathname.split("/").filter(Boolean);
-    const hasLocale = routing.locales.includes(segments[0] as (typeof routing.locales)[number]);
+    const firstSegment = pathname.split("/").find(Boolean);
+
+    // Bypass API, Next internals, and static assets to avoid locale rewrites
+    const isApi = pathname.startsWith("/api");
+    const isNext = pathname.startsWith("/_next");
+    // Special-case favicon: rewrite to existing SVG asset
+    if (pathname === "/favicon.ico") {
+      return NextResponse.rewrite(new URL("/images/favicon.svg", req.url));
+    }
+
+    const isKnownFile =
+      pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/manifest.json";
+    const hasFileExtension = pathname.includes(".");
+    if (isApi || isNext || isKnownFile || hasFileExtension) {
+      return NextResponse.next();
+    }
+    const hasLocale = routing.locales.includes(firstSegment as (typeof routing.locales)[number]);
 
     if (!hasLocale) {
+      const cookieLocale = req.cookies.get("NEXT_LOCALE")?.value;
+      const preferredLocale = routing.locales.includes(
+        cookieLocale as (typeof routing.locales)[number]
+      )
+        ? (cookieLocale as (typeof routing.locales)[number])
+        : routing.defaultLocale;
+
       const url = req.nextUrl.clone();
-      url.pathname = `/${routing.defaultLocale}${pathname === "/" ? "" : pathname}`;
+      url.pathname = `/${preferredLocale}${pathname === "/" ? "" : pathname}`;
       return NextResponse.rewrite(url);
     }
 
@@ -75,5 +97,15 @@ export default withAuth(
 
 export const config = {
   // Apply to all non-static, non-API routes so default-locale routing works at "/".
-  matcher: ["/((?!api|_next|.*\\..*).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - files with extensions (e.g., .png, .jpg, .css, .js)
+     */
+    String.raw`/((?!api/|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\..*).*)`,
+  ],
 };
