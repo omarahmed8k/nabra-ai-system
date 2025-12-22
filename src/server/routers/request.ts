@@ -173,6 +173,49 @@ function buildCostBreakdownMessage(
   return `Request created successfully. ${totalCreditCost} credit${totalCreditCost === 1 ? "" : "s"} ${totalCreditCost === 1 ? "has" : "have"} been deducted${breakdownMessage}.`;
 }
 
+/**
+ * Validates request access based on user role
+ */
+function validateRequestAccess(userId: string, role: string, request: any) {
+  if (role === "CLIENT" && request.clientId !== userId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You don't have access to this request",
+    });
+  }
+
+  if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You don't have access to this request",
+    });
+  }
+}
+
+/**
+ * Calculates attribute credits with fallback for old requests
+ */
+function getAttributeCredits(request: any): number {
+  let attributeCredits = request.attributeCredits ?? 0;
+
+  if (attributeCredits === 0) {
+    const rawAttributeResponses = request.attributeResponses;
+    const serviceAttributes = request.serviceType?.attributes;
+
+    if (serviceAttributes && rawAttributeResponses) {
+      const calculated = calculateAttributeCredits(
+        serviceAttributes as ServiceAttribute[],
+        rawAttributeResponses as AttributeResponse[]
+      );
+      if (calculated > 0) {
+        attributeCredits = calculated;
+      }
+    }
+  }
+
+  return attributeCredits;
+}
+
 export const requestRouter = router({
   // Create a new request (client only)
   create: clientProcedure
@@ -431,19 +474,7 @@ export const requestRouter = router({
       }
 
       // Access control
-      if (role === "CLIENT" && request.clientId !== userId) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have access to this request",
-        });
-      }
-
-      if (role === "PROVIDER" && request.providerId !== userId && request.status !== "PENDING") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have access to this request",
-        });
-      }
+      validateRequestAccess(userId, role, request);
 
       // Get revision info if client
       let revisionInfo = null;
@@ -451,29 +482,8 @@ export const requestRouter = router({
         revisionInfo = await getRevisionInfo(input.id, request.clientId);
       }
 
-      // Use stored credit cost and attribute credits (preserves cost at time of creation)
-      // For backward compatibility with old requests: if attributeCredits is 0/null and we have attributeResponses,
-      // attempt to calculate it
-      let attributeCredits = (request as any).attributeCredits ?? 0;
-
-      if (attributeCredits === 0) {
-        const rawAttributeResponses = (request as any).attributeResponses;
-        const serviceAttributes = (request.serviceType as any)?.attributes;
-
-        if (serviceAttributes && rawAttributeResponses) {
-          try {
-            const calculated = calculateAttributeCredits(
-              serviceAttributes as ServiceAttribute[],
-              rawAttributeResponses as AttributeResponse[]
-            );
-            if (calculated > 0) {
-              attributeCredits = calculated;
-            }
-          } catch (e) {
-            // Ignore calculation errors, keep as 0
-          }
-        }
-      }
+      // Calculate attribute credits with backward compatibility
+      const attributeCredits = getAttributeCredits(request);
 
       return {
         ...request,
