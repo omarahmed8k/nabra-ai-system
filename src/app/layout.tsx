@@ -3,7 +3,6 @@ import { Lato, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
-import { NotificationProvider } from "@/components/providers/notification-provider";
 import { ChunkReloadOnError } from "@/components/system/chunk-reloader";
 import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 
@@ -59,11 +58,9 @@ export default function RootLayout({
       <body className="font-sans">
         <AuthProvider>
           <TRPCProvider>
-            <NotificationProvider>
-              <ChunkReloadOnError />
-              {children}
-              <PWAInstallPrompt />
-            </NotificationProvider>
+            <ChunkReloadOnError />
+            {children}
+            <PWAInstallPrompt />
           </TRPCProvider>
         </AuthProvider>
       </body>

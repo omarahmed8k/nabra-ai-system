@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, useCallback, useMemo } 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useLocale, useTranslations } from "next-intl";
+import { routing } from "@/i18n/routing";
 
 interface RealtimeNotification {
   type: "message" | "status_change" | "assignment" | "general" | "connected";
@@ -51,6 +53,8 @@ function navigateToNotification(targetPath: string, currentPath: string, router:
 export function NotificationProvider({ children }: { readonly children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations();
   const [isConnected, setIsConnected] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -126,12 +130,24 @@ export function NotificationProvider({ children }: { readonly children: React.Re
 
       const currentPath = globalThis.location.pathname;
 
+      const linkWithLocale = (() => {
+        if (!notification.link) return undefined;
+        const path = notification.link;
+        const first = path.split("/").filter(Boolean)[0];
+        const startsWithLocale = routing.locales.includes(
+          first as (typeof routing.locales)[number]
+        );
+        if (startsWithLocale) return path;
+        const normalized = path.startsWith("/") ? path : `/${path}`;
+        return `/${locale}${normalized}`;
+      })();
+
       toast.info(notification.title, {
         description: notification.message,
-        action: notification.link
+        action: linkWithLocale
           ? {
-              label: "View",
-              onClick: () => navigateToNotification(notification.link!, currentPath, router),
+              label: t("admin.requests.actions.view"),
+              onClick: () => navigateToNotification(linkWithLocale!, currentPath, router),
             }
           : undefined,
       });
@@ -139,7 +155,7 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       setUnreadCount((prev) => prev + 1);
       showDesktopNotification(notification);
     },
-    [router, showDesktopNotification]
+    [router, showDesktopNotification, locale, t]
   );
 
   useEffect(() => {
@@ -157,8 +173,8 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       reconnectAttempts += 1;
 
       if (reconnectAttempts > maxAttempts) {
-        toast.error("Connection lost", {
-          description: "Unable to reconnect to notification service. Please refresh the page.",
+        toast.error(t("client.notifications.title"), {
+          description: t("client.notifications.noNotificationsDesc"),
           duration: 10000,
         });
         return;

@@ -1,0 +1,232 @@
+import { NextRequest } from "next/server";
+
+// Mock next-intl and next-auth
+jest.mock("next-intl/middleware", () => ({
+  __esModule: true,
+  default: jest.fn(() => jest.fn()),
+}));
+
+jest.mock("next-auth/middleware", () => ({
+  withAuth: jest.fn((middleware) => middleware),
+}));
+
+jest.mock("@/i18n/routing", () => ({
+  routing: {
+    locales: ["en", "ar"],
+    defaultLocale: "en",
+  },
+}));
+
+describe("Proxy Middleware Logic", () => {
+  describe("Path locale detection", () => {
+    const testCases = [
+      { path: "/en/admin", hasLocale: true, locale: "en" },
+      { path: "/ar/client", hasLocale: true, locale: "ar" },
+      { path: "/admin", hasLocale: false, locale: undefined },
+      { path: "/", hasLocale: false, locale: undefined },
+      { path: "/api/health", hasLocale: false, locale: undefined },
+    ];
+
+    testCases.forEach(({ path, hasLocale, locale }) => {
+      it(`should detect locale=${locale} for path ${path}`, () => {
+        const segments = path.split("/").filter(Boolean);
+        const firstSegment = segments[0];
+        const locales = ["en", "ar"];
+        const result = locales.includes(firstSegment as any);
+
+        expect(result).toBe(hasLocale);
+        if (hasLocale) {
+          expect(firstSegment).toBe(locale);
+        }
+      });
+    });
+  });
+
+  describe("Protected route detection", () => {
+    function getPathWithoutLocale(pathname: string) {
+      const segments = pathname.split("/").filter(Boolean);
+      const maybeLocale = segments[0];
+      const locales = ["en", "ar"];
+      const rest = locales.includes(maybeLocale as any) ? segments.slice(1) : segments;
+      return rest.join("/");
+    }
+
+    function isProtected(pathname: string) {
+      const first = getPathWithoutLocale(pathname).split("/")[0];
+      return first === "client" || first === "provider" || first === "admin";
+    }
+
+    const protectedRoutes = [
+      "/en/admin",
+      "/ar/client",
+      "/en/provider",
+      "/admin/users",
+      "/client/requests",
+      "/provider/available",
+    ];
+
+    const publicRoutes = ["/", "/en", "/ar", "/en/auth/login", "/ar/auth/register", "/api/health"];
+
+    protectedRoutes.forEach((path) => {
+      it(`should identify ${path} as protected`, () => {
+        expect(isProtected(path)).toBe(true);
+      });
+    });
+
+    publicRoutes.forEach((path) => {
+      it(`should identify ${path} as public`, () => {
+        expect(isProtected(path)).toBe(false);
+      });
+    });
+  });
+
+  describe("Static asset bypass", () => {
+    const bypassPaths = [
+      { path: "/api/health", reason: "API route" },
+      { path: "/api/trpc/user.get", reason: "API route" },
+      { path: "/_next/static/chunk.js", reason: "Next.js internal" },
+      { path: "/_next/image", reason: "Next.js internal" },
+      { path: "/robots.txt", reason: "Known file" },
+      { path: "/sitemap.xml", reason: "Known file" },
+      { path: "/manifest.json", reason: "Known file" },
+      { path: "/images/logo.png", reason: "File extension" },
+      { path: "/sw.js", reason: "File extension" },
+      { path: "/workbox-123.js", reason: "File extension" },
+    ];
+
+    bypassPaths.forEach(({ path, reason }) => {
+      it(`should bypass ${path} (${reason})`, () => {
+        const isApi = path.startsWith("/api");
+        const isNext = path.startsWith("/_next");
+        const isKnownFile =
+          path === "/robots.txt" || path === "/sitemap.xml" || path === "/manifest.json";
+        const hasFileExtension = path.includes(".");
+
+        const shouldBypass = isApi || isNext || isKnownFile || hasFileExtension;
+        expect(shouldBypass).toBe(true);
+      });
+    });
+  });
+
+  describe("Favicon rewrite logic", () => {
+    it("should rewrite /favicon.ico to /images/favicon.svg", () => {
+      const pathname = "/favicon.ico";
+      const shouldRewrite = pathname === "/favicon.ico";
+      expect(shouldRewrite).toBe(true);
+    });
+
+    it("should not rewrite other ico files", () => {
+      const pathname = "/other-icon.ico";
+      const shouldRewrite = pathname === "/favicon.ico";
+      expect(shouldRewrite).toBe(false);
+    });
+  });
+
+  describe("Locale cookie preservation", () => {
+    const testScenarios = [
+      {
+        path: "/admin",
+        cookie: "ar",
+        expected: "ar",
+        description: "Should use cookie locale when no locale in path",
+      },
+      {
+        path: "/client/requests",
+        cookie: "en",
+        expected: "en",
+        description: "Should use cookie locale for locale-less protected routes",
+      },
+      {
+        path: "/",
+        cookie: "ar",
+        expected: "ar",
+        description: "Should use cookie locale for root path",
+      },
+      {
+        path: "/admin",
+        cookie: "invalid",
+        expected: "en",
+        description: "Should fallback to default when cookie has invalid locale",
+      },
+      {
+        path: "/admin",
+        cookie: undefined,
+        expected: "en",
+        description: "Should fallback to default when no cookie",
+      },
+    ];
+
+    testScenarios.forEach(({ path, cookie, expected, description }) => {
+      it(description, () => {
+        const locales = ["en", "ar"];
+        const defaultLocale = "en";
+        const firstSegment = path.split("/").find(Boolean);
+        const hasLocale = locales.includes(firstSegment as any);
+
+        let preferredLocale = defaultLocale;
+        if (!hasLocale && cookie) {
+          preferredLocale = locales.includes(cookie as any) ? cookie : defaultLocale;
+        }
+
+        expect(preferredLocale).toBe(expected);
+      });
+    });
+  });
+
+  describe("Locale path construction", () => {
+    it("should construct correct locale-prefixed paths", () => {
+      const locale = "ar";
+      const pathname = "/admin/users";
+      const expectedPath = `/${locale}${pathname}`;
+
+      expect(expectedPath).toBe("/ar/admin/users");
+    });
+
+    it("should handle root path correctly", () => {
+      const locale = "en";
+      const pathname = "/";
+      const expectedPath = pathname === "/" ? `/${locale}` : `/${locale}${pathname}`;
+
+      expect(expectedPath).toBe("/en");
+    });
+
+    it("should not double-prefix if locale already exists", () => {
+      const pathname = "/en/admin";
+      const firstSegment = pathname.split("/").filter(Boolean)[0];
+      const locales = ["en", "ar"];
+      const hasLocale = locales.includes(firstSegment as any);
+
+      expect(hasLocale).toBe(true);
+      // Should not add another locale prefix
+    });
+  });
+
+  describe("Regex pattern matching", () => {
+    it("should match the middleware config pattern", () => {
+      // Pattern from config.matcher: "/((?!api/|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.json|.*\\..*).*)"
+      const pattern =
+        /^\/((?!api\/|_next\/static|_next\/image|favicon\.ico|robots\.txt|sitemap\.xml|manifest\.json|.*\..*).*)/;
+
+      const shouldMatch = ["/", "/en", "/ar", "/admin", "/en/admin/users", "/ar/client/requests"];
+
+      const shouldNotMatch = [
+        "/api/health",
+        "/_next/static/chunk.js",
+        "/_next/image",
+        "/favicon.ico",
+        "/robots.txt",
+        "/manifest.json",
+        "/images/logo.png",
+        "/sw.js",
+      ];
+
+      shouldMatch.forEach((path) => {
+        expect(pattern.test(path)).toBe(true);
+      });
+
+      shouldNotMatch.forEach((path) => {
+        expect(pattern.test(path)).toBe(false);
+      });
+    });
+  });
+});

@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { routing } from "@/i18n/routing";
 import { LocaleHtmlUpdater } from "@/components/system/locale-html-updater";
 import { Toaster } from "@/components/ui/sonner";
+import { NotificationProvider } from "@/components/providers/notification-provider";
 
 export default async function LocaleLayout({
   children,
@@ -25,8 +26,10 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <LocaleHtmlUpdater locale={locale} />
-      <div dir={locale === "ar" ? "rtl" : "ltr"}>{children}</div>
-      <Toaster position="top-right" richColors closeButton />
+      <NotificationProvider>
+        <div dir={locale === "ar" ? "rtl" : "ltr"}>{children}</div>
+        <Toaster position="top-right" richColors closeButton />
+      </NotificationProvider>
     </NextIntlClientProvider>
   );
 }

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,20 +24,21 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const t = useTranslations("auth.login");
+  const locale = useLocale();
 
   // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      // Redirect based on user role
+      // Redirect based on user role, preserving locale
       if (session.user.role === "SUPER_ADMIN") {
-        router.push("/admin");
+        router.push(`/${locale}/admin`);
       } else if (session.user.role === "PROVIDER") {
-        router.push("/provider");
+        router.push(`/${locale}/provider`);
       } else {
-        router.push("/client");
+        router.push(`/${locale}/client`);
       }
     }
-  }, [status, session, router]);
+  }, [status, session, router, locale]);
 
   // Show loading state while checking authentication
   if (status === "loading") {
@@ -85,11 +86,11 @@ export default function LoginPage() {
 
       // Redirect based on user role with full page reload to ensure proper session initialization
       if (session?.user?.role === "SUPER_ADMIN") {
-        globalThis.location.href = "/admin";
+        globalThis.location.href = `/${locale}/admin`;
       } else if (session?.user?.role === "PROVIDER") {
-        globalThis.location.href = "/provider";
+        globalThis.location.href = `/${locale}/provider`;
       } else {
-        globalThis.location.href = "/client";
+        globalThis.location.href = `/${locale}/client`;
       }
     } catch (err) {
       console.error("Login error:", err);

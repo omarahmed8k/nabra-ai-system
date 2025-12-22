@@ -682,7 +682,7 @@ function PaymentProofForm({
                 <DatePicker
                   id="transferDate"
                   selected={formData.transferDate}
-                  onChange={(date) => updateDateField(date)}
+                  onChange={(date: Date | null) => updateDateField(date)}
                   dateFormat="yyyy-MM-dd"
                   maxDate={new Date()}
                   placeholderText={t("uploadProof.transferDatePlaceholder")}

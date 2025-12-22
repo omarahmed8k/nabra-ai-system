@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "prisma generate && next build --webpack",
+    "build": "prisma generate --no-engine && next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
@@ -76,6 +76,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.57.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
