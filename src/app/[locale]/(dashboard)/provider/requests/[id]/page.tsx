@@ -20,6 +20,7 @@ import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { formatDateTime, getInitials } from "@/lib/utils";
 import { resolveLocalizedText } from "@/lib/i18n";
+import { calculateAttributeCredits } from "@/lib/attribute-validation";
 import { Send, Upload, Play, CheckCircle } from "lucide-react";
 
 export default function ProviderRequestDetailPage() {
@@ -136,6 +137,25 @@ export default function ProviderRequestDetailPage() {
   const canStart = request.status === "PENDING";
   const canDeliver = request.status === "IN_PROGRESS" || request.status === "REVISION_REQUESTED";
 
+  // Recompute attribute credits if missing/zero to ensure consistent breakdown
+  const attributeCredits = (() => {
+    const existing = (request as any).attributeCredits ?? 0;
+    if (existing > 0) return existing;
+    try {
+      const responses = (request as any).attributeResponses;
+      const attrs = (request.serviceType as any).attributes;
+      if (attrs && responses) {
+        const derived = calculateAttributeCredits(attrs as any, responses as any);
+        if (derived > 0) return derived;
+      }
+    } catch (e) {
+      console.error("Failed to derive attribute credits", e);
+    }
+    return existing;
+  })();
+
+  const priorityCreditCost = (request as any).priorityCreditCost ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -145,8 +165,8 @@ export default function ProviderRequestDetailPage() {
         priority={request.priority}
         creditCost={(request as any).creditCost}
         baseCreditCost={(request as any).baseCreditCost}
-        attributeCredits={(request as any).attributeCredits}
-        priorityCreditCost={(request as any).priorityCreditCost}
+        attributeCredits={attributeCredits}
+        priorityCreditCost={priorityCreditCost}
         isRevision={(request as any).isRevision}
         revisionType={(request as any).revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}

@@ -836,7 +836,11 @@
       "description": "There are no requests to display"
     },
     "attributes": {
-      "title": "Service-Specific Information"
+      "title": "Service-Specific Information",
+      "costBreakdown": "Add-ons Cost Breakdown",
+      "noCosts": "No add-on costs",
+      "credit": "credit",
+      "credits": "credits"
     }
   },
   "profile": {

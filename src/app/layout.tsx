@@ -58,7 +58,7 @@ export default function RootLayout({
       <body className="font-sans">
         <AuthProvider>
           <TRPCProvider>
-            <ChunkReloadOnError />
+            {/* <ChunkReloadOnError /> */}
             {children}
             <PWAInstallPrompt />
           </TRPCProvider>

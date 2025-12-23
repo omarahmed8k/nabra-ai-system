@@ -28,6 +28,7 @@ interface CreditBreakdownData {
   hasCreditBreakdown: boolean;
   creditBreakdown?: string;
   base: number;
+  attrs: number;
   prio: number;
   paidRevisionTotal: number;
   hasPaidRevisions: boolean;
@@ -48,10 +49,18 @@ function calculateCreditBreakdown(
 ): CreditBreakdownData {
   const hasCreditBreakdown = baseCreditCost !== undefined && priorityCreditCost !== undefined;
   const base = baseCreditCost ?? 0;
-  const attrs = attributeCredits ?? 0;
+  let attrs = attributeCredits ?? 0;
   const prio = priorityCreditCost ?? 0;
   const paidUnit = paidRevisionCost ?? 0;
-  const paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - attrs - prio) : 0;
+  let paidRevisionTotal = hasCreditBreakdown ? Math.max(0, creditCost - base - attrs - prio) : 0;
+
+  // If this is NOT a revision request, prefer attributing any remainder to attributes.
+  // This fixes legacy requests where attributeCredits/priorities were not stored explicitly
+  // and avoids showing misleading "revision" costs on initial requests.
+  if (!isRevision && attrs === 0 && paidRevisionTotal > 0) {
+    attrs = paidRevisionTotal;
+    paidRevisionTotal = 0;
+  }
   const hasPaidRevisions = paidRevisionTotal > 0;
   const canDeriveMultiplier = paidUnit > 0;
   const paidRevisionMultiplier = canDeriveMultiplier ? Math.floor(paidRevisionTotal / paidUnit) : 0;
@@ -77,6 +86,7 @@ function calculateCreditBreakdown(
     hasCreditBreakdown,
     creditBreakdown,
     base,
+    attrs,
     prio,
     paidRevisionTotal,
     hasPaidRevisions,
@@ -212,10 +222,10 @@ export function RequestHeader({
             <div className="flex justify-between">
               <span className="text-muted-foreground">{t("baseCost")}</span>
               <span className="font-medium">
-                {baseCreditCost} {baseCreditCost === 1 ? t("credit") : t("credits")}
+                {breakdown.base} {breakdown.base === 1 ? t("credit") : t("credits")}
               </span>
             </div>
-            {priorityCreditCost !== 0 && (
+            {breakdown.prio !== 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">
                   {t("priorityCost", {
@@ -223,15 +233,15 @@ export function RequestHeader({
                   })}
                 </span>
                 <span className="font-medium">
-                  +{priorityCreditCost} {priorityCreditCost === 1 ? t("credit") : t("credits")}
+                  +{breakdown.prio} {breakdown.prio === 1 ? t("credit") : t("credits")}
                 </span>
               </div>
             )}
-            {attributeCredits !== undefined && attributeCredits > 0 && (
+            {breakdown.attrs > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("attributesCost")}</span>
                 <span className="font-medium">
-                  +{attributeCredits} {attributeCredits === 1 ? t("credit") : t("credits")}
+                  +{breakdown.attrs} {breakdown.attrs === 1 ? t("credit") : t("credits")}
                 </span>
               </div>
             )}

@@ -12,6 +12,7 @@ import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { resolveLocalizedText } from "@/lib/i18n";
+import { calculateAttributeCredits } from "@/lib/attribute-validation";
 
 export default function AdminRequestDetailPage() {
   const t = useTranslations("admin.requests");
@@ -45,6 +46,24 @@ export default function AdminRequestDetailPage() {
     );
   }
 
+  const attributeCredits = (() => {
+    const existing = (request as any).attributeCredits ?? 0;
+    if (existing > 0) return existing;
+    try {
+      const responses = (request as any).attributeResponses;
+      const attrs = (request.serviceType as any).attributes;
+      if (attrs && responses) {
+        const derived = calculateAttributeCredits(attrs as any, responses as any);
+        if (derived > 0) return derived;
+      }
+    } catch (e) {
+      console.error("Failed to derive attribute credits", e);
+    }
+    return existing;
+  })();
+
+  const priorityCreditCost = request.priorityCreditCost ?? 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -54,8 +73,8 @@ export default function AdminRequestDetailPage() {
         priority={request.priority}
         creditCost={(request as any).creditCost}
         baseCreditCost={request.baseCreditCost}
-        attributeCredits={(request as any).attributeCredits}
-        priorityCreditCost={request.priorityCreditCost}
+        attributeCredits={attributeCredits}
+        priorityCreditCost={priorityCreditCost}
         isRevision={request.isRevision}
         revisionType={request.revisionType}
         paidRevisionCost={(request.serviceType as any).paidRevisionCost}

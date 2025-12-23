@@ -221,6 +221,46 @@ export function calculateAttributeCredits(
 }
 
 /**
+ * Breaks down additional credits per attribute
+ */
+export function calculateAttributeCreditBreakdown(
+  attributes: ServiceAttribute[],
+  responses: AttributeResponse[]
+): Array<{ question: string; answer: string | string[]; cost: number }> {
+  if (!attributes || attributes.length === 0 || !responses || responses.length === 0) {
+    return [];
+  }
+
+  const responseMap = new Map(responses.map((r) => [r.question, r.answer]));
+
+  const items: Array<{ question: string; answer: string | string[]; cost: number }> = [];
+
+  for (const attribute of attributes) {
+    if (!attribute.creditImpact || attribute.creditImpact === 0) continue;
+    const answer = responseMap.get(attribute.question);
+    if (!answer) continue;
+
+    const cost = (() => {
+      if (Array.isArray(answer)) return 0;
+      const numericValue = Number.parseFloat(answer);
+      if (Number.isNaN(numericValue)) return 0;
+      const impact = attribute.creditImpact || 0;
+      if (attribute.includedQuantity !== undefined) {
+        const excess = Math.max(0, numericValue - attribute.includedQuantity);
+        return excess * impact;
+      }
+      return numericValue * impact;
+    })();
+
+    if (cost > 0) {
+      items.push({ question: attribute.question, answer, cost });
+    }
+  }
+
+  return items;
+}
+
+/**
  * Calculates credits for a single attribute
  */
 function calculateSingleAttributeCredits(
