@@ -38,6 +38,21 @@ export default withAuth(
     if (isApi || isNext || isKnownFile || hasFileExtension) {
       return NextResponse.next();
     }
+
+    // Normalize accidental double locale prefixes like "/ar/ar/..."
+    const segments = pathname.split("/").filter(Boolean);
+    const isDoubleLocale =
+      segments.length >= 2 &&
+      routing.locales.includes(segments[0] as (typeof routing.locales)[number]) &&
+      routing.locales.includes(segments[1] as (typeof routing.locales)[number]);
+
+    if (isDoubleLocale) {
+      const normalizedPath = `/${segments[0]}${segments.slice(2).length ? `/${segments.slice(2).join("/")}` : ""}`;
+      const url = req.nextUrl.clone();
+      url.pathname = normalizedPath || "/";
+      // Redirect so the browser URL is cleaned up instead of silently rewriting.
+      return NextResponse.redirect(url, 308);
+    }
     const hasLocale = routing.locales.includes(firstSegment as (typeof routing.locales)[number]);
 
     if (!hasLocale) {

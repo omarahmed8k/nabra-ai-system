@@ -26,11 +26,12 @@ export const paymentRouter = router({
       })
     )
     .query(async () => {
-      // In production, this could come from database settings
+      // Return payment info object that can be localized on the client
+      // The client will display these bank details
       return {
         bankName: "International Bank",
         accountName: "Nabra AI System",
-        iban: "DE89 3704 0044 0532 0130 00", // Example IBAN
+        iban: "DE89 3704 0044 0532 0130 00",
         swiftCode: "COBADEFFXXX",
         currency: "USD",
         note: "Please include your email address in the transfer reference for faster verification.",

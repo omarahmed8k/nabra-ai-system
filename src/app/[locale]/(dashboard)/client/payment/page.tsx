@@ -464,7 +464,7 @@ function BankDetailsCard({
 
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{paymentInfo.note}</AlertDescription>
+          <AlertDescription>{t("bankDetails.note")}</AlertDescription>
         </Alert>
       </CardContent>
     </Card>

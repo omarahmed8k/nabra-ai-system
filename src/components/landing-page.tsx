@@ -3,7 +3,8 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,44 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check, Zap, Shield, Clock, Star, Users, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Check,
+  Zap,
+  Shield,
+  Clock,
+  Star,
+  Users,
+  Sparkles,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 type FeatureKey = "credit" | "quality" | "speed" | "revisions" | "experts";
 
-type PackageKey = "starter" | "professional" | "enterprise";
-
 type StepKey = "subscribe" | "create" | "results";
+
+interface Package {
+  id: string;
+  name: string;
+  nameI18n?: Record<string, string>;
+  price: number;
+  credits: number;
+  durationDays: number;
+  description?: string;
+  descriptionI18n?: Record<string, string>;
+  features: string[];
+  featuresI18n?: Record<string, string[]>;
+  sortOrder: number;
+  services: Array<{
+    serviceType: {
+      id: string;
+      name: string;
+      nameI18n?: Record<string, string>;
+      icon: string;
+    };
+  }>;
+}
 
 const featureItems: Array<{ icon: ComponentType<{ className?: string }>; key: FeatureKey }> = [
   { icon: Zap, key: "credit" },
@@ -32,16 +64,6 @@ const featureItems: Array<{ icon: ComponentType<{ className?: string }>; key: Fe
   { icon: Clock, key: "speed" },
   { icon: Star, key: "revisions" },
   { icon: Users, key: "experts" },
-];
-
-const packageItems: Array<{
-  key: PackageKey;
-  price: number;
-  popular: boolean;
-}> = [
-  { key: "starter", price: 49, popular: false },
-  { key: "professional", price: 149, popular: true },
-  { key: "enterprise", price: 299, popular: false },
 ];
 
 const howSteps: Array<{ step: number; key: StepKey }> = [
@@ -79,9 +101,37 @@ const scaleIn = {
 export default function LandingPage() {
   const t = useTranslations("landing");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
 
-  const packageFeatures = (pkgKey: PackageKey) =>
-    (t.raw(`pricing.packages.${pkgKey}.features`) as string[]) || [];
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loadingPackages, setLoadingPackages] = useState(true);
+
+  // Fetch packages and services from API
+  const { data: packagesData } = trpc.admin.getPublicPackages.useQuery(undefined, {
+    enabled: true,
+  });
+
+  useEffect(() => {
+    if (packagesData) {
+      setPackages(packagesData);
+      setLoadingPackages(false);
+    }
+  }, [packagesData]);
+
+  const getLocalizedText = (
+    text: string | undefined,
+    i18nObj: Record<string, string> | undefined
+  ) => {
+    if (!i18nObj) return text || "";
+    return i18nObj[locale] || text || "";
+  };
+
+  const getPackageFeatures = (pkg: Package) => {
+    if (pkg.featuresI18n?.[locale]) {
+      return pkg.featuresI18n[locale];
+    }
+    return pkg.features || [];
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-background via-background/50 to-background overflow-hidden">
@@ -334,98 +384,145 @@ export default function LandingPage() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerContainer}
-            className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto"
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto"
           >
-            {packageItems.map((pkg, idx) => (
-              <motion.div
-                key={pkg.key}
-                variants={scaleIn}
-                whileHover={{
-                  y: -12,
-                  transition: { duration: 0.3 },
-                }}
-                className={`relative group ${pkg.popular ? "md:scale-105" : ""}`}
-              >
-                {/* Card Glow */}
-                <div
-                  className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all ${
-                    pkg.popular
-                      ? "bg-gradient-to-br from-primary/40 via-purple-500/40 to-pink-500/40"
-                      : "bg-gradient-to-br from-primary/20 to-purple-500/20"
-                  }`}
-                />
+            {loadingPackages && (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
+            {!loadingPackages && packages.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                {t("pricing.noPackages")}
+              </div>
+            )}
+            {!loadingPackages &&
+              packages.length > 0 &&
+              packages.map((pkg, idx) => {
+                const isPopular = idx === Math.floor(packages.length / 2);
+                return (
+                  <motion.div
+                    key={pkg.id}
+                    variants={scaleIn}
+                    whileHover={{
+                      y: -12,
+                      transition: { duration: 0.3 },
+                    }}
+                    className={`relative group ${isPopular ? "md:scale-105" : ""}`}
+                  >
+                    {/* Card Glow */}
+                    <div
+                      className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all ${
+                        isPopular
+                          ? "bg-gradient-to-br from-primary/40 via-purple-500/40 to-pink-500/40"
+                          : "bg-gradient-to-br from-primary/20 to-purple-500/20"
+                      }`}
+                    />
 
-                <Card
-                  className={`relative border backdrop-blur-xl bg-background/50 transition-all h-full ${
-                    pkg.popular
-                      ? "border-primary/50 shadow-2xl shadow-primary/20"
-                      : "border-white/10 group-hover:border-primary/30"
-                  }`}
-                >
-                  {pkg.popular && (
-                    <motion.div
-                      initial={{ scale: 0, y: -20 }}
-                      animate={{ scale: 1, y: 0 }}
-                      transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                      className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-primary via-purple-500 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-lg"
+                    <Card
+                      className={`relative border backdrop-blur-xl bg-background/50 transition-all h-full ${
+                        isPopular
+                          ? "border-primary/50 shadow-2xl shadow-primary/20"
+                          : "border-white/10 group-hover:border-primary/30"
+                      }`}
                     >
-                      🌟 {t("pricing.mostPopular")}
-                    </motion.div>
-                  )}
-
-                  <CardHeader className="text-center pt-8">
-                    <CardTitle className="text-3xl font-black">
-                      {t(`pricing.packages.${pkg.key}.name`)}
-                    </CardTitle>
-                    <CardDescription className="mt-4">
-                      <span className="text-5xl font-black bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                        ${pkg.price}
-                      </span>
-                      <span className="text-muted-foreground block mt-1">
-                        {t("pricing.perMonth")}
-                      </span>
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent>
-                    <ul className="space-y-4">
-                      {packageFeatures(pkg.key).map((feature, featureIndex) => (
-                        <motion.li
-                          key={feature}
-                          className="flex items-start gap-3"
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: featureIndex * 0.08 }}
+                      {isPopular && (
+                        <motion.div
+                          initial={{ scale: 0, y: -20 }}
+                          animate={{ scale: 1, y: 0 }}
+                          transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                          className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-gradient-to-r from-primary via-purple-500 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-lg"
                         >
-                          <motion.div className="mt-1 flex-shrink-0" whileHover={{ scale: 1.2 }}>
-                            <Check className="h-5 w-5 text-green-400 font-bold" />
+                          🌟 {t("pricing.mostPopular")}
+                        </motion.div>
+                      )}
+
+                      <CardHeader className="text-center pt-8">
+                        <CardTitle className="text-3xl font-black">
+                          {getLocalizedText(pkg.name, pkg.nameI18n)}
+                        </CardTitle>
+                        <CardDescription className="mt-4">
+                          <span className="text-5xl font-black bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                            ${pkg.price}
+                          </span>
+                          <span className="text-muted-foreground block mt-1">
+                            {t("pricing.perMonth")}
+                          </span>
+                        </CardDescription>
+                      </CardHeader>
+
+                      <CardContent>
+                        {pkg.description && (
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {getLocalizedText(pkg.description, pkg.descriptionI18n)}
+                          </p>
+                        )}
+                        <ul className="space-y-4">
+                          {getPackageFeatures(pkg).map((feature, featureIndex) => (
+                            <motion.li
+                              key={`${pkg.id}-${feature}`}
+                              className="flex items-start gap-3"
+                              initial={{ opacity: 0, x: -10 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: featureIndex * 0.08 }}
+                            >
+                              <motion.div
+                                className="mt-1 flex-shrink-0"
+                                whileHover={{ scale: 1.2 }}
+                              >
+                                <Check className="h-5 w-5 text-green-400 font-bold" />
+                              </motion.div>
+                              <span className="text-sm leading-relaxed">{feature}</span>
+                            </motion.li>
+                          ))}
+                        </ul>
+                        {pkg.services && pkg.services.length > 0 && (
+                          <div className="mt-6 pt-4 border-t border-white/10">
+                            <p className="text-xs font-semibold text-muted-foreground mb-3">
+                              {locale === "ar" ? "الخدمات المتضمنة" : "Included Services"}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {pkg.services.map((service) => (
+                                <div
+                                  key={service.serviceType.id}
+                                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium border border-primary/20"
+                                >
+                                  <span>{service.serviceType.icon}</span>
+                                  <span>
+                                    {getLocalizedText(
+                                      service.serviceType.name,
+                                      service.serviceType.nameI18n
+                                    )}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+
+                      <CardFooter>
+                        <Link href="/auth/register" className="w-full">
+                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Button
+                              className={`w-full font-semibold h-12 ${
+                                isPopular
+                                  ? "bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90"
+                                  : "border border-white/20 hover:bg-white/5"
+                              }`}
+                              variant={isPopular ? "default" : "outline"}
+                            >
+                              {tCommon("buttons.getStarted")}{" "}
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
                           </motion.div>
-                          <span className="text-sm leading-relaxed">{feature}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </CardContent>
-
-                  <CardFooter>
-                    <Link href="/auth/register" className="w-full">
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button
-                          className={`w-full font-semibold h-12 ${
-                            pkg.popular
-                              ? "bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90"
-                              : "border border-white/20 hover:bg-white/5"
-                          }`}
-                          variant={pkg.popular ? "default" : "outline"}
-                        >
-                          {tCommon("buttons.getStarted")} <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      </motion.div>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
+                        </Link>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                );
+              })}
           </motion.div>
         </section>
 

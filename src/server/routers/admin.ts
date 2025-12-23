@@ -1,10 +1,84 @@
 import { z } from "zod";
-import { router, adminProcedure } from "@/server/trpc";
+import { router, adminProcedure, publicProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { notifyProviderAssignment } from "@/lib/notifications";
 
 export const adminRouter = router({
+  // Get all active service types (public - for landing page)
+  getPublicServiceTypes: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/services/public",
+        tags: ["admin"],
+        summary: "List all active service types",
+      },
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      return ctx.db.serviceType.findMany({
+        where: { isActive: true, deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          nameI18n: true,
+          description: true,
+          descriptionI18n: true,
+          icon: true,
+          sortOrder: true,
+        },
+        orderBy: { sortOrder: "asc" },
+      });
+    }),
+
+  // Get all active packages (public - for landing page)
+  getPublicPackages: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/packages/public",
+        tags: ["admin"],
+        summary: "List all active packages",
+      },
+    })
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      return ctx.db.package.findMany({
+        where: {
+          isActive: true,
+          deletedAt: null,
+          isFreePackage: false, // Don't show free package on landing page
+        },
+        select: {
+          id: true,
+          name: true,
+          nameI18n: true,
+          description: true,
+          descriptionI18n: true,
+          price: true,
+          credits: true,
+          durationDays: true,
+          features: true,
+          featuresI18n: true,
+          sortOrder: true,
+          services: {
+            select: {
+              serviceType: {
+                select: {
+                  id: true,
+                  name: true,
+                  nameI18n: true,
+                  icon: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { sortOrder: "asc" },
+      });
+    }),
+
   // Get dashboard stats
   getStats: adminProcedure
     .meta({

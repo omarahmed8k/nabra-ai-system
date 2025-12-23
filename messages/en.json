@@ -994,7 +994,8 @@
         "bankName": "Bank Name",
         "accountName": "Account Name",
         "iban": "IBAN",
-        "swiftCode": "SWIFT/BIC"
+        "swiftCode": "SWIFT/BIC",
+        "note": "Please include your email address in the transfer reference for faster verification."
       },
       "uploadProof": {
         "title": "Upload Payment Proof",

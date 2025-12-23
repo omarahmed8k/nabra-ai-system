@@ -1,5 +1,3 @@
-import { NextRequest } from "next/server";
-
 // Mock next-intl and next-auth
 jest.mock("next-intl/middleware", () => ({
   __esModule: true,
@@ -116,9 +114,9 @@ describe("Proxy Middleware Logic", () => {
     });
 
     it("should not rewrite other ico files", () => {
-      const pathname = "/other-icon.ico";
-      const shouldRewrite = pathname === "/favicon.ico";
-      expect(shouldRewrite).toBe(false);
+      const pathname: string = "/other-icon.ico";
+      const isFaviconPath = pathname === "/favicon.ico";
+      expect(isFaviconPath).toBe(false);
     });
   });
 
@@ -198,6 +196,21 @@ describe("Proxy Middleware Logic", () => {
 
       expect(hasLocale).toBe(true);
       // Should not add another locale prefix
+    });
+
+    it("should normalize double-prefixed locales to a single prefix", () => {
+      const path = "/ar/ar/provider";
+      const segments = path.split("/").filter(Boolean);
+      const locales = ["en", "ar"];
+      const isDoubleLocale =
+        segments.length >= 2 &&
+        locales.includes(segments[0] as any) &&
+        locales.includes(segments[1] as any);
+
+      expect(isDoubleLocale).toBe(true);
+
+      const normalized = `/${segments[0]}${segments.slice(2).length ? `/${segments.slice(2).join("/")}` : ""}`;
+      expect(normalized).toBe("/ar/provider");
     });
   });
 

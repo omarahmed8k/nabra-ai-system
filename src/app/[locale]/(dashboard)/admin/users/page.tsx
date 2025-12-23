@@ -232,7 +232,7 @@ function UserListItem({
     <div className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors gap-4">
       <div className="flex items-center gap-4">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={user.image || ""} />
+          <AvatarImage src={user.image || ""} className="object-cover" />
           <AvatarFallback className="text-lg">
             {getInitials(user.name || user.email)}
           </AvatarFallback>

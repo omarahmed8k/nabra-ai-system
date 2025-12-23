@@ -45,13 +45,13 @@ async function main() {
     data: {
       name: "Free Plan",
       nameI18n: { en: "Free Plan", ar: "الخطة المجانية" },
-      description: "Basic free plan for all new users with 1 credit valid for 14 days",
+      description: "Basic free plan for all new users with 5 credit valid for 14 days",
       descriptionI18n: {
-        en: "Basic free plan for all new users with 1 credit valid for 14 days",
+        en: "Basic free plan for all new users with 5 credit valid for 14 days",
         ar: "خطة مجانية أساسية لجميع المستخدمين الجدد مع رصيد واحد صالح لمدة 14 يومًا",
       },
       price: 0,
-      credits: 1,
+      credits: 5,
       durationDays: 14,
       isActive: true,
       isFreePackage: true,

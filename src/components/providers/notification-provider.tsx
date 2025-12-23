@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
-import { routing } from "@/i18n/routing";
 
 interface RealtimeNotification {
   type: "message" | "status_change" | "assignment" | "general" | "connected";
@@ -134,9 +133,8 @@ export function NotificationProvider({ children }: { readonly children: React.Re
         if (!notification.link) return undefined;
         const path = notification.link;
         const first = path.split("/").filter(Boolean)[0];
-        const startsWithLocale = routing.locales.includes(
-          first as (typeof routing.locales)[number]
-        );
+        const locales = ["en", "ar"];
+        const startsWithLocale = locales.includes(first as any);
         if (startsWithLocale) return path;
         const normalized = path.startsWith("/") ? path : `/${path}`;
         return `/${locale}${normalized}`;

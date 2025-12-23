@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +30,7 @@ import { trpc } from "@/lib/trpc/client";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { data: session, status } = useSession();
   const [error, setError] = useState("");
   const t = useTranslations("auth.register");
@@ -40,7 +41,7 @@ export default function RegisterPage() {
       toast.success(t("accountCreated"), {
         description: t("successMessage"),
       });
-      router.push("/auth/login?registered=true");
+      router.push(`/${locale}/auth/login?registered=true`);
     },
     onError: (err) => {
       setError(err.message);
@@ -65,14 +66,14 @@ export default function RegisterPage() {
     if (status === "authenticated" && session?.user) {
       // Redirect based on user role
       if (session.user.role === "SUPER_ADMIN") {
-        router.push("/admin");
+        router.push(`/${locale}/admin`);
       } else if (session.user.role === "PROVIDER") {
-        router.push("/provider");
+        router.push(`/${locale}/provider`);
       } else {
-        router.push("/client");
+        router.push(`/${locale}/client`);
       }
     }
-  }, [status, session, router]);
+  }, [status, session, router, locale]);
 
   // Show loading state while checking authentication
   if (status === "loading") {

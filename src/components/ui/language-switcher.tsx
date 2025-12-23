@@ -19,7 +19,16 @@ export function LanguageSwitcher() {
   const targetLanguage = locales.find((l) => l.code === targetLocale) || locales[0];
 
   const handleToggle = () => {
-    router.replace(pathname, { locale: targetLocale });
+    // Ensure we don't pass a locale-prefixed path to the router,
+    // as it will add the target locale automatically.
+    const segments = pathname.split("/").filter(Boolean);
+    const locales = ["en", "ar"] as const;
+    const first = segments[0];
+    const pathWithoutLocale = locales.includes(first as (typeof locales)[number])
+      ? `/${segments.slice(1).join("/")}` || "/"
+      : pathname;
+
+    router.replace(pathWithoutLocale, { locale: targetLocale });
   };
 
   return (

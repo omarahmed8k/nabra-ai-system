@@ -425,7 +425,7 @@ export const subscriptionRouter = router({
         orderBy: { createdAt: "desc" },
       });
 
-      return subscriptions.map((sub) => ({
+      return subscriptions.map((sub: any) => ({
         id: sub.id,
         type: "subscription" as const,
         packageName: sub.package.name,

@@ -836,8 +836,8 @@ export const requestRouter = router({
           });
           await Promise.all(
             watchers
-              .filter((w) => w.userId !== userId)
-              .map((w) =>
+              .filter((w: any) => w.userId !== userId)
+              .map((w: any) =>
                 notifyNewMessage({
                   requestId: input.requestId,
                   senderName,
