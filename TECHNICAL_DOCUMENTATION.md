@@ -1568,6 +1568,52 @@ Notifications are alerts that inform users about important events in the system:
 
 ---
 
+### 9.5 WhatsApp Cloud API (Optional)
+
+Enable WhatsApp notifications for users who explicitly opt in. This uses Meta’s official Cloud API and requires approved templates for outbound notifications.
+
+- Configuration (env):
+  - `WHATSAPP_ENABLED` = `true` to enable sending
+  - `WHATSAPP_ACCESS_TOKEN` = permanent token
+  - `WHATSAPP_PHONE_NUMBER_ID` = connected number ID
+  - `WHATSAPP_LANGUAGE_CODE` = template language (e.g. `en`)
+  - `WHATSAPP_TEMPLATE_MESSAGE` = template for type `message`
+  - `WHATSAPP_TEMPLATE_STATUS_CHANGE` = template for type `status_change`
+  - `WHATSAPP_TEMPLATE_ASSIGNMENT` = template for type `assignment`
+  - `WHATSAPP_TEMPLATE_GENERAL` = template for type `general`
+
+- Behavior:
+  - When `createNotification()` runs, and WhatsApp is enabled, if the user has `hasWhatsapp=true` and a valid E.164 phone, the system sends a template message using the env-configured template corresponding to the notification `type`. The notification `message` is passed as a body parameter.
+  - If the template parameters do not align, Meta will reject the send; adjust templates or parameters accordingly.
+
+- Example cURL:
+
+```
+curl -X POST \
+   -H "Authorization: Bearer $WHATSAPP_ACCESS_TOKEN" \
+   -H "Content-Type: application/json" \
+   "https://graph.facebook.com/v21.0/$WHATSAPP_PHONE_NUMBER_ID/messages" \
+   -d '{
+      "messaging_product": "whatsapp",
+      "to": "+15551234567",
+      "type": "template",
+      "template": {
+         "name": "your_template_name",
+         "language": { "code": "en" },
+         "components": [
+            { "type": "body", "parameters": [ { "type": "text", "text": "Hello" } ] }
+         ]
+      }
+   }'
+```
+
+- Notes:
+  - Outbound notifications outside a 24h session require approved templates.
+  - Meta bills per conversation; consult the latest pricing.
+  - There is no free, compliant API to check if a number has WhatsApp—gate by explicit opt-in and handle API errors gracefully.
+
+---
+
 ## 10. DATA MANAGEMENT & INTERNATIONALIZATION
 
 ### 10.1 Multi-Language Support

@@ -9,6 +9,12 @@ import {
   getWelcomeEmailTemplate,
 } from "./email";
 import { sendNotificationToUser } from "./sse-utils";
+import {
+  isWhatsAppEnabled,
+  formatE164,
+  getTemplateConfigForType,
+  sendWhatsAppTemplate,
+} from "./whatsapp";
 
 // Store for SSE notification sender (will be set by SSE route when a user connects)
 let sseNotificationSender: ((userId: string, notification: any) => void) | null = null;
@@ -59,20 +65,19 @@ export async function createNotification(data: NotificationData) {
     },
   });
 
-  // Get user email for email notification
-  if (shouldSendEmail && emailTemplate) {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
-    });
+  // Fetch user info for channels (email, WhatsApp)
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true, phone: true, hasWhatsapp: true },
+  });
 
-    if (user?.email) {
-      await sendEmail({
-        to: user.email,
-        subject: emailTemplate.subject,
-        html: emailTemplate.html,
-      });
-    }
+  // Email notification
+  if (shouldSendEmail && emailTemplate && user?.email) {
+    await sendEmail({
+      to: user.email,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
+    });
   }
 
   // Send realtime notification via SSE
@@ -88,6 +93,33 @@ export async function createNotification(data: NotificationData) {
     });
   } catch (error) {
     console.error("Failed to send SSE notification:", error);
+  }
+
+  // WhatsApp notification (template-based, requires opt-in and env configuration)
+  if (isWhatsAppEnabled() && user?.hasWhatsapp) {
+    const to = formatE164(user.phone);
+    // Prefer type-specific template; fall back to general if not configured
+    const templateConfig = getTemplateConfigForType(type) ?? getTemplateConfigForType("general");
+
+    if (to && templateConfig) {
+      const { name, paramCount } = templateConfig;
+      // Only send as many params as the template expects; if 0, omit entirely
+      const bodyParams = paramCount > 0 && message ? [message].slice(0, paramCount) : undefined;
+
+      try {
+        await sendWhatsAppTemplate(to, name, {
+          bodyParams,
+          languageCode: process.env.WHATSAPP_LANGUAGE_CODE || "en_US",
+        });
+      } catch (err) {
+        console.error("Failed to send WhatsApp notification:", err);
+      }
+    } else {
+      console.warn(`Skipped WhatsApp: ${!to ? "invalid phone" : "no template configured"}`, {
+        userId,
+        type,
+      });
+    }
   }
 
   return notification;
