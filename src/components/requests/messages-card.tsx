@@ -55,6 +55,7 @@ export function MessagesCard({
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
   const utils = trpc.useUtils();
@@ -123,9 +124,15 @@ export function MessagesCard({
           showError(e, t("messageFailed"));
         } finally {
           setIsRecording(false);
+          // Stop all audio tracks to release mic access
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+          }
         }
       };
       mediaRecorderRef.current = mediaRecorder;
+      streamRef.current = stream;
       chunksRef.current = chunks;
       mediaRecorder.start();
       setIsRecording(true);
