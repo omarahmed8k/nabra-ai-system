@@ -293,10 +293,11 @@ export function InlineFileUpload({
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync internal state with external files prop
+  // Sync internal state with external files prop only when files prop actually changes
   React.useEffect(() => {
     setUploadedFiles(files);
-  }, [files]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(files)]);
 
   const uploadFile = async (file: File): Promise<UploadedFile | null> => {
     if (!ALLOWED_TYPES.has(file.type)) {

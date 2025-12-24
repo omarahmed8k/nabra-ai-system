@@ -86,8 +86,8 @@ export function getStatusChangeEmailTemplate(
         <h2 style="color: #333;">Request Status Changed</h2>
         <p>The status of your request <strong>${requestTitle}</strong> has been updated:</p>
         <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-          <p style="margin: 0;"><strong>From:</strong> ${oldStatus.replace("_", " ")}</p>
-          <p style="margin: 10px 0 0;"><strong>To:</strong> ${newStatus.replace("_", " ")}</p>
+          <p style="margin: 0;"><strong>From:</strong> ${oldStatus.replaceAll("_", " ")}</p>
+          <p style="margin: 10px 0 0;"><strong>To:</strong> ${newStatus.replaceAll("_", " ")}</p>
         </div>
         <p><a href="${process.env.NEXTAUTH_URL}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Request</a></p>
       </div>

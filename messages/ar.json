@@ -1098,7 +1098,10 @@
         "placeholder": "صف التغييرات التي تحتاجها...",
         "minCharacters": "يتطلب الحد الأدنى {min} حرف",
         "button": "طلب مراجعة",
-        "requesting": "جاري الطلب..."
+        "requesting": "جاري الطلب...",
+        "insufficientCredits": "رصيد كريدت غير كافٍ",
+        "insufficientCreditsDesc": "تحتاج إلى {required} كريدت لهذه المراجعة، ولكن لديك {available} كريدت متبقية. يرجى شراء المزيد من الكريدت.",
+        "buyCredits": "شراء كريدت"
       },
       "rateService": {
         "title": "قيّم هذه الخدمة",

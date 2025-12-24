@@ -42,6 +42,73 @@ interface NotificationData {
   };
 }
 
+async function sendEmailNotification(
+  emailTemplate: NotificationData["emailTemplate"],
+  userEmail: string | null | undefined
+) {
+  if (emailTemplate && userEmail) {
+    await sendEmail({
+      to: userEmail,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
+    });
+  }
+}
+
+async function sendSseNotification(
+  userId: string,
+  notification: {
+    type: string;
+    title: string;
+    message: string;
+    link: string | undefined;
+    data: { notificationId: string };
+    timestamp: Date;
+  }
+) {
+  const sender = getSseSender();
+  try {
+    sender(userId, notification);
+  } catch (error) {
+    console.error("Failed to send SSE notification:", error);
+  }
+}
+
+async function sendWhatsAppNotificationIfOptedIn(
+  userId: string,
+  notificationType: string,
+  message: string,
+  userPhone: string | null | undefined,
+  userHasWhatsapp: boolean | undefined
+) {
+  if (!isWhatsAppEnabled() || !userHasWhatsapp) return;
+
+  const to = formatE164(userPhone);
+  if (!to) {
+    console.warn("Skipped WhatsApp: invalid phone", { userId, type: notificationType });
+    return;
+  }
+
+  const templateConfig =
+    getTemplateConfigForType(notificationType) ?? getTemplateConfigForType("general");
+  if (!templateConfig) {
+    console.warn("Skipped WhatsApp: no template configured", { userId, type: notificationType });
+    return;
+  }
+
+  const { name, paramCount } = templateConfig;
+  const bodyParams = paramCount > 0 && message ? [message].slice(0, paramCount) : undefined;
+
+  try {
+    await sendWhatsAppTemplate(to, name, {
+      bodyParams,
+      languageCode: process.env.WHATSAPP_LANGUAGE_CODE || "en_US",
+    });
+  } catch (err) {
+    console.error("Failed to send WhatsApp notification:", err);
+  }
+}
+
 export async function createNotification(data: NotificationData) {
   const {
     userId,
@@ -71,56 +138,21 @@ export async function createNotification(data: NotificationData) {
     select: { email: true, phone: true, hasWhatsapp: true },
   });
 
-  // Email notification
-  if (shouldSendEmail && emailTemplate && user?.email) {
-    await sendEmail({
-      to: user.email,
-      subject: emailTemplate.subject,
-      html: emailTemplate.html,
-    });
+  // Send through all channels
+  if (shouldSendEmail) {
+    await sendEmailNotification(emailTemplate, user?.email);
   }
 
-  // Send realtime notification via SSE
-  const sender = getSseSender();
-  try {
-    sender(userId, {
-      type,
-      title,
-      message,
-      link: link || undefined,
-      data: { notificationId: notification.id },
-      timestamp: new Date(),
-    });
-  } catch (error) {
-    console.error("Failed to send SSE notification:", error);
-  }
+  await sendSseNotification(userId, {
+    type,
+    title,
+    message,
+    link: link || undefined,
+    data: { notificationId: notification.id },
+    timestamp: new Date(),
+  });
 
-  // WhatsApp notification (template-based, requires opt-in and env configuration)
-  if (isWhatsAppEnabled() && user?.hasWhatsapp) {
-    const to = formatE164(user.phone);
-    // Prefer type-specific template; fall back to general if not configured
-    const templateConfig = getTemplateConfigForType(type) ?? getTemplateConfigForType("general");
-
-    if (to && templateConfig) {
-      const { name, paramCount } = templateConfig;
-      // Only send as many params as the template expects; if 0, omit entirely
-      const bodyParams = paramCount > 0 && message ? [message].slice(0, paramCount) : undefined;
-
-      try {
-        await sendWhatsAppTemplate(to, name, {
-          bodyParams,
-          languageCode: process.env.WHATSAPP_LANGUAGE_CODE || "en_US",
-        });
-      } catch (err) {
-        console.error("Failed to send WhatsApp notification:", err);
-      }
-    } else {
-      console.warn(`Skipped WhatsApp: ${!to ? "invalid phone" : "no template configured"}`, {
-        userId,
-        type,
-      });
-    }
-  }
+  await sendWhatsAppNotificationIfOptedIn(userId, type, message, user?.phone, user?.hasWhatsapp);
 
   return notification;
 }
@@ -158,6 +190,18 @@ export async function notifyAdminsNewPendingPayment(params: {
   return { notifiedAdmins: admins.length };
 }
 
+function getLinkForNotificationRecipient(
+  recipientRole: string | undefined | null,
+  requestId: string,
+  isAssigned: boolean
+): string {
+  if (recipientRole === "CLIENT") return `/client/requests/${requestId}`;
+  if (recipientRole === "PROVIDER") {
+    return isAssigned ? `/provider/requests/${requestId}` : `/provider/available/${requestId}`;
+  }
+  return `/provider/requests/${requestId}`;
+}
+
 export async function notifyNewMessage(params: {
   requestId: string;
   senderName: string;
@@ -181,18 +225,8 @@ export async function notifyNewMessage(params: {
   if (!request) return;
 
   const emailTemplate = getNewMessageEmailTemplate(senderName, request.title, messagePreview);
-
-  // Determine the correct link based on role and assignment status
-  let link: string;
-  if (user?.role === "CLIENT") {
-    link = `/client/requests/${requestId}`;
-  } else if (user?.role === "PROVIDER") {
-    // If provider is not assigned to this request, send to available page
-    const isAssigned = request.providerId === recipientId;
-    link = isAssigned ? `/provider/requests/${requestId}` : `/provider/available/${requestId}`;
-  } else {
-    link = `/provider/requests/${requestId}`;
-  }
+  const isAssigned = request.providerId === recipientId;
+  const link = getLinkForNotificationRecipient(user?.role, requestId, isAssigned);
 
   return createNotification({
     userId: recipientId,
@@ -232,7 +266,7 @@ export async function notifyStatusChange(params: {
   return createNotification({
     userId,
     title: "Request Status Updated",
-    message: `Your request "${request.title}" status changed from ${oldStatus.replace("_", " ")} to ${newStatus.replace("_", " ")}`,
+    message: `Your request "${request.title}" status changed from ${oldStatus.replaceAll("_", " ")} to ${newStatus.replaceAll("_", " ")}`,
     type: "status_change",
     link: `${linkPrefix}/requests/${requestId}`,
     emailTemplate,
@@ -304,6 +338,12 @@ export async function notifySubscriptionExpired(params: { userId: string; packag
   });
 }
 
+const ROLE_NOTIFICATION_LINKS: Record<string, string> = {
+  CLIENT: "/client",
+  PROVIDER: "/provider",
+  SUPER_ADMIN: "/admin",
+};
+
 export async function sendWelcomeEmail(params: {
   userId: string;
   userName: string;
@@ -311,8 +351,8 @@ export async function sendWelcomeEmail(params: {
   userRole: string;
 }) {
   const { userId, userName, userEmail, userRole } = params;
-
   const emailTemplate = getWelcomeEmailTemplate(userName, userRole);
+  const notificationLink = ROLE_NOTIFICATION_LINKS[userRole] || "/";
 
   try {
     await sendEmail({
@@ -320,16 +360,6 @@ export async function sendWelcomeEmail(params: {
       subject: emailTemplate.subject,
       html: emailTemplate.html,
     });
-
-    // Also create a notification in the database
-    let notificationLink: string;
-    if (userRole === "CLIENT") {
-      notificationLink = "/client";
-    } else if (userRole === "PROVIDER") {
-      notificationLink = "/provider";
-    } else {
-      notificationLink = "/admin";
-    }
 
     await db.notification.create({
       data: {
@@ -345,6 +375,5 @@ export async function sendWelcomeEmail(params: {
     console.log(`✅ Welcome email sent to ${userEmail}`);
   } catch (error) {
     console.error(`❌ Failed to send welcome email to ${userEmail}:`, error);
-    // Don't throw - welcome email failure shouldn't break registration
   }
 }

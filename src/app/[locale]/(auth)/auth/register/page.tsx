@@ -57,9 +57,8 @@ export default function RegisterPage() {
   const [hasWhatsapp, setHasWhatsapp] = useState(false);
 
   useEffect(() => {
-    if (!phoneInput) {
-      setHasWhatsapp(false);
-    }
+    if (phoneInput) return;
+    setHasWhatsapp(false);
   }, [phoneInput]);
 
   // Redirect if already logged in
@@ -222,10 +221,10 @@ export default function RegisterPage() {
                   disabled={registerMutation.isPending}
                   value={phoneInput}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    const value = e.target.value.replaceAll(/\D/g, "");
                     setPhoneInput(value);
                   }}
-                  pattern="[0-9]{7,15}"
+                  pattern="\d{7,15}"
                   title="Phone number must be 7-15 digits"
                   className="flex-1"
                 />
@@ -235,11 +234,11 @@ export default function RegisterPage() {
                   id="hasWhatsapp"
                   checked={hasWhatsapp}
                   onCheckedChange={(checked) => setHasWhatsapp(checked === true)}
-                  disabled={!phoneInput || registerMutation.isPending}
+                  disabled={registerMutation.isPending || !phoneInput}
                 />
                 <Label
                   htmlFor="hasWhatsapp"
-                  className={`text-sm ${!phoneInput ? "opacity-50" : ""}`}
+                  className={`text-sm ${phoneInput ? "" : "opacity-50"}`}
                 >
                   {t("hasWhatsappLabel")}
                 </Label>

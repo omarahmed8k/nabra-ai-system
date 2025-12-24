@@ -37,31 +37,34 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid E.164 phone in 'to'" }, { status: 400 });
   }
 
-  const isAdmin = me?.role === "SUPER_ADMIN";
-  const isSelfTest = me?.phone && formatE164(me.phone) === to && me?.hasWhatsapp;
+  async function findTargetUser(phoneE164: string) {
+    // Try exact match first
+    let target = await db.user.findFirst({
+      where: { phone: phoneE164 },
+      select: { id: true, hasWhatsapp: true, phone: true },
+    });
+    if (target) return target;
 
-  // Allow testing to any existing user in DB who hasWhatsapp=true
-  // Try exact match, then fallback to normalization against all opted-in users
-  let target = await db.user.findFirst({
-    where: { phone: to },
-    select: { id: true, hasWhatsapp: true, phone: true },
-  });
-  if (!target) {
-    const phoneNoPlus = to.replace(/^\+/, "");
+    // Try normalized (remove +)
+    const phoneNoPlus = phoneE164.replaceAll(/^\+/g, "");
     target = await db.user.findFirst({
       where: { phone: phoneNoPlus },
       select: { id: true, hasWhatsapp: true, phone: true },
     });
-  }
-  if (!target) {
+    if (target) return target;
+
+    // Try format match against all opted-in users
     const candidates = await db.user.findMany({
       where: { hasWhatsapp: true, phone: { not: null } },
       select: { id: true, hasWhatsapp: true, phone: true },
-      take: 50, // safety limit
+      take: 50,
     });
-    target = candidates.find((c) => formatE164(c.phone) === to) || (undefined as any);
+    return candidates.find((c) => formatE164(c.phone) === phoneE164);
   }
 
+  const isAdmin = me?.role === "SUPER_ADMIN";
+  const isSelfTest = me?.phone && formatE164(me.phone) === to && me?.hasWhatsapp;
+  const target = await findTargetUser(to);
   const isTargetOptedIn = !!target?.hasWhatsapp;
 
   if (!isAdmin && !isSelfTest && !isTargetOptedIn) {
@@ -77,14 +80,15 @@ export async function POST(req: Request) {
     );
   }
 
-  let bodyParams = params && Array.isArray(params) ? [...params] : undefined;
-  if (cfg) {
-    if (cfg.paramCount === 0) {
-      bodyParams = undefined; // template expects no params
-    } else if (cfg.paramCount > 0 && bodyParams && bodyParams.length > cfg.paramCount) {
-      bodyParams = bodyParams.slice(0, cfg.paramCount); // trim extras
-    }
+  function buildBodyParams() {
+    if (!cfg || !params || !Array.isArray(params)) return undefined;
+    if (cfg.paramCount === 0) return undefined; // template expects no params
+    if (cfg.paramCount > 0 && params.length > cfg.paramCount)
+      return params.slice(0, cfg.paramCount);
+    return params;
   }
+
+  const bodyParams = buildBodyParams();
 
   try {
     const res = await sendWhatsAppTemplate(to, templateName, {

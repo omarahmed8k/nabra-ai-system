@@ -55,32 +55,30 @@ export function EditUserDialog({
   const updateUser = trpc.admin.updateUser.useMutation();
 
   useEffect(() => {
-    if (user) {
-      setName(user.name || "");
-      setEmail(user.email);
+    if (!user) return;
+    setName(user.name || "");
+    setEmail(user.email);
 
-      const rawPhone = (user as any).phone as string | undefined | null;
-      if (rawPhone) {
-        const parts = rawPhone.split(" ");
-        if (parts.length > 1 && parts[0].startsWith("+")) {
-          setCountryCode(parts[0]);
-          setPhone(parts.slice(1).join(" "));
-        } else {
-          setPhone(rawPhone);
-        }
+    const rawPhone = (user as any).phone as string | undefined | null;
+    if (rawPhone) {
+      const parts = rawPhone.split(" ");
+      if (parts.length > 1 && parts[0].startsWith("+")) {
+        setCountryCode(parts[0]);
+        setPhone(parts.slice(1).join(" "));
       } else {
-        setPhone("");
-        setCountryCode("+20");
+        setPhone(rawPhone);
       }
-
-      setHasWhatsapp(Boolean((user as any).hasWhatsapp));
+    } else {
+      setPhone("");
+      setCountryCode("+20");
     }
+
+    setHasWhatsapp(Boolean((user as any).hasWhatsapp));
   }, [user]);
 
   useEffect(() => {
-    if (!phone) {
-      setHasWhatsapp(false);
-    }
+    if (phone) return;
+    setHasWhatsapp(false);
   }, [phone]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -211,10 +209,10 @@ export function EditUserDialog({
                 type="tel"
                 value={phone}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  const value = e.target.value.replaceAll(/\D/g, "");
                   setPhone(value);
                 }}
-                pattern="[0-9]{7,15}"
+                pattern="\d{7,15}"
                 title="Phone number must be 7-15 digits"
                 placeholder="123456789"
                 className="flex-1"
@@ -230,9 +228,9 @@ export function EditUserDialog({
               <label
                 htmlFor="edit-hasWhatsapp"
                 className={`text-sm font-medium leading-none ${
-                  !phone
-                    ? "cursor-not-allowed opacity-50"
-                    : "peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  phone
+                    ? "peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    : "cursor-not-allowed opacity-50"
                 }`}
               >
                 {t("dialog.fields.hasWhatsapp")}

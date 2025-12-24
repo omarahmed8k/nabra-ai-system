@@ -18,7 +18,7 @@ import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { resolveLocalizedText } from "@/lib/i18n";
-import { CheckCircle, RotateCcw, Star } from "lucide-react";
+import { CheckCircle, RotateCcw, Star, CreditCard } from "lucide-react";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
@@ -34,6 +34,8 @@ export default function RequestDetailPage() {
   const { data: request, isLoading } = trpc.request.getById.useQuery({
     id: requestId,
   });
+
+  const { data: subscription } = trpc.subscription.getActive.useQuery();
 
   // Validation constants
   const MIN_REVISION_FEEDBACK = 10;
@@ -119,6 +121,11 @@ export default function RequestDetailPage() {
   const canApprove = request.status === "DELIVERED";
   const canRate = request.status === "COMPLETED" && !request.rating;
   const revisionInfo = request.revisionInfo;
+
+  // Check if user has enough credits for paid revision
+  const needsPaidRevision = revisionInfo && revisionInfo.freeRevisionsRemaining === 0;
+  const hasEnoughCredits = subscription?.remainingCredits >= (revisionInfo?.nextRevisionCost || 0);
+  const canAffordRevision = !needsPaidRevision || hasEnoughCredits;
 
   return (
     <div className="space-y-6">
@@ -249,10 +256,31 @@ export default function RequestDetailPage() {
                       </span>
                     </div>
                   </div>
+                  {needsPaidRevision && !hasEnoughCredits && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                      <p className="font-medium text-red-800">
+                        {t("requestRevision.insufficientCredits")}
+                      </p>
+                      <p className="text-xs text-red-700 mt-2">
+                        {t("requestRevision.insufficientCreditsDesc", {
+                          required: revisionInfo?.nextRevisionCost || 0,
+                          available: subscription?.remainingCredits || 0,
+                        })}
+                      </p>
+                      <Link href="/client/subscription" className="inline-block mt-3">
+                        <Button size="sm" className="gap-2 bg-red-600 hover:bg-red-700 text-white">
+                          <CreditCard className="h-3 w-3" />
+                          {t("requestRevision.buyCredits")}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                   <Button
                     variant="outline"
                     onClick={handleRequestRevision}
-                    disabled={!revisionFeedbackValid || requestRevision.isPending}
+                    disabled={
+                      !revisionFeedbackValid || requestRevision.isPending || !canAffordRevision
+                    }
                   >
                     {requestRevision.isPending
                       ? t("requestRevision.requesting")

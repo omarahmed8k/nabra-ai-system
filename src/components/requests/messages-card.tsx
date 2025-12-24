@@ -187,7 +187,7 @@ export function MessagesCard({
   const prettyFilename = (name: string = "") => {
     let result = name;
     // Strip leading long numeric timestamp/hash followed by hyphen
-    result = result.replace(/^\d{8,}-/, "");
+    result = result.replaceAll(/^\d{8,}-/g, "");
     // If still too long, keep last segment after another hyphen
     if (result.length > 60 && result.includes("-")) {
       const parts = result.split("-");

@@ -69,7 +69,7 @@ export function getStatusLabel(status: string): string {
     COMPLETED: "Completed",
     CANCELLED: "Cancelled",
   };
-  return labels[status] || status.replace("_", " ");
+  return labels[status] || status.replaceAll("_", " ");
 }
 
 export function getPriorityLabel(priority: number): string {

@@ -455,7 +455,7 @@ export default function ProviderRequestDetailPage() {
 
                                 const prettyFilename = (name: string = "") => {
                                   let result = name;
-                                  result = result.replace(/^\d{8,}-/, "");
+                                  result = result.replaceAll(/^\d{8,}-/g, "");
                                   if (result.length > 60 && result.includes("-")) {
                                     const parts = result.split("-");
                                     result = parts.slice(1).join("-");

@@ -1098,7 +1098,10 @@
         "placeholder": "Describe what changes you need...",
         "minCharacters": "Minimum {min} characters required",
         "button": "Request Revision",
-        "requesting": "Requesting..."
+        "requesting": "Requesting...",
+        "insufficientCredits": "Insufficient Credits",
+        "insufficientCreditsDesc": "You need {required} credits for this revision, but you have {available} credits remaining. Please purchase more credits.",
+        "buyCredits": "Buy Credits"
       },
       "rateService": {
         "title": "Rate This Service",

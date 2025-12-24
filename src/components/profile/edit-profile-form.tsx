@@ -35,31 +35,29 @@ export function EditProfileForm() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (!phone) {
-      setHasWhatsapp(false);
-    }
+    if (phone) return;
+    setHasWhatsapp(false);
   }, [phone]);
 
   // Set form values when profile loads
   useEffect(() => {
-    if (profile) {
-      setName(profile.name || "");
-      setEmail(profile.email);
-      setImage(profile.image || "");
-      if (profile.phone) {
-        const parts = profile.phone.split(" ");
-        if (parts.length > 1 && parts[0].startsWith("+")) {
-          setCountryCode(parts[0]);
-          setPhone(parts.slice(1).join(" "));
-        } else {
-          setPhone(profile.phone);
-        }
+    if (!profile) return;
+    setName(profile.name || "");
+    setEmail(profile.email);
+    setImage(profile.image || "");
+    if (profile.phone) {
+      const parts = profile.phone.split(" ");
+      if (parts.length > 1 && parts[0].startsWith("+")) {
+        setCountryCode(parts[0]);
+        setPhone(parts.slice(1).join(" "));
       } else {
-        setPhone("");
-        setCountryCode("+20");
+        setPhone(profile.phone);
       }
-      setHasWhatsapp(profile.hasWhatsapp ?? false);
+    } else {
+      setPhone("");
+      setCountryCode("+20");
     }
+    setHasWhatsapp(profile.hasWhatsapp ?? false);
   }, [profile]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,10 +242,10 @@ export function EditProfileForm() {
                 type="tel"
                 value={phone}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  const value = e.target.value.replaceAll(/\D/g, "");
                   setPhone(value);
                 }}
-                pattern="[0-9]{7,15}"
+                pattern="\d{7,15}"
                 title="Phone number must be 7-15 digits"
                 placeholder={t("placeholders.phone")}
                 className="flex-1"
@@ -260,7 +258,7 @@ export function EditProfileForm() {
                 onCheckedChange={(checked) => setHasWhatsapp(checked === true)}
                 disabled={!phone}
               />
-              <Label htmlFor="hasWhatsapp" className={`text-sm ${!phone ? "opacity-50" : ""}`}>
+              <Label htmlFor="hasWhatsapp" className={`text-sm ${phone ? "" : "opacity-50"}`}>
                 {t("labels.hasWhatsapp")}
               </Label>
             </div>

@@ -4,6 +4,19 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "@/i18n/routing";
 import { useEffect } from "react";
 
+function getProviderRedirect(role?: string | null): string | null {
+  switch (role) {
+    case "CLIENT":
+      return "/client";
+    case "SUPER_ADMIN":
+      return "/admin";
+    case "PROVIDER":
+      return null; // Allow access
+    default:
+      return role ? "/" : null; // Redirect unknown roles to home
+  }
+}
+
 export default function ProviderLayout({
   children,
 }: Readonly<{
@@ -20,26 +33,17 @@ export default function ProviderLayout({
       return;
     }
 
-    if (session.user?.role !== "PROVIDER" && session.user?.role !== "SUPER_ADMIN") {
-      // Redirect to user's own role base path
-      if (session.user?.role === "CLIENT") {
-        router.push("/client");
-      } else if (session.user?.role === "SUPER_ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
-      return;
+    const redirect = getProviderRedirect(session.user?.role);
+    if (redirect) {
+      router.push(redirect);
     }
   }, [session, status, router]);
 
-  if (
-    status === "loading" ||
-    !session ||
-    (session.user?.role !== "PROVIDER" && session.user?.role !== "SUPER_ADMIN")
-  ) {
-    return null;
-  }
+  const isAuthorized = !!(
+    status !== "loading" &&
+    session &&
+    (session.user?.role === "PROVIDER" || session.user?.role === "SUPER_ADMIN")
+  );
 
-  return children;
+  return isAuthorized ? children : null;
 }

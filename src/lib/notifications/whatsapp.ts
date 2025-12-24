@@ -17,7 +17,7 @@ export function formatE164(phone?: string | null): string | null {
   let s = phone.trim();
 
   // Replace common formatting characters
-  s = s.replace(/[\s\-().]/g, "");
+  s = s.replaceAll(/[\s\-().]]/g, "");
 
   // Handle international prefix '00'
   if (s.startsWith("00")) {
@@ -43,7 +43,7 @@ export function getTemplateConfigForType(
   type: string
 ): { name: string; paramCount: number } | null {
   const fallbackName = process.env.WHATSAPP_TEMPLATE_DEFAULT || "hello_world";
-  const map: Record<string, { name?: string; paramCount?: string | undefined }> = {
+  const map: Record<string, { name?: string; paramCount?: string }> = {
     message: {
       name: process.env.WHATSAPP_TEMPLATE_MESSAGE || fallbackName,
       paramCount: process.env.WHATSAPP_TEMPLATE_MESSAGE_PARAMS,

@@ -226,7 +226,7 @@ function UserListItem({
     if (!user.hasWhatsapp || !user.phone) return null;
     const normalized = user.phone.replaceAll(/[^\d+]/g, "");
     const withoutPlus = normalized.startsWith("+") ? normalized.slice(1) : normalized;
-    return withoutPlus ? `https://wa.me/${withoutPlus}` : null;
+    return withoutPlus && `https://wa.me/${withoutPlus}`;
   })();
 
   return (
@@ -576,7 +576,7 @@ export default function AdminUsersPage() {
                     placeholder="123456789"
                     value={newUser.phone}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      const value = e.target.value.replaceAll(/\D/g, "");
                       setNewUser((prev) => ({ ...prev, phone: value }));
                     }}
                     pattern="[0-9]{7,15}"
