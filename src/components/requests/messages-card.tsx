@@ -324,6 +324,7 @@ export function MessagesCard({
                 onFilesChange={setCommentFiles}
                 maxFiles={3}
                 disabled={addComment.isPending}
+                files={commentFiles}
               />
               {commentFiles.length > 0 && (
                 <div className="space-y-2 rounded-md border p-3 bg-muted/40">

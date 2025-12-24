@@ -203,8 +203,8 @@
       "namePlaceholder": "أحمد محمد",
       "nameHint": "2-100 حرف",
       "phoneLabel": "رقم الهاتف (يفضل واتساب)",
-      "phonePlaceholder": "+966 5 5555 5555",
-      "phoneHint": "أدخل مفتاح الدولة، مثال: +966...",
+      "phonePlaceholder": "1234567890",
+      "phoneHint": "أدخل رقم الهاتف فقط (مفتاح الدولة محدد أعلاه)",
       "hasWhatsappLabel": "هذا الرقم لديه واتساب",
       "emailLabel": "البريد الإلكتروني",
       "emailPlaceholder": "name@example.com",
@@ -221,7 +221,9 @@
       "successMessage": "يمكنك الآن تسجيل الدخول باستخدام بيانات الاعتماد الخاصة بك.",
       "registrationFailed": "فشل التسجيل",
       "passwordsNotMatch": "كلمات المرور غير متطابقة",
-      "validationError": "خطأ في التحقق"
+      "validationError": "خطأ في التحقق",
+      "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
+      "invalidPhone": "يرجى إدخال رقم هاتف صالح (7-15 رقم)"
     },
     "common": {
       "required": "*"
@@ -361,6 +363,10 @@
           "updated": "تم تحديث المستخدم بنجاح",
           "deleted": "تم حذف المستخدم بنجاح",
           "error": "حدث خطأ"
+        },
+        "validation": {
+          "invalidEmail": "يرجى إدخال عنوان بريد إلكتروني صالح",
+          "invalidPhone": "يرجى إدخال رقم هاتف صالح (7-15 رقم)"
         }
       },
       "servicesBadge": {

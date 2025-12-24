@@ -22,6 +22,12 @@ export const phoneSchema = z
   .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number")
   .or(z.literal(""));
 
+// Phone number without country code (for use with separate country code selector)
+export const phoneNumberOnlySchema = z
+  .string()
+  .regex(/^[0-9]{7,15}$/, "Please enter a valid phone number (7-15 digits)")
+  .or(z.literal(""));
+
 // Login form validation
 export const loginFormSchema = z.object({
   email: emailSchema,

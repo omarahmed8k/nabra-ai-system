@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
+import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -95,12 +96,37 @@ export default function RegisterPage() {
 
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
+    const email = (formData.get("email") as string).toLowerCase().trim();
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const phoneRaw = (formData.get("phone") as string) || "";
+    const phoneRaw = (formData.get("phone") as string).trim() || "";
 
-    const phone = phoneRaw ? `${countryCode} ${phoneRaw}` : undefined;
+    // Validate email using emailSchema
+    const emailValidation = emailSchema.safeParse(email);
+    if (!emailValidation.success) {
+      const errorMsg = emailValidation.error.errors[0]?.message || "Invalid email";
+      setError(errorMsg);
+      toast.error(t("validationError"), {
+        description: errorMsg,
+      });
+      return;
+    }
+
+    // Build phone with country code if provided
+    let phone: string | undefined = undefined;
+    if (phoneRaw) {
+      // Validate phone number using phoneNumberOnlySchema
+      const phoneValidation = phoneNumberOnlySchema.safeParse(phoneRaw);
+      if (!phoneValidation.success) {
+        const errorMsg = phoneValidation.error.errors[0]?.message || "Invalid phone number";
+        setError(errorMsg);
+        toast.error(t("validationError"), {
+          description: errorMsg,
+        });
+        return;
+      }
+      phone = `${countryCode} ${phoneRaw}`;
+    }
 
     if (password !== confirmPassword) {
       setError(t("passwordsNotMatch"));
@@ -195,7 +221,12 @@ export default function RegisterPage() {
                   placeholder={t("phonePlaceholder")}
                   disabled={registerMutation.isPending}
                   value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    setPhoneInput(value);
+                  }}
+                  pattern="[0-9]{7,15}"
+                  title="Phone number must be 7-15 digits"
                   className="flex-1"
                 />
               </div>

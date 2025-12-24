@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Upload, FileIcon, Image, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -281,15 +281,22 @@ export function InlineFileUpload({
   onFilesChange,
   maxFiles = 3,
   disabled = false,
+  files = [],
 }: {
   readonly onFilesChange: (files: UploadedFile[]) => void;
   readonly maxFiles?: number;
   readonly disabled?: boolean;
+  readonly files?: UploadedFile[];
 }) {
   const t = useTranslations("ui.fileUpload");
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(files);
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync internal state with external files prop
+  React.useEffect(() => {
+    setUploadedFiles(files);
+  }, [files]);
 
   const uploadFile = async (file: File): Promise<UploadedFile | null> => {
     if (!ALLOWED_TYPES.has(file.type)) {

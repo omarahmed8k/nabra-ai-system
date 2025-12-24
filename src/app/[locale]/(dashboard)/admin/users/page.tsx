@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditUserDialog } from "@/components/admin/edit-user-dialog";
 import { trpc } from "@/lib/trpc/client";
 import { formatDate, getInitials } from "@/lib/utils";
+import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 import { toast } from "sonner";
 import {
   Search,
@@ -428,9 +429,37 @@ export default function AdminUsersPage() {
       toast.error(t("dialog.toast.error"));
       return;
     }
+
+    // Validate email using emailSchema
+    const emailValidation = emailSchema.safeParse(newUser.email);
+    if (!emailValidation.success) {
+      toast.error(
+        emailValidation.error.errors[0]?.message ||
+          t("dialog.validation.invalidEmail") ||
+          "Invalid email"
+      );
+      return;
+    }
+
+    // Validate phone number if provided
+    let phone: string | undefined = undefined;
+    if (newUser.phone) {
+      const phoneValidation = phoneNumberOnlySchema.safeParse(newUser.phone);
+      if (!phoneValidation.success) {
+        toast.error(
+          phoneValidation.error.errors[0]?.message ||
+            t("dialog.validation.invalidPhone") ||
+            "Invalid phone"
+        );
+        return;
+      }
+      phone = `${newUser.countryCode} ${newUser.phone}`;
+    }
+
     const payload = {
       ...newUser,
-      phone: newUser.phone ? `${newUser.countryCode} ${newUser.phone}` : undefined,
+      email: newUser.email.toLowerCase().trim(),
+      phone,
     };
     createUser.mutate(payload as any);
   };
@@ -517,7 +546,9 @@ export default function AdminUsersPage() {
                   type="email"
                   placeholder="email@example.com"
                   value={newUser.email}
-                  onChange={(e) => setNewUser((prev) => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setNewUser((prev) => ({ ...prev, email: e.target.value.toLowerCase().trim() }))
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -544,7 +575,12 @@ export default function AdminUsersPage() {
                     type="tel"
                     placeholder="123456789"
                     value={newUser.phone}
-                    onChange={(e) => setNewUser((prev) => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      setNewUser((prev) => ({ ...prev, phone: value }));
+                    }}
+                    pattern="[0-9]{7,15}"
+                    title="Phone number must be 7-15 digits"
                     className="flex-1"
                   />
                 </div>

@@ -1209,10 +1209,16 @@ export const adminRouter = router({
     .input(
       z.object({
         name: z.string().min(2),
-        email: z.string().email(),
+        email: z.string().email("Invalid email address").toLowerCase(),
         password: z.string().min(6),
         role: z.enum(["CLIENT", "PROVIDER", "SUPER_ADMIN"]),
-        phone: z.string().optional(),
+        phone: z
+          .string()
+          .regex(
+            /^\+[1-9]\d{1,3}\s[0-9]{7,15}$/,
+            "Phone must be in format: +countryCode phoneNumber (e.g., +20 1234567890)"
+          )
+          .optional(),
         hasWhatsapp: z.boolean().optional(),
         supportedServiceIds: z.array(z.string()).optional(), // For providers only
       })

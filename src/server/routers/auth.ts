@@ -18,9 +18,15 @@ export const authRouter = router({
     .input(
       z.object({
         name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.string().email("Invalid email address"),
+        email: z.string().email("Invalid email address").toLowerCase(),
         password: z.string().min(6, "Password must be at least 6 characters"),
-        phone: z.string().optional(),
+        phone: z
+          .string()
+          .regex(
+            /^\+[1-9]\d{1,3}\s[0-9]{7,15}$/,
+            "Phone must be in format: +countryCode phoneNumber (e.g., +20 1234567890)"
+          )
+          .optional(),
         hasWhatsapp: z.boolean().optional(),
       })
     )

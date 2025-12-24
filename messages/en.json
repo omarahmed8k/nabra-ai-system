@@ -203,8 +203,8 @@
       "namePlaceholder": "John Doe",
       "nameHint": "2-100 characters",
       "phoneLabel": "Phone (WhatsApp preferred)",
-      "phonePlaceholder": "+1 555 123 4567",
-      "phoneHint": "Include country code, e.g. +1...",
+      "phonePlaceholder": "1234567890",
+      "phoneHint": "Enter phone number only (country code selected above)",
       "hasWhatsappLabel": "This number has WhatsApp",
       "emailLabel": "Email",
       "emailPlaceholder": "name@example.com",
@@ -221,7 +221,9 @@
       "successMessage": "You can now sign in with your credentials.",
       "registrationFailed": "Registration Failed",
       "passwordsNotMatch": "Passwords do not match",
-      "validationError": "Validation Error"
+      "validationError": "Validation Error",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidPhone": "Please enter a valid phone number (7-15 digits)"
     },
     "common": {
       "required": "*"
@@ -361,6 +363,10 @@
           "updated": "User updated successfully",
           "deleted": "User deleted successfully",
           "error": "An error occurred"
+        },
+        "validation": {
+          "invalidEmail": "Please enter a valid email address",
+          "invalidPhone": "Please enter a valid phone number (7-15 digits)"
         }
       },
       "servicesBadge": {
