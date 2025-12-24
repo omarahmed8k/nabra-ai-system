@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
+import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 import { toast } from "sonner";
 import { Loader2, User, Mail, Upload, X } from "lucide-react";
 
@@ -120,10 +121,16 @@ export function EditProfileForm() {
         updates.name = name;
       }
 
-      if (email === profile?.email) {
-        /* no change */
-      } else {
-        updates.email = email;
+      // Validate email if changed
+      if (email !== profile?.email) {
+        const emailValidation = emailSchema.safeParse(email);
+        if (!emailValidation.success) {
+          toast.error(
+            emailValidation.error.errors[0]?.message || "Please enter a valid email address"
+          );
+          return;
+        }
+        updates.email = email.toLowerCase().trim();
       }
 
       if (image === profile?.image) {
@@ -132,8 +139,21 @@ export function EditProfileForm() {
         updates.image = image || null;
       }
 
-      const composedPhone = phone ? `${countryCode} ${phone}` : undefined;
-      if (composedPhone !== profile?.phone) {
+      // Validate and compose phone if changed
+      let composedPhone: string | undefined = undefined;
+      if (phone) {
+        const phoneValidation = phoneNumberOnlySchema.safeParse(phone);
+        if (!phoneValidation.success) {
+          toast.error(
+            phoneValidation.error.errors[0]?.message ||
+              "Please enter a valid phone number (7-15 digits)"
+          );
+          return;
+        }
+        composedPhone = `${countryCode} ${phone}`;
+      }
+
+      if (composedPhone && composedPhone !== profile?.phone) {
         updates.phone = composedPhone;
       }
 
@@ -223,7 +243,12 @@ export function EditProfileForm() {
                 id="phone"
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setPhone(value);
+                }}
+                pattern="[0-9]{7,15}"
+                title="Phone number must be 7-15 digits"
                 placeholder={t("placeholders.phone")}
                 className="flex-1"
               />

@@ -3,6 +3,7 @@ import { router, adminProcedure, publicProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { notifyProviderAssignment } from "@/lib/notifications";
+import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
 export const adminRouter = router({
   // Get all active service types (public - for landing page)
@@ -1212,13 +1213,7 @@ export const adminRouter = router({
         email: z.string().email("Invalid email address").toLowerCase(),
         password: z.string().min(6),
         role: z.enum(["CLIENT", "PROVIDER", "SUPER_ADMIN"]),
-        phone: z
-          .string()
-          .regex(
-            /^\+[1-9]\d{1,3}\s[0-9]{7,15}$/,
-            "Phone must be in format: +countryCode phoneNumber (e.g., +20 1234567890)"
-          )
-          .optional(),
+        phone: phoneWithCountryCodeSchema,
         hasWhatsapp: z.boolean().optional(),
         supportedServiceIds: z.array(z.string()).optional(), // For providers only
       })
@@ -1470,8 +1465,8 @@ export const adminRouter = router({
       z.object({
         userId: z.string(),
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
-        email: z.string().email("Invalid email address").optional(),
-        phone: z.string().optional(),
+        email: z.string().email("Invalid email address").toLowerCase().optional(),
+        phone: phoneWithCountryCodeSchema,
         hasWhatsapp: z.boolean().optional(),
       })
     )
@@ -1492,9 +1487,10 @@ export const adminRouter = router({
 
       // If email is being changed, check if it's already taken
       if (email && email !== user.email) {
+        const normalizedEmail = email.toLowerCase().trim();
         const existingUser = await ctx.db.user.findFirst({
           where: {
-            email,
+            email: normalizedEmail,
             id: { not: userId },
           },
         });

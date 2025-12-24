@@ -22,6 +22,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc/client";
+import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 import { toast } from "sonner";
 import { Loader2, User, Mail } from "lucide-react";
 
@@ -101,14 +102,36 @@ export function EditUserDialog({
         updates.name = name;
       }
 
-      if (email === user.email) {
-        /* no change */
-      } else {
-        updates.email = email;
+      // Validate email if changed
+      if (email !== user.email) {
+        const emailValidation = emailSchema.safeParse(email);
+        if (!emailValidation.success) {
+          toast.error(
+            emailValidation.error.errors[0]?.message ||
+              t("dialog.validation.invalidEmail") ||
+              "Invalid email"
+          );
+          return;
+        }
+        updates.email = email.toLowerCase().trim();
       }
 
-      const composedPhone = phone ? `${countryCode} ${phone}` : "";
-      if (composedPhone !== (user as any).phone) {
+      // Validate phone if provided
+      let composedPhone: string | undefined = undefined;
+      if (phone) {
+        const phoneValidation = phoneNumberOnlySchema.safeParse(phone);
+        if (!phoneValidation.success) {
+          toast.error(
+            phoneValidation.error.errors[0]?.message ||
+              t("dialog.validation.invalidPhone") ||
+              "Invalid phone"
+          );
+          return;
+        }
+        composedPhone = `${countryCode} ${phone}`;
+      }
+      // Only update phone when a valid phone is provided
+      if (composedPhone && composedPhone !== (user as any).phone) {
         updates.phone = composedPhone;
       }
 
@@ -187,8 +210,13 @@ export function EditUserDialog({
                 id="edit-phone"
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="123 456 789"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setPhone(value);
+                }}
+                pattern="[0-9]{7,15}"
+                title="Phone number must be 7-15 digits"
+                placeholder="123456789"
                 className="flex-1"
               />
             </div>

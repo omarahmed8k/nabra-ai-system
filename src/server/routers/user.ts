@@ -2,6 +2,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { router, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
+import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
 export const userRouter = router({
   // Get current user profile
@@ -81,9 +82,9 @@ export const userRouter = router({
     .input(
       z.object({
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
-        email: z.string().email("Invalid email address").optional(),
+        email: z.string().email("Invalid email address").toLowerCase().optional(),
         image: z.string().nullable().optional(),
-        phone: z.string().optional(),
+        phone: phoneWithCountryCodeSchema,
         hasWhatsapp: z.boolean().optional(),
       })
     )
@@ -107,9 +108,10 @@ export const userRouter = router({
 
       // If email is being changed, check if it's already taken
       if (input.email) {
+        const normalizedEmail = input.email.toLowerCase().trim();
         const existingUser = await ctx.db.user.findFirst({
           where: {
-            email: input.email,
+            email: normalizedEmail,
             id: { not: userId },
           },
         });

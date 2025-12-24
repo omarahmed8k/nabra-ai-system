@@ -28,6 +28,15 @@ export const phoneNumberOnlySchema = z
   .regex(/^[0-9]{7,15}$/, "Please enter a valid phone number (7-15 digits)")
   .or(z.literal(""));
 
+// Phone with country code (e.g., +20 1234567890)
+export const phoneWithCountryCodeSchema = z
+  .string()
+  .regex(
+    /^\+[1-9]\d{1,3}\s[0-9]{7,15}$/,
+    "Phone must be in format: +countryCode phoneNumber (e.g., +20 1234567890)"
+  )
+  .optional();
+
 // Login form validation
 export const loginFormSchema = z.object({
   email: emailSchema,
