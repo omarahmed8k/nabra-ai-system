@@ -40,6 +40,29 @@ function calculateReconnectDelay(attempts: number): number {
   return exponentialDelay + jitter;
 }
 
+// Helper function to play notification sound
+// Plays the custom notification.wav audio file
+function playNotificationSound() {
+  // Check if we're in browser environment
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return;
+  }
+
+  try {
+    const audio = new Audio("/sounds/notification.wav");
+    audio.volume = 1; // Set volume to 100%
+    audio.play().catch((error) => {
+      // Silently fail if audio is not allowed (e.g., no user interaction yet)
+      // This is expected for the first notification before any user interaction
+      if (!error.message.includes("user didn't interact")) {
+        console.error("Failed to play notification sound:", error);
+      }
+    });
+  } catch (error) {
+    console.error("Failed to create notification sound:", error);
+  }
+}
+
 // Helper function to handle notification navigation
 function navigateToNotification(targetPath: string, currentPath: string, router: any) {
   if (currentPath === targetPath) {
@@ -132,7 +155,10 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       const linkWithLocale = (() => {
         if (!notification.link) return undefined;
         const path = notification.link;
-        const first = path.split("/").filter(Boolean)[0];
+        const first = path
+          .split("/")
+          .filter(Boolean)
+          .find(() => true);
         const locales = ["en", "ar"];
         const startsWithLocale = locales.includes(first as any);
         if (startsWithLocale) return path;
@@ -145,13 +171,16 @@ export function NotificationProvider({ children }: { readonly children: React.Re
         action: linkWithLocale
           ? {
               label: t("admin.requests.actions.view"),
-              onClick: () => navigateToNotification(linkWithLocale!, currentPath, router),
+              onClick: () => navigateToNotification(linkWithLocale, currentPath, router),
             }
           : undefined,
       });
 
       setUnreadCount((prev) => prev + 1);
       showDesktopNotification(notification);
+
+      // Play notification sound
+      playNotificationSound();
     },
     [router, showDesktopNotification, locale, t]
   );
