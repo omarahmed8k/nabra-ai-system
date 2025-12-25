@@ -23,13 +23,18 @@ export const createTRPCContext = async (
 
   // Extract locale from cookies
   let locale = "en";
-  if (opts?.req) {
-    const cookieHeader =
-      "headers" in opts.req
-        ? (opts.req.headers as Headers).get("cookie")
-        : opts.req.headers?.cookie;
-    if (cookieHeader) {
-      locale = getLocaleFromCookie(cookieHeader);
+  if (opts) {
+    const req = "res" in opts ? opts.req : opts.req;
+    if (req) {
+      let cookieHeader: string | undefined;
+      if ("headers" in req && req.headers instanceof Headers) {
+        cookieHeader = req.headers.get("cookie") ?? undefined;
+      } else if ("headers" in req && typeof req.headers === "object") {
+        cookieHeader = (req.headers as Record<string, any>).cookie;
+      }
+      if (cookieHeader) {
+        locale = getLocaleFromCookie(cookieHeader);
+      }
     }
   }
 
