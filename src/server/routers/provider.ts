@@ -406,6 +406,7 @@ export const providerRouter = router({
         userId: request.clientId,
         oldStatus: "PENDING",
         newStatus: "IN_PROGRESS",
+        locale: ctx.locale,
       });
 
       return { success: true, request: updatedRequest };
@@ -497,6 +498,7 @@ export const providerRouter = router({
         userId: request.clientId,
         oldStatus: "PENDING",
         newStatus: "IN_PROGRESS",
+        locale: ctx.locale,
       });
 
       return { success: true, request: updatedRequest };
@@ -571,6 +573,7 @@ export const providerRouter = router({
         userId: request.clientId,
         oldStatus: request.status,
         newStatus: "DELIVERED",
+        locale: ctx.locale,
       });
 
       return { success: true, request: updatedRequest };

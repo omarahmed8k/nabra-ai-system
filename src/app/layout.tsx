@@ -3,8 +3,6 @@ import { Lato, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
-import { ChunkReloadOnError } from "@/components/system/chunk-reloader";
-import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 
 // Initialize notification system on server
 import "@/lib/notifications/init";
@@ -60,7 +58,6 @@ export default function RootLayout({
           <TRPCProvider>
             {/* <ChunkReloadOnError /> */}
             {children}
-            <PWAInstallPrompt />
           </TRPCProvider>
         </AuthProvider>
       </body>

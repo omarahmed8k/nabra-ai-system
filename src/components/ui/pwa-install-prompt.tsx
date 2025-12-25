@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { X, Share, MoreVertical } from "lucide-react";
 import { Button } from "./button";
 
@@ -28,6 +29,9 @@ const isInstalled = () => {
 };
 
 export function PWAInstallPrompt() {
+  const t = useTranslations("pwa.install");
+  const locale = useLocale();
+  const fontClass = locale === "ar" ? "font-cairo" : "font-lato";
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
@@ -92,20 +96,18 @@ export function PWAInstallPrompt() {
   if (showIOSInstructions) {
     return (
       <div className="fixed bottom-4 start-4 end-4 z-50 md:start-auto md:end-4 md:w-96">
-        <div className="rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900">
+        <div className={`rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900 ${fontClass}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <h3 className="font-semibold text-black dark:text-white">Install Nabra AI App</h3>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                To install this app on iPhone/iPad:
-              </p>
+              <h3 className="font-semibold text-black dark:text-white">{t("ios.title")}</h3>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t("ios.intro")}</p>
               <ol className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
                 <li>
-                  Tap the <Share className="inline h-3 w-3 mx-1" /> Share button or the{" "}
-                  <MoreVertical className="inline h-3 w-3 mx-1" /> Options button
+                  {t("ios.step1")} <Share className="inline h-3 w-3 mx-1" />
+                  <MoreVertical className="inline h-3 w-3 mx-1" />
                 </li>
-                <li>Scroll and tap "Add to Home Screen"</li>
-                <li>Tap "Add" to install</li>
+                <li>{t("ios.step2")}</li>
+                <li>{t("ios.step3")}</li>
               </ol>
             </div>
             <button
@@ -117,7 +119,7 @@ export function PWAInstallPrompt() {
           </div>
           <div className="mt-4">
             <Button onClick={handleDismiss} variant="outline" className="w-full">
-              Got it
+              {t("ios.gotIt")}
             </Button>
           </div>
         </div>
@@ -130,13 +132,11 @@ export function PWAInstallPrompt() {
 
   return (
     <div className="fixed bottom-4 start-4 end-4 z-50 md:start-auto md:end-4 md:w-96">
-      <div className="rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900">
+      <div className={`rounded-lg border bg-white p-4 shadow-lg dark:bg-gray-900 ${fontClass}`}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h3 className="font-semibold text-black dark:text-white">Install Nabra AI App</h3>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Add to your home screen for quick access and offline support
-            </p>
+            <h3 className="font-semibold text-black dark:text-white">{t("title")}</h3>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{t("description")}</p>
           </div>
           <button
             onClick={handleDismiss}
@@ -147,10 +147,10 @@ export function PWAInstallPrompt() {
         </div>
         <div className="mt-4 flex gap-2">
           <Button onClick={handleInstall} className="flex-1">
-            Install
+            {t("installButton")}
           </Button>
           <Button onClick={handleDismiss} variant="outline" className="flex-1">
-            Not now
+            {t("dismissButton")}
           </Button>
         </div>
       </div>

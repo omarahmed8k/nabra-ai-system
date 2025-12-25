@@ -7,25 +7,48 @@ interface ZodErrorData {
   formErrors?: string[];
 }
 
+// Type for translation function - can be passed optionally
+type TranslateFn = (key: string) => string;
+
 /**
  * Maps tRPC error codes to user-friendly messages
  */
-function getMessageForCode(code: string | undefined, message: string): string {
+function getMessageForCode(code: string | undefined, message: string, t?: TranslateFn): string {
+  if (!t) {
+    // Fallback to English if no translation function provided
+    switch (code) {
+      case "UNAUTHORIZED":
+        return "You need to be logged in to perform this action";
+      case "FORBIDDEN":
+        return "You don't have permission to perform this action";
+      case "NOT_FOUND":
+        return message || "The requested resource was not found";
+      case "BAD_REQUEST":
+        return message || "Invalid request. Please check your input.";
+      case "CONFLICT":
+        return message || "A conflict occurred. Please try again.";
+      case "INTERNAL_SERVER_ERROR":
+        return "An unexpected error occurred. Please try again later.";
+      default:
+        return message || "Something went wrong";
+    }
+  }
+
   switch (code) {
     case "UNAUTHORIZED":
-      return "You need to be logged in to perform this action";
+      return t("errors.unauthorized");
     case "FORBIDDEN":
-      return "You don't have permission to perform this action";
+      return t("errors.forbidden");
     case "NOT_FOUND":
-      return message || "The requested resource was not found";
+      return message || t("errors.notFound");
     case "BAD_REQUEST":
-      return message || "Invalid request. Please check your input.";
+      return message || t("errors.badRequest");
     case "CONFLICT":
-      return message || "A conflict occurred. Please try again.";
+      return message || t("errors.conflict");
     case "INTERNAL_SERVER_ERROR":
-      return "An unexpected error occurred. Please try again later.";
+      return t("errors.internalError");
     default:
-      return message || "Something went wrong";
+      return message || t("errors.somethingWrong");
   }
 }
 
@@ -47,7 +70,7 @@ function getZodErrorMessage(zodError: ZodErrorData): string | null {
  * Handles tRPC client errors
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleTRPCError(error: TRPCClientError<any>): string {
+function handleTRPCError(error: TRPCClientError<any>, t?: TranslateFn): string {
   const message = error.message;
   const data = error.data as Record<string, unknown> | undefined;
 
@@ -56,18 +79,17 @@ function handleTRPCError(error: TRPCClientError<any>): string {
     if (zodMessage) return zodMessage;
   }
 
-  return getMessageForCode(data?.code as string | undefined, message);
+  return getMessageForCode(data?.code as string | undefined, message, t);
 }
 
 /**
  * Handles network-related error messages
  */
-function handleNetworkError(message: string): string | null {
-  if (message.includes("fetch failed")) {
-    return "Unable to connect to the server. Please check your internet connection.";
-  }
-  if (message.includes("Network Error")) {
-    return "Network error. Please check your internet connection.";
+function handleNetworkError(message: string, t?: TranslateFn): string | null {
+  if (message.includes("fetch failed") || message.includes("Network Error")) {
+    return t
+      ? t("errors.networkError")
+      : "Unable to connect to the server. Please check your internet connection.";
   }
   return null;
 }
@@ -75,33 +97,33 @@ function handleNetworkError(message: string): string | null {
 /**
  * Extracts a user-friendly error message from various error types
  */
-export function getErrorMessage(error: unknown): string {
+export function getErrorMessage(error: unknown, t?: TranslateFn): string {
   if (error instanceof TRPCClientError) {
-    return handleTRPCError(error);
+    return handleTRPCError(error, t);
   }
 
   if (error instanceof ZodError) {
     const firstError = error.errors[0];
-    return firstError?.message ?? "Validation error occurred";
+    return firstError?.message ?? (t ? t("errors.validationError") : "Validation error occurred");
   }
 
   if (error instanceof Error) {
-    return handleNetworkError(error.message) ?? error.message;
+    return handleNetworkError(error.message, t) ?? error.message;
   }
 
   if (typeof error === "string") {
     return error;
   }
 
-  return "An unexpected error occurred";
+  return t ? t("errors.unexpectedError") : "An unexpected error occurred";
 }
 
 /**
  * Shows an error toast with the extracted error message
  */
-export function showError(error: unknown, title?: string) {
-  const message = getErrorMessage(error);
-  toast.error(title || "Error", {
+export function showError(error: unknown, title?: string, t?: TranslateFn) {
+  const message = getErrorMessage(error, t);
+  toast.error(title || (t ? t("errors.titles.error") : "Error"), {
     description: message,
     duration: 5000,
   });
@@ -110,8 +132,8 @@ export function showError(error: unknown, title?: string) {
 /**
  * Shows a success toast
  */
-export function showSuccess(message: string, title?: string) {
-  toast.success(title || "Success", {
+export function showSuccess(message: string, title?: string, t?: TranslateFn) {
+  toast.success(title || (t ? t("errors.titles.success") : "Success"), {
     description: message,
     duration: 3000,
   });
@@ -120,8 +142,8 @@ export function showSuccess(message: string, title?: string) {
 /**
  * Shows an info toast
  */
-export function showInfo(message: string, title?: string) {
-  toast.info(title || "Info", {
+export function showInfo(message: string, title?: string, t?: TranslateFn) {
+  toast.info(title || (t ? t("errors.titles.info") : "Info"), {
     description: message,
     duration: 4000,
   });
@@ -130,8 +152,8 @@ export function showInfo(message: string, title?: string) {
 /**
  * Shows a warning toast
  */
-export function showWarning(message: string, title?: string) {
-  toast.warning(title || "Warning", {
+export function showWarning(message: string, title?: string, t?: TranslateFn) {
+  toast.warning(title || (t ? t("errors.titles.warning") : "Warning"), {
     description: message,
     duration: 4000,
   });
@@ -160,17 +182,14 @@ export function showPromise<T>(
     loading: string;
     success: string | ((data: T) => string);
     error: string | ((error: unknown) => string);
-  }
+  },
+  t?: TranslateFn
 ) {
   return toast.promise(promise, {
     loading: messages.loading,
     success: (data) =>
-      typeof messages.success === "function"
-        ? messages.success(data)
-        : messages.success,
+      typeof messages.success === "function" ? messages.success(data) : messages.success,
     error: (err) =>
-      typeof messages.error === "function"
-        ? messages.error(err)
-        : getErrorMessage(err),
+      typeof messages.error === "function" ? messages.error(err) : getErrorMessage(err, t),
   });
 }

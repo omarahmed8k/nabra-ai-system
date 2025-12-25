@@ -130,6 +130,7 @@ export function validateField<T>(
     return { success: true, data: result.data };
   }
   return { success: false, error: result.error.errors[0]?.message || "Invalid value" };
+  // Note: For full i18n support, pass locale and use: getTranslation(locale, "errors.invalidValue")
 }
 
 // Form error extractor

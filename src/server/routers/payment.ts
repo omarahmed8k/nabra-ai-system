@@ -111,9 +111,10 @@ export const paymentRouter = router({
 
       // Notify admins (DB + SSE)
       await notifyAdminsNewPendingPayment({
-        clientNameOrEmail: ctx.session.user.name || ctx.session.user.email,
+        clientNameOrEmail: ctx.session.user.name || ctx.session.user.email || "Unknown",
         amount: input.amount,
         currency: input.currency,
+        locale: ctx.locale,
       });
 
       return paymentProof;

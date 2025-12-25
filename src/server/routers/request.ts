@@ -744,6 +744,7 @@ export const requestRouter = router({
           userId: request.providerId,
           oldStatus: "DELIVERED",
           newStatus: "COMPLETED",
+          locale: ctx.locale,
         });
       }
 
@@ -825,8 +826,10 @@ export const requestRouter = router({
           await notifyNewMessage({
             requestId: input.requestId,
             senderName,
+            senderRole: "CLIENT",
             recipientId: request.providerId,
             messagePreview: input.content.slice(0, 100),
+            locale: ctx.locale,
           });
         } else {
           // Notify all watchers (providers who previously commented)
@@ -841,8 +844,10 @@ export const requestRouter = router({
                 notifyNewMessage({
                   requestId: input.requestId,
                   senderName,
+                  senderRole: "CLIENT",
                   recipientId: w.userId,
                   messagePreview: input.content.slice(0, 100),
+                  locale: ctx.locale,
                 })
               )
           );

@@ -407,7 +407,7 @@ export default function AdminPaymentsPage() {
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {formatCurrency(selectedPayment.subscription.package.price, locale)} -{" "}
-                    {selectedPayment.subscription.package.credits} credits
+                    {selectedPayment.subscription.package.credits} {t("details.credits")}
                   </p>
                 </div>
                 <div className="space-y-1">

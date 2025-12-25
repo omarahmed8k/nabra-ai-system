@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
 import type { ReactNode } from "react";
 
 import { routing } from "@/i18n/routing";
 import { LocaleHtmlUpdater } from "@/components/system/locale-html-updater";
 import { Toaster } from "@/components/ui/sonner";
 import { NotificationProvider } from "@/components/providers/notification-provider";
+import { PWAInstallPrompt } from "@/components/ui/pwa-install-prompt";
 
 export default async function LocaleLayout({
   children,
@@ -21,7 +21,7 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  const messages = await getMessages();
+  const messages = (await import(`../../../messages/${locale}.json`)).default;
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
@@ -29,6 +29,7 @@ export default async function LocaleLayout({
       <NotificationProvider>
         <div dir={locale === "ar" ? "rtl" : "ltr"}>{children}</div>
         <Toaster position="top-right" richColors closeButton />
+        <PWAInstallPrompt />
       </NotificationProvider>
     </NextIntlClientProvider>
   );

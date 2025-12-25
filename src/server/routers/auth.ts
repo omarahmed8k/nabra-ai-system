@@ -104,6 +104,7 @@ export const authRouter = router({
         userName: user.name || "User",
         userEmail: user.email,
         userRole: user.role,
+        locale: ctx.locale,
       }).catch((error) => {
         console.error("Failed to send welcome email:", error);
         // Don't throw - email failure shouldn't break registration

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { setSseNotificationSender } from "@/lib/notifications";
 import { getSseClients, sendNotificationToUser } from "@/lib/notifications/sse-utils";
+import { getLocaleFromCookie } from "@/lib/notifications/i18n-helper";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,14 @@ export async function GET(request: Request) {
   const userId = session.user.id;
   const clients = getSseClients();
 
+  // Extract locale from cookies on this connection
+  const cookieHeader = request.headers.get("cookie") || "";
+  const locale = getLocaleFromCookie(cookieHeader);
+
   const stream = new ReadableStream({
     start(controller) {
-      // Store the connection
-      clients.set(userId, controller);
+      // Store the connection with locale
+      clients.set(userId, { controller, locale });
 
       // Send initial connection message
       controller.enqueue(

@@ -4,6 +4,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getLocaleFromCookie } from "@/lib/notifications/i18n-helper";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -19,10 +20,24 @@ export const createTRPCContext = async (
     opts && "res" in opts
       ? await getServerSession(opts.req, opts.res, authOptions)
       : await getServerSession(authOptions);
+
+  // Extract locale from cookies
+  let locale = "en";
+  if (opts?.req) {
+    const cookieHeader =
+      "headers" in opts.req
+        ? (opts.req.headers as Headers).get("cookie")
+        : opts.req.headers?.cookie;
+    if (cookieHeader) {
+      locale = getLocaleFromCookie(cookieHeader);
+    }
+  }
+
   return {
     db,
     session,
     req: opts?.req,
+    locale,
   };
 };
 

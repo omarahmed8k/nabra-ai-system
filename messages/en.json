@@ -664,6 +664,7 @@
         "description": "Review the payment proof submitted by the client",
         "client": "Client",
         "package": "Package",
+        "credits": "credits",
         "amountSent": "Amount Sent",
         "transferDate": "Transfer Date",
         "senderName": "Sender Name",
@@ -1487,5 +1488,148 @@
   "locales": {
     "en": "English",
     "ar": "Arabic"
+  },
+  "errors": {
+    "titles": {
+      "error": "Error",
+      "success": "Success",
+      "info": "Info",
+      "warning": "Warning"
+    },
+    "unauthorized": "You need to be logged in to perform this action",
+    "forbidden": "You don't have permission to perform this action",
+    "notFound": "The requested resource was not found",
+    "badRequest": "Invalid request. Please check your input.",
+    "conflict": "A conflict occurred. Please try again.",
+    "internalError": "An unexpected error occurred. Please try again later.",
+    "somethingWrong": "Something went wrong",
+    "validationError": "Validation error occurred",
+    "networkError": "Unable to connect to the server. Please check your internet connection.",
+    "unexpectedError": "An unexpected error occurred",
+    "invalidValue": "Invalid value"
+  },
+  "notifications": {
+    "newMessage": {
+      "title": "New message from {senderName}",
+      "message": "{messagePreview}",
+      "emailSubject": "New message from {senderName}",
+      "emailBody": {
+        "heading": "New Message Received",
+        "intro": "<strong>{senderName}</strong> sent you a message regarding <strong>{requestTitle}</strong>:",
+        "viewButton": "View Message"
+      }
+    },
+    "statusChange": {
+      "title": "Request Status Updated",
+      "message": "Your request \"{requestTitle}\" status changed from {oldStatus} to {newStatus}",
+      "emailSubject": "Request Status Updated: {requestTitle}",
+      "emailBody": {
+        "heading": "Request Status Changed",
+        "intro": "The status of your request <strong>{requestTitle}</strong> has been updated:",
+        "from": "From:",
+        "to": "To:",
+        "viewButton": "View Request"
+      }
+    },
+    "assignment": {
+      "title": "New Request Assigned",
+      "message": "You have been assigned to: {requestTitle}",
+      "emailSubject": "New Request Assigned: {requestTitle}",
+      "emailBody": {
+        "heading": "New Request Assigned",
+        "intro": "You have been assigned to work on: <strong>{requestTitle}</strong>",
+        "viewButton": "View Request"
+      }
+    },
+    "subscriptionExpiring": {
+      "title": "⚠️ Subscription Expiring Soon",
+      "message": "Your {packageName} subscription expires in {daysRemaining} days. Renew now to continue service.",
+      "emailSubject": "⚠️ Your subscription expires in {daysRemaining} days",
+      "emailBody": {
+        "heading": "⚠️ Subscription Expiring Soon",
+        "intro": "Your <strong>{packageName}</strong> subscription will expire in <strong>{daysRemaining} days</strong>.",
+        "remainingCredits": "Remaining Credits:",
+        "expiryDate": "Expiry Date:",
+        "expiryDateValue": "{daysRemaining} days from now",
+        "message": "Don't let your subscription expire! Renew now to continue enjoying uninterrupted service.",
+        "renewButton": "Renew Subscription"
+      }
+    },
+    "subscriptionExpired": {
+      "title": "❌ Subscription Expired",
+      "message": "Your {packageName} subscription has expired. Renew now to continue using our services.",
+      "emailSubject": "❌ Your subscription has expired",
+      "emailBody": {
+        "heading": "❌ Subscription Expired",
+        "intro": "Your <strong>{packageName}</strong> subscription has expired.",
+        "message": "You no longer have access to create new requests or use services.",
+        "message2": "Renew your subscription to continue using our platform.",
+        "renewButton": "Renew Now"
+      }
+    },
+    "welcome": {
+      "title": "Welcome to Nabra AI System! 🎉",
+      "message": "Hi {userName}! Your account has been created successfully. Start exploring the platform now.",
+      "emailSubject": "Welcome to Nabra AI System! 🎉",
+      "emailBody": {
+        "heading": "Welcome to Nabra AI System!",
+        "subheading": "We're excited to have you on board",
+        "greeting": "Hi {userName}! 👋",
+        "intro": "Thank you for joining Nabra AI System. Your account has been created successfully!",
+        "quickStartTitle": "🚀 Quick Start Guide",
+        "client": {
+          "step1Title": "1. Choose a Package",
+          "step1Desc": "Select a subscription package that fits your needs",
+          "step2Title": "2. Create Your First Request",
+          "step2Desc": "Submit a service request and let our providers help you",
+          "step3Title": "3. Track Progress",
+          "step3Desc": "Monitor your requests and communicate with providers in real-time"
+        },
+        "provider": {
+          "step1Title": "1. Complete Your Profile",
+          "step1Desc": "Add your skills and portfolio to attract clients",
+          "step2Title": "2. Browse Available Requests",
+          "step2Desc": "Check out client requests matching your expertise",
+          "step3Title": "3. Start Working",
+          "step3Desc": "Claim requests and deliver high-quality work"
+        },
+        "admin": {
+          "step1Title": "1. Manage Users",
+          "step1Desc": "View and manage all users on the platform",
+          "step2Title": "2. Review Requests",
+          "step2Desc": "Monitor and manage all service requests",
+          "step3Title": "3. Configure Services",
+          "step3Desc": "Set up packages, services, and platform settings"
+        },
+        "dashboardButton": "Go to Dashboard",
+        "proTip": "💡 Pro Tip:",
+        "proTipMessage": "Enable desktop notifications to stay updated on your requests in real-time!",
+        "needHelp": "Need help getting started?",
+        "emailUs": "📧 Email us at:",
+        "contactSupport": "💬 Visit our help center or contact support",
+        "copyright": "© {year} Nabra AI System. All rights reserved.",
+        "disclaimer": "You received this email because you signed up for Nabra AI System."
+      }
+    },
+    "paymentVerification": {
+      "title": "New Payment Verification Required",
+      "message": "{clientNameOrEmail} submitted a payment proof: {amount} {currency}."
+    }
+  },
+  "pwa": {
+    "install": {
+      "title": "Install Nabra AI App",
+      "description": "Add to your home screen for quick access and offline support",
+      "installButton": "Install",
+      "dismissButton": "Not now",
+      "ios": {
+        "title": "Install Nabra AI App",
+        "intro": "To install this app on iPhone/iPad:",
+        "step1": "Tap the Share button or the Options button",
+        "step2": "Scroll and tap \"Add to Home Screen\"",
+        "step3": "Tap \"Add\" to install",
+        "gotIt": "Got it"
+      }
+    }
   }
 }
