@@ -5,12 +5,19 @@
 
 export type AttributeType = "text" | "select" | "multiselect" | "textarea" | "number";
 
+export interface AttributeOptionWithCost {
+  value: string;
+  creditCost?: number;
+  labelI18n?: { [locale: string]: string };
+}
+
 export interface ServiceAttribute {
   question: string;
   questionI18n?: { [locale: string]: string }; // Optional localized question
   required: boolean;
   type: AttributeType;
   options?: string[]; // For select/multiselect types
+  optionsWithCost?: AttributeOptionWithCost[]; // Per-option credit cost for select/multiselect
   placeholder?: string;
   placeholderI18n?: { [locale: string]: string };
   helpText?: string;

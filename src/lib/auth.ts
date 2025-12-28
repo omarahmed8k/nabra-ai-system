@@ -3,6 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+const DEFAULT_AVATAR = "/images/nabarawy.png";
+
 type UserRole = "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
 
 declare module "next-auth" {
@@ -81,7 +83,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name || "",
           role: user.role,
-          image: user.image,
+          image: user.image || DEFAULT_AVATAR,
           phone: user.phone,
           hasWhatsapp: user.hasWhatsapp,
         };
@@ -95,7 +97,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.name = user.name;
         token.email = user.email;
-        token.picture = user.image;
+        token.picture = user.image || DEFAULT_AVATAR;
         token.phone = user.phone;
         token.hasWhatsapp = user.hasWhatsapp;
       }
@@ -104,7 +106,7 @@ export const authOptions: NextAuthOptions = {
       if (trigger === "update" && session) {
         token.name = session.name ?? token.name;
         token.email = session.email ?? token.email;
-        token.picture = session.image ?? token.picture;
+        token.picture = session.image ?? token.picture ?? DEFAULT_AVATAR;
         token.phone = session.phone ?? token.phone;
         token.hasWhatsapp = session.hasWhatsapp ?? token.hasWhatsapp;
       }
@@ -117,7 +119,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
-        session.user.image = token.picture as string | null;
+        session.user.image = (token.picture as string | null) || DEFAULT_AVATAR;
         session.user.phone = token.phone;
         session.user.hasWhatsapp = token.hasWhatsapp;
       }

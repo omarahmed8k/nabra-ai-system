@@ -93,8 +93,9 @@ function validateByType(attribute: ServiceAttribute, answer: string | string[]):
  * Validates select type attribute
  */
 function validateSelectType(attribute: ServiceAttribute, answer: string | string[]): string | null {
-  if (attribute.options && !attribute.options.includes(answer as string)) {
-    return `"${attribute.question}" must be one of: ${attribute.options.join(", ")}`;
+  const allowedOptions = attribute.optionsWithCost?.map((o) => o.value) ?? attribute.options;
+  if (allowedOptions && !allowedOptions.includes(answer as string)) {
+    return `"${attribute.question}" must be one of: ${allowedOptions.join(", ")}`;
   }
   return null;
 }
@@ -110,8 +111,10 @@ function validateMultiselectType(
     return `"${attribute.question}" must be an array`;
   }
 
-  if (attribute.options) {
-    const invalidOptions = answer.filter((opt) => !attribute.options?.includes(opt));
+  const allowedOptions = attribute.optionsWithCost?.map((o) => o.value) ?? attribute.options;
+
+  if (allowedOptions) {
+    const invalidOptions = answer.filter((opt) => !allowedOptions.includes(opt));
     if (invalidOptions.length > 0) {
       return `"${attribute.question}" contains invalid options: ${invalidOptions.join(", ")}`;
     }
@@ -202,17 +205,9 @@ export function calculateAttributeCredits(
   let totalAdditionalCredits = 0;
 
   for (const attribute of attributes) {
-    // Skip if no credit impact defined
-    if (!attribute.creditImpact || attribute.creditImpact === 0) {
-      continue;
-    }
-
     const answer = responseMap.get(attribute.question);
-    if (!answer) {
-      continue;
-    }
+    if (!answer) continue;
 
-    // Calculate credits based on attribute type
     const credits = calculateSingleAttributeCredits(attribute, answer);
     totalAdditionalCredits += credits;
   }
@@ -236,21 +231,10 @@ export function calculateAttributeCreditBreakdown(
   const items: Array<{ question: string; answer: string | string[]; cost: number }> = [];
 
   for (const attribute of attributes) {
-    if (!attribute.creditImpact || attribute.creditImpact === 0) continue;
     const answer = responseMap.get(attribute.question);
     if (!answer) continue;
 
-    const cost = (() => {
-      if (Array.isArray(answer)) return 0;
-      const numericValue = Number.parseFloat(answer);
-      if (Number.isNaN(numericValue)) return 0;
-      const impact = attribute.creditImpact || 0;
-      if (attribute.includedQuantity !== undefined) {
-        const excess = Math.max(0, numericValue - attribute.includedQuantity);
-        return excess * impact;
-      }
-      return numericValue * impact;
-    })();
+    const cost = calculateSingleAttributeCredits(attribute, answer);
 
     if (cost > 0) {
       items.push({ question: attribute.question, answer, cost });
@@ -267,24 +251,42 @@ function calculateSingleAttributeCredits(
   attribute: ServiceAttribute,
   answer: string | string[]
 ): number {
-  // Only process numeric values (for select/number types)
-  if (Array.isArray(answer)) {
-    return 0; // Multiselect doesn't support credit impact yet
+  // Per-option credit costs for select/multiselect
+  if (attribute.type === "select") {
+    const optionCost = getOptionCost(attribute, answer as string);
+    if (optionCost !== null) return optionCost;
   }
 
-  const numericValue = Number.parseFloat(answer);
-  if (Number.isNaN(numericValue)) {
-    return 0; // Non-numeric values don't incur additional costs
+  if (attribute.type === "multiselect") {
+    if (!Array.isArray(answer)) return 0;
+    const costs = answer
+      .map((val) => getOptionCost(attribute, val))
+      .filter((c): c is number => c !== null);
+    return costs.reduce((sum, c) => sum + c, 0);
   }
+
+  // Numeric-based impacts (number or select using creditImpact)
+  if (Array.isArray(answer)) return 0;
+
+  const numericValue = Number.parseFloat(answer);
+  if (Number.isNaN(numericValue)) return 0;
 
   const creditImpact = attribute.creditImpact || 0;
 
-  // If includedQuantity is defined, only charge for excess
   if (attribute.includedQuantity !== undefined) {
     const excess = Math.max(0, numericValue - attribute.includedQuantity);
     return excess * creditImpact;
   }
 
-  // Otherwise, charge for the full value
-  return numericValue * creditImpact;
+  return creditImpact * numericValue;
+}
+
+function getOptionCost(attribute: ServiceAttribute, value: string): number | null {
+  const option = attribute.optionsWithCost?.find((o) => o.value === value);
+  if (option) return option.creditCost ?? 0;
+  if (attribute.creditImpact) {
+    const numericValue = Number.parseFloat(value);
+    if (!Number.isNaN(numericValue)) return numericValue * attribute.creditImpact;
+  }
+  return attribute.creditImpact ?? null;
 }

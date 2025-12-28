@@ -1194,7 +1194,8 @@
         "extraCost": "+{cost} credits per {unit}",
         "extraCostWithIncluded": "+{cost} credits per {unit} (first {included} included)",
         "selection": "selection",
-        "unit": "unit"
+        "unit": "unit",
+        "credit": "credit"
       },
       "actions": {
         "cancel": "Cancel",

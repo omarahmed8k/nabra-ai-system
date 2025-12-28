@@ -78,6 +78,41 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
     onChange(newAttributes);
   };
 
+  const getOptionsWithCost = (attr: AttributeWithId) => {
+    if (attr.optionsWithCost && attr.optionsWithCost.length > 0) return attr.optionsWithCost;
+    return (attr.options || []).map((value) => ({ value, creditCost: attr.creditImpact || 0 }));
+  };
+
+  const setOptionsWithCost = (index: number, next: { value: string; creditCost?: number }[]) => {
+    updateAttribute(index, {
+      optionsWithCost: next,
+      options: next.map((o) => o.value),
+    } as any);
+  };
+
+  const addOptionRow = (index: number) => {
+    const existing = getOptionsWithCost(attributes[index] as AttributeWithId);
+    setOptionsWithCost(index, [...existing, { value: "", creditCost: 0 }]);
+  };
+
+  const updateOptionRow = (
+    index: number,
+    optionIndex: number,
+    updates: { value?: string; creditCost?: number }
+  ) => {
+    const existing = getOptionsWithCost(attributes[index] as AttributeWithId);
+    const updated = existing.map((opt, idx) =>
+      idx === optionIndex ? { ...opt, ...updates } : opt
+    );
+    setOptionsWithCost(index, updated);
+  };
+
+  const removeOptionRow = (index: number, optionIndex: number) => {
+    const existing = getOptionsWithCost(attributes[index] as AttributeWithId);
+    const updated = existing.filter((_, idx) => idx !== optionIndex);
+    setOptionsWithCost(index, updated);
+  };
+
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -203,7 +238,7 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         {/* Required Checkbox */}
                         <div className="space-y-2">
                           <Label>{t("settings")}</Label>
-                          <div className="flex items-center space-x-2 pt-2">
+                          <div className="flex items-center gap-2 pt-2">
                             <Checkbox
                               id={`required-${index}`}
                               checked={attr.required}
@@ -221,19 +256,63 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         </div>
                       </div>
 
-                      {/* Options for Select/Multiselect */}
+                      {/* Options for Select/Multiselect with per-option credit cost */}
                       {(attr.type === "select" || attr.type === "multiselect") && (
                         <div className="space-y-2">
-                          <Label htmlFor={`options-${index}`}>{t("options")}</Label>
-                          <Input
-                            id={`options-${index}`}
-                            placeholder={t("exampleOptions")}
-                            value={(attr as any)._optionsRaw ?? attr.options?.join(", ") ?? ""}
-                            onChange={(e) => updateOptions(index, e.target.value)}
-                            required
-                          />
+                          <div className="flex items-center justify-between">
+                            <Label>{t("options")}</Label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-1"
+                              onClick={() => addOptionRow(index)}
+                            >
+                              <Plus className="h-4 w-4" />
+                              {t("addQuestion")}
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            {getOptionsWithCost(attr).map((opt, optIdx) => (
+                              <div
+                                key={`${attr._id}-opt-${optIdx}`}
+                                className="grid grid-cols-1 md:grid-cols-[1fr_140px_40px] items-center gap-2"
+                              >
+                                <Input
+                                  value={opt.value}
+                                  placeholder={t("exampleOptions")}
+                                  onChange={(e) =>
+                                    updateOptionRow(index, optIdx, { value: e.target.value })
+                                  }
+                                />
+                                <Input
+                                  type="number"
+                                  value={opt.creditCost ?? ""}
+                                  placeholder="0"
+                                  onChange={(e) =>
+                                    updateOptionRow(index, optIdx, {
+                                      creditCost:
+                                        e.target.value === "" ? undefined : Number(e.target.value),
+                                    })
+                                  }
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => removeOptionRow(index, optIdx)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            {getOptionsWithCost(attr).length === 0 && (
+                              <p className="text-xs text-muted-foreground">{t("noQuestions")}</p>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">
-                            {t("optionsCount", { count: attr.options?.length || 0 })}
+                            {t("optionsCount", { count: getOptionsWithCost(attr).length })}
                           </p>
                         </div>
                       )}
@@ -278,8 +357,8 @@ export function AttributesManager({ attributes, onChange }: AttributesManagerPro
                         </div>
                       )}
 
-                      {/* Credit Impact (for select and number types) */}
-                      {(attr.type === "select" || attr.type === "number") && (
+                      {/* Credit Impact (for number type only) */}
+                      {attr.type === "number" && (
                         <div className="space-y-2">
                           <Label htmlFor={`creditImpact-${index}`}>
                             {t("creditImpact")}{" "}

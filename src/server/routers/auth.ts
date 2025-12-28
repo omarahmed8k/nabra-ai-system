@@ -5,6 +5,8 @@ import { TRPCError } from "@trpc/server";
 import { sendWelcomeEmail } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
+const DEFAULT_AVATAR = "/images/nabarawy.png";
+
 export const authRouter = router({
   // Register a new user
   register: publicProcedure
@@ -68,6 +70,7 @@ export const authRouter = router({
           password: hashedPassword,
           phone: input.phone || null,
           hasWhatsapp: input.hasWhatsapp ?? false,
+          image: DEFAULT_AVATAR,
           role: "CLIENT", // Default role
           registrationIp: ip,
         },
@@ -188,7 +191,7 @@ export const authRouter = router({
         name: user.name,
         email: user.email,
         role: user.role,
-        image: user.image,
+        image: user.image || DEFAULT_AVATAR,
         createdAt: user.createdAt,
         providerProfile: user.providerProfile,
       };
@@ -207,7 +210,6 @@ export const authRouter = router({
     .input(
       z.object({
         name: z.string().min(2).optional(),
-        image: z.string().url().optional(),
       })
     )
     .output(
@@ -226,7 +228,6 @@ export const authRouter = router({
         where: { id: ctx.session.user.id },
         data: {
           name: input.name,
-          image: input.image,
         },
       });
 
@@ -236,7 +237,7 @@ export const authRouter = router({
           id: user.id,
           name: user.name,
           email: user.email,
-          image: user.image,
+          image: user.image || DEFAULT_AVATAR,
         },
       };
     }),

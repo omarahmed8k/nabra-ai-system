@@ -15,10 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { trpc } from "@/lib/trpc/client";
 import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 import { toast } from "sonner";
-import { Loader2, User, Mail, Upload, X } from "lucide-react";
+import { Loader2, User, Mail } from "lucide-react";
+
+const DEFAULT_AVATAR = "/images/nabarawy.png";
 
 export function EditProfileForm() {
   const t = useTranslations("profile.editProfile");
@@ -28,11 +31,9 @@ export function EditProfileForm() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [image, setImage] = useState("");
   const [countryCode, setCountryCode] = useState("+20");
   const [phone, setPhone] = useState("");
   const [hasWhatsapp, setHasWhatsapp] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (phone) return;
@@ -44,7 +45,6 @@ export function EditProfileForm() {
     if (!profile) return;
     setName(profile.name || "");
     setEmail(profile.email);
-    setImage(profile.image || "");
     if (profile.phone) {
       const parts = profile.phone.split(" ");
       if (parts.length > 1 && parts[0].startsWith("+")) {
@@ -60,47 +60,6 @@ export function EditProfileForm() {
     setHasWhatsapp(profile.hasWhatsapp ?? false);
   }, [profile]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error(t("uploadMessages.invalidType"));
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t("uploadMessages.tooLarge"));
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(t("uploadMessages.uploadFailed"));
-      }
-
-      const data = await response.json();
-      setImage(data.url);
-      toast.success(t("uploadMessages.success"));
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast.error(t("uploadMessages.failed"));
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -108,7 +67,6 @@ export function EditProfileForm() {
       const updates: {
         name?: string;
         email?: string;
-        image?: string | null;
         phone?: string;
         hasWhatsapp?: boolean;
       } = {};
@@ -129,12 +87,6 @@ export function EditProfileForm() {
           return;
         }
         updates.email = email.toLowerCase().trim();
-      }
-
-      if (image === profile?.image) {
-        /* no change */
-      } else {
-        updates.image = image || null;
       }
 
       // Validate and compose phone if changed
@@ -266,66 +218,16 @@ export function EditProfileForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image" className="flex items-center gap-1">
-              <Upload className="inline h-4 w-4" />
+            <Label className="flex items-center gap-1">
+              <User className="inline h-4 w-4" />
               {t("labels.profileImage")}
             </Label>
-            <div className="flex flex-col gap-3">
-              {image ? (
-                <div className="flex items-center gap-4">
-                  <img
-                    src={image}
-                    alt="Profile preview"
-                    className="h-20 w-20 rounded-full object-cover border-2 border-border"
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {t("helperText.currentPhoto")}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setImage("")}
-                      disabled={uploading}
-                      className="flex items-center gap-1"
-                    >
-                      <X className="h-4 w-4" />
-                      {t("buttons.removePhoto")}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => document.getElementById("image-upload")?.click()}
-                    disabled={uploading}
-                    className="flex items-center gap-2"
-                  >
-                    {uploading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {t("buttons.uploading")}
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4" />
-                        {t("buttons.uploadPhoto")}
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">{t("helperText.maxFileSize")}</p>
-                </div>
-              )}
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
+            <div className="flex items-center gap-3 rounded-md border p-3">
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={profile?.image || DEFAULT_AVATAR} alt="Profile avatar" />
+                <AvatarFallback>NB</AvatarFallback>
+              </Avatar>
+              <p className="text-sm text-muted-foreground">{t("helperText.currentPhoto")}</p>
             </div>
           </div>
 
@@ -336,7 +238,6 @@ export function EditProfileForm() {
               onClick={() => {
                 setName(profile?.name || "");
                 setEmail(profile?.email || "");
-                setImage(profile?.image || "");
                 if (profile?.phone) {
                   const parts = profile.phone.split(" ");
                   if (parts.length > 1 && parts[0].startsWith("+")) {

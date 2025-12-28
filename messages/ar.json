@@ -1189,7 +1189,8 @@
         "extraCost": "+{cost} كريدت لكل {unit}",
         "extraCostWithIncluded": "+{cost} كريدت لكل {unit} (أول {included} مشمول)",
         "selection": "اختيار",
-        "unit": "وحدة"
+        "unit": "وحدة",
+        "credit": "كريدت"
       },
       "actions": {
         "cancel": "إلغاء",

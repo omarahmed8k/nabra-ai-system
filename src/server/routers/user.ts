@@ -4,6 +4,8 @@ import { router, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
+const DEFAULT_AVATAR = "/images/nabarawy.png";
+
 export const userRouter = router({
   // Get current user profile
   getProfile: protectedProcedure
@@ -66,7 +68,10 @@ export const userRouter = router({
         });
       }
 
-      return user;
+      return {
+        ...user,
+        image: user.image || DEFAULT_AVATAR,
+      };
     }),
 
   // Update user profile
@@ -83,7 +88,6 @@ export const userRouter = router({
       z.object({
         name: z.string().min(2, "Name must be at least 2 characters").optional(),
         email: z.string().email("Invalid email address").toLowerCase().optional(),
-        image: z.string().nullable().optional(),
         phone: phoneWithCountryCodeSchema,
         hasWhatsapp: z.boolean().optional(),
       })
@@ -129,7 +133,6 @@ export const userRouter = router({
         data: {
           ...(input.name && { name: input.name }),
           ...(input.email && { email: input.email }),
-          ...(input.image !== undefined && { image: input.image }),
           ...(input.phone !== undefined && { phone: input.phone }),
           ...(input.hasWhatsapp !== undefined && { hasWhatsapp: input.hasWhatsapp }),
         },
@@ -147,7 +150,10 @@ export const userRouter = router({
       return {
         success: true,
         message: "Profile updated successfully",
-        user: updatedUser,
+        user: {
+          ...updatedUser,
+          image: updatedUser.image || DEFAULT_AVATAR,
+        },
       };
     }),
 

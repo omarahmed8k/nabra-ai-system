@@ -64,6 +64,23 @@ export function ServiceAttributesForm({
     updateResponse(question, newArray);
   };
 
+  const getOptionsWithCosts = (attr: ServiceAttribute) => {
+    if (attr.optionsWithCost && attr.optionsWithCost.length > 0) return attr.optionsWithCost;
+    return (attr.options || []).map((value) => ({ value, creditCost: attr.creditImpact }));
+  };
+
+  const formatOptionLabel = (
+    option: { value: string; creditCost?: number },
+    attr: ServiceAttribute
+  ) => {
+    const base = option.value;
+    if (option.creditCost && option.creditCost > 0) {
+      const unit = attr.type === "select" ? t("selection") : t("unit");
+      return `${base} • +${option.creditCost} ${t("credit")}`;
+    }
+    return base;
+  };
+
   const getCreditCostLabel = (attr: ServiceAttribute): string | null => {
     if (!attr.creditImpact || attr.creditImpact === 0) return null;
 
@@ -177,9 +194,9 @@ export function ServiceAttributesForm({
                       <SelectValue placeholder={t("selectOption")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {attr.options?.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
+                      {getOptionsWithCosts(attr).map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {formatOptionLabel(option, attr)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -189,23 +206,32 @@ export function ServiceAttributesForm({
                 {/* Multiselect Input */}
                 {attr.type === "multiselect" && (
                   <div className="space-y-2 border rounded-md p-4">
-                    {attr.options?.map((option) => (
-                      <div key={option} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${attr.question}-${option}`}
-                          checked={
-                            Array.isArray(getResponse(attr.question)) &&
-                            (getResponse(attr.question) as string[]).includes(option)
-                          }
-                          onCheckedChange={() => toggleMultiselectOption(attr.question, option)}
-                          disabled={disabled}
-                        />
-                        <label
-                          htmlFor={`${attr.question}-${option}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {option}
-                        </label>
+                    {getOptionsWithCosts(attr).map((option) => (
+                      <div key={option.value} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id={`${attr.question}-${option.value}`}
+                            checked={
+                              Array.isArray(getResponse(attr.question)) &&
+                              (getResponse(attr.question) as string[]).includes(option.value)
+                            }
+                            onCheckedChange={() =>
+                              toggleMultiselectOption(attr.question, option.value)
+                            }
+                            disabled={disabled}
+                          />
+                          <label
+                            htmlFor={`${attr.question}-${option.value}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {option.value}
+                          </label>
+                        </div>
+                        {option.creditCost && option.creditCost > 0 && (
+                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                            +{option.creditCost} {t("credit")}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
