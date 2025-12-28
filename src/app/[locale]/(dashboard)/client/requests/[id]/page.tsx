@@ -15,10 +15,13 @@ import { RequestHeader } from "@/components/requests/request-header";
 import { RequestDescription } from "@/components/requests/request-description";
 import { RequestSidebar } from "@/components/requests/request-sidebar";
 import { MessagesCard } from "@/components/requests/messages-card";
+import { ProviderDeliverables } from "@/components/requests/provider-deliverables";
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { resolveLocalizedText } from "@/lib/i18n";
-import { CheckCircle, RotateCcw, Star, CreditCard } from "lucide-react";
+import { CheckCircle, RotateCcw, Star, CreditCard, MessageCircle } from "lucide-react";
+
+export const ADMIN_WHATSAPP_NUMBER = "+201207401576";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
@@ -97,6 +100,26 @@ export default function RequestDetailPage() {
     submitRating.mutate({ requestId, rating, reviewText });
   };
 
+  const handleReportIssue = () => {
+    if (!request) return;
+
+    const currentUrl =
+      typeof globalThis !== "undefined" && globalThis.window ? globalThis.window.location.href : "";
+
+    const whatsappNumber = ADMIN_WHATSAPP_NUMBER.replace(/^\+/, "");
+    const message = encodeURIComponent(
+      `I need to report an issue with this request: ${request.title}\n\nRequest Link: ${currentUrl}\n\nIssue Details: `
+    );
+
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
+
+    toast.info(t("reportIssue.sent", { defaultValue: "Issue report opened in WhatsApp" }), {
+      description: t("reportIssue.sentDesc", {
+        defaultValue: "Please describe your issue in WhatsApp",
+      }),
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -157,6 +180,12 @@ export default function RequestDetailPage() {
           {/* Description */}
           <RequestDescription description={request.description} attachments={request.attachments} />
 
+          {/* Provider Deliverables */}
+          <ProviderDeliverables
+            comments={request.comments as any}
+            providerName={request.provider?.name || "Provider"}
+          />
+
           {/* Service-Specific Q&A Responses */}
           {(request as any).attributeResponses &&
             Array.isArray((request as any).attributeResponses) &&
@@ -187,6 +216,14 @@ export default function RequestDetailPage() {
                     {approveRequest.isPending
                       ? t("deliverableReady.approving")
                       : t("deliverableReady.approve")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleReportIssue}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {t("reportIssue.button", { defaultValue: "Report Issue (WhatsApp)" })}
                   </Button>
                 </div>
 

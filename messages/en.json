@@ -830,6 +830,11 @@
       "messageFailed": "Failed to send message",
       "requestCompleted": "This request has been completed. Comments are no longer available."
     },
+    "deliverables": {
+      "title": "Provider Deliverables",
+      "badge": "Deliverable",
+      "filesLabel": "{count, plural, one {1 file} other {# files}}"
+    },
     "card": {
       "freeRevision": "Free",
       "paidRevision": "Paid",
@@ -1090,6 +1095,11 @@
         "approve": "Approve & Complete",
         "approving": "Approving..."
       },
+      "reportIssue": {
+        "button": "Report Issue (WhatsApp)",
+        "sent": "WhatsApp message opened",
+        "sentDesc": "We opened WhatsApp with a pre-filled message for your request."
+      },
       "requestRevision": {
         "title": "Request Revision",
         "freeRemaining": "{count} free {revision} remaining",
@@ -1136,6 +1146,11 @@
       "costInfo": "Base cost: {baseCost} {credit} + Priority cost ({priorityCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
       "costInfoWithAttributes": "Base cost: {baseCost} {credit} + Attributes ({attributeCost} {credit}) + Priority ({priorityCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
       "costInfoNoPriority": "Base cost: {baseCost} {credit}. You have {available} credits available.",
+      "deliverables": {
+        "title": "Provider Deliverables",
+        "badge": "Deliverable",
+        "filesLabel": "{count, plural, one {1 file} other {# files}}"
+      },
       "costInfoNoPriorityWithAttributes": "Base cost: {baseCost} {credit} + Attributes ({attributeCost} {credit}) = {totalCost} {credit}. You have {available} credits available.",
       "costInfoNoService": "Select a service to see the credit cost. You have {available} credits available.",
       "credit": "credit",
@@ -1160,7 +1175,7 @@
         "serviceType": "Service Type *",
         "serviceTypePlaceholder": "Select a service type",
         "title": "Title *",
-        "titlePlaceholder": "E.g., Company Website Redesign",
+        "titlePlaceholder": "The goal of my project is to...",
         "titleHint": "5-200 characters - Be clear and concise",
         "description": "Description *",
         "descriptionPlaceholder": "Describe your project in detail. Include any specific requirements, preferences, or references...",

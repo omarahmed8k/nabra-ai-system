@@ -31,17 +31,28 @@ const ALLOWED_TYPES = new Set([
   "application/pdf",
   "application/zip",
   "application/x-zip-compressed",
+  // Audio types for voice notes
   "audio/webm",
   "audio/mpeg",
   "audio/ogg",
   "audio/mp4",
+  "audio/wav",
+  "audio/m4a",
+  "audio/aac",
+  // Video types
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/mpeg",
 ]);
 
 export function FileUpload({
   onFilesChange,
   maxFiles = 5,
   maxSizeMB = 10,
-  accept = "image/*,.pdf,.zip,audio/*",
+  accept = "image/*,.pdf,.zip,audio/*,video/*",
   className,
   disabled = false,
 }: FileUploadProps) {

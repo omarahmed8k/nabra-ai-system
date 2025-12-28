@@ -9,6 +9,51 @@ interface RequestDescriptionProps {
 export function RequestDescription({ description, attachments }: RequestDescriptionProps) {
   const t = useTranslations("requests.description");
 
+  const isImage = (file: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
+  const isVideo = (file: string) => /\.(mp4|webm|mov|avi|mkv|mpeg|flv|3gp)$/i.test(file);
+  const isAudio = (file: string) => /\.(mp3|wav|ogg|m4a|aac|webm)$/i.test(file);
+
+  const renderMediaFile = (file: string, fileName: string) => {
+    if (isImage(file)) {
+      return (
+        <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+          <div className="aspect-video rounded overflow-hidden bg-muted mb-2 flex items-center justify-center">
+            <img src={file} alt={fileName} className="w-full h-full object-cover" />
+          </div>
+        </a>
+      );
+    }
+
+    if (isVideo(file)) {
+      return (
+        <div className="aspect-video rounded overflow-hidden bg-muted mb-2 flex items-center justify-center">
+          <video src={file} controls className="w-full h-full object-cover" title={fileName}>
+            <track kind="captions" />
+          </video>
+        </div>
+      );
+    }
+
+    if (isAudio(file)) {
+      return (
+        <div className="aspect-video rounded bg-muted mb-2 flex items-center justify-center">
+          <audio controls className="w-full" title={fileName}>
+            <source src={file} />
+            <track kind="captions" />
+          </audio>
+        </div>
+      );
+    }
+
+    return (
+      <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+        <div className="aspect-video rounded bg-muted mb-2 flex items-center justify-center text-2xl">
+          📎
+        </div>
+      </a>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -27,28 +72,18 @@ export function RequestDescription({ description, attachments }: RequestDescript
               {attachments.map((file: string, index: number) => {
                 const fileName =
                   file.split("/").pop() || t("attachmentFallback", { number: index + 1 });
-                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
                 return (
-                  <a
+                  <div
                     key={file}
-                    href={file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block p-2 rounded-lg border bg-background hover:bg-muted/50 transition-colors"
+                    className="group p-2 rounded-lg border bg-background hover:bg-muted/50 transition-colors"
                   >
-                    {isImage ? (
-                      <div className="aspect-video rounded overflow-hidden bg-muted mb-2 flex items-center justify-center">
-                        <img src={file} alt={fileName} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="aspect-video rounded bg-muted mb-2 flex items-center justify-center text-2xl">
-                        📎
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground truncate group-hover:text-foreground">
-                      {fileName}
-                    </p>
-                  </a>
+                    {renderMediaFile(file, fileName)}
+                    <a href={file} target="_blank" rel="noopener noreferrer" className="block">
+                      <p className="text-xs text-muted-foreground truncate group-hover:text-foreground">
+                        {fileName}
+                      </p>
+                    </a>
+                  </div>
                 );
               })}
             </div>

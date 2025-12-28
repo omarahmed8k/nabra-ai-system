@@ -178,6 +178,11 @@ export function MessagesCard({
     return ["png", "jpg", "jpeg", "gif", "webp", "avif"].includes(ext);
   };
 
+  const isVideoUrl = (url: string) => {
+    const ext = getExtension(url);
+    return ["mp4", "webm", "mov", "avi", "mkv", "mpeg", "flv", "3gp"].includes(ext);
+  };
+
   const getFileNameFromUrl = (url: string) => {
     const clean = url.split("?")[0];
     const parts = clean.split("/");
@@ -256,6 +261,7 @@ export function MessagesCard({
                         {comment.files.map((file: string, i: number) => {
                           const audio = isAudioUrl(file);
                           const image = isImageUrl(file);
+                          const video = isVideoUrl(file);
                           const rawFilename = getFileNameFromUrl(file);
                           const displayName = prettyFilename(rawFilename);
                           if (audio) {
@@ -268,6 +274,23 @@ export function MessagesCard({
                                 <div className="text-xs text-muted-foreground">
                                   {t("voiceNote")}
                                 </div>
+                              </div>
+                            );
+                          }
+                          if (video) {
+                            return (
+                              <div key={`${comment.id}-file-${i}`} className="space-y-1">
+                                <video
+                                  src={file}
+                                  controls
+                                  className="max-h-48 rounded border"
+                                  title={displayName}
+                                >
+                                  <track kind="captions" />
+                                </video>
+                                <span className="text-xs text-muted-foreground block">
+                                  {t("video", { defaultValue: "Video" })} • {displayName}
+                                </span>
                               </div>
                             );
                           }

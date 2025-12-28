@@ -282,13 +282,59 @@ export default function NewRequestPage() {
                   <SelectValue placeholder={t("fields.serviceTypePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceTypes?.map((type: any) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      {type.icon} {resolveLocalizedText(type.nameI18n, locale, type.name)}
-                    </SelectItem>
-                  ))}
+                  {serviceTypes?.map((type: any) => {
+                    const creditLabel = type.creditCost === 1 ? t("credit") : t("credits");
+                    const supportingPackages = type.supportingPackages || [];
+                    const packageName =
+                      supportingPackages.length > 0
+                        ? resolveLocalizedText(
+                            supportingPackages[0].nameI18n,
+                            locale,
+                            supportingPackages[0].name
+                          )
+                        : "";
+                    const unsupportedMessage =
+                      locale === "ar"
+                        ? ` (مدعوم بداية من باقة ${packageName})`
+                        : ` (supported in ${packageName} package)`;
+                    const supportText = type.isSupported ? "" : unsupportedMessage;
+
+                    return (
+                      <SelectItem key={type.id} value={type.id} disabled={!type.isSupported}>
+                        <span className="flex items-center gap-2">
+                          <span>{type.icon}</span>
+                          <span>{resolveLocalizedText(type.nameI18n, locale, type.name)}</span>
+                          <span className="text-xs opacity-70">
+                            • 💳 {type.creditCost || 1} {creditLabel}
+                          </span>
+                          {!type.isSupported && (
+                            <span className="text-xs opacity-50">{supportText}</span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+              {selectedService && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md space-y-2">
+                  <p className="text-sm text-blue-800">
+                    {resolveLocalizedText(
+                      (selectedService as any).descriptionI18n,
+                      locale,
+                      selectedService.description
+                    )}
+                  </p>
+                  {!selectedService.isSupported &&
+                    (selectedService as any).supportingPackages?.length > 0 && (
+                      <p className="text-xs text-amber-700 font-medium">
+                        {locale === "ar"
+                          ? `⚠️ مدعوم في باقة ${resolveLocalizedText((selectedService as any).supportingPackages[0].nameI18n, locale, (selectedService as any).supportingPackages[0].name)}`
+                          : `⚠️ Supported in ${resolveLocalizedText((selectedService as any).supportingPackages[0].nameI18n, locale, (selectedService as any).supportingPackages[0].name)} package`}
+                      </p>
+                    )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

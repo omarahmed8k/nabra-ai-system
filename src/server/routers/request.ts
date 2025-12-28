@@ -979,36 +979,66 @@ export const requestRouter = router({
       return [];
     }
 
-    // If package supports all services, return all active services
-    if (activeSubscription.package.supportAllServices) {
-      const allServices = await ctx.db.serviceType.findMany({
-        where: { isActive: true, deletedAt: null },
-        select: {
-          id: true,
-          name: true,
-          nameI18n: true,
-          description: true,
-          descriptionI18n: true,
-          icon: true,
-          attributes: true,
-          creditCost: true,
-          priorityCostLow: true,
-          priorityCostMedium: true,
-          priorityCostHigh: true,
-          isActive: true,
-          sortOrder: true,
-        },
-        orderBy: { sortOrder: "asc" },
-      });
-      return allServices;
-    }
+    // Get all active services with their package support info
+    const allServices = await ctx.db.serviceType.findMany({
+      where: { isActive: true, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        nameI18n: true,
+        description: true,
+        descriptionI18n: true,
+        icon: true,
+        attributes: true,
+        creditCost: true,
+        priorityCostLow: true,
+        priorityCostMedium: true,
+        priorityCostHigh: true,
+        isActive: true,
+        sortOrder: true,
+      },
+      orderBy: { sortOrder: "asc" },
+    });
 
-    // Get only the service types allowed by the user's package
-    const allowedServices = activeSubscription.package.services
-      .map((ps: { serviceType: any }) => ps.serviceType)
-      .filter((st: { isActive: boolean }) => st.isActive)
-      .sort((a: { sortOrder: number }, b: { sortOrder: number }) => a.sortOrder - b.sortOrder);
+    // Get all packages that support each service
+    const packageServices = await ctx.db.packageService.findMany({
+      include: { package: true },
+    });
 
-    return allowedServices;
+    // Create a map of service ID to packages that support it
+    const servicePackageMap = new Map<string, any[]>();
+    packageServices.forEach((ps) => {
+      const serviceId = ps.serviceId;
+      if (!servicePackageMap.has(serviceId)) {
+        servicePackageMap.set(serviceId, []);
+      }
+      servicePackageMap.get(serviceId)!.push(ps.package);
+    });
+
+    // Check if package supports all services
+    const supportAllServices = activeSubscription.package.supportAllServices;
+
+    // Get allowed service IDs if package doesn't support all
+    const allowedServiceIds = supportAllServices
+      ? null
+      : new Set(
+          activeSubscription.package.services.map((ps: { serviceType: any }) => ps.serviceType.id)
+        );
+
+    // Return all services with isSupported flag and supportingPackages
+    return allServices.map((service: any) => {
+      const isSupported = supportAllServices || allowedServiceIds?.has(service.id) || false;
+      const supportingPackages = servicePackageMap.get(service.id) || [];
+
+      return {
+        ...service,
+        isSupported,
+        supportingPackages: supportingPackages.map((pkg) => ({
+          id: pkg.id,
+          name: pkg.name,
+          nameI18n: pkg.nameI18n,
+        })),
+      };
+    });
   }),
 });

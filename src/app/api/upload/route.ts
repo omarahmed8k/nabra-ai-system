@@ -28,6 +28,16 @@ const ALLOWED_TYPES = new Set([
   "audio/mpeg",
   "audio/ogg",
   "audio/mp4",
+  "audio/wav",
+  "audio/m4a",
+  "audio/aac",
+  // Video types
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/mpeg",
 ]);
 
 export async function POST(req: NextRequest) {

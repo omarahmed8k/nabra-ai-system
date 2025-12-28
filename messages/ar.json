@@ -830,6 +830,11 @@
       "messageFailed": "فشل إرسال الرسالة",
       "requestCompleted": "تم إكمال هذا الطلب. لم تعد التعليقات متاحة."
     },
+    "deliverables": {
+      "title": "تسليمات المزود",
+      "badge": "تسليم",
+      "filesLabel": "{count, plural, zero {لا توجد ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفاً} other {# ملف}}"
+    },
     "card": {
       "freeRevision": "مجانًا",
       "paidRevision": "مدفوع",
@@ -1090,6 +1095,11 @@
         "approve": "الموافقة والإكمال",
         "approving": "جاري الموافقة..."
       },
+      "reportIssue": {
+        "button": "الإبلاغ عن مشكلة (واتساب)",
+        "sent": "تم إرسال الرسالة عبر واتساب",
+        "sentDesc": "قمنا بفتح واتساب مع رسالة مُعدة مسبقاً لطلبك."
+      },
       "requestRevision": {
         "title": "طلب مراجعة",
         "freeRemaining": "{count} {revision} مجانية متبقية",
@@ -1160,7 +1170,7 @@
         "serviceType": "نوع الخدمة *",
         "serviceTypePlaceholder": "حدد نوع الخدمة",
         "title": "العنوان *",
-        "titlePlaceholder": "مثال: إعادة تصميم موقع الشركة",
+        "titlePlaceholder": "الهدف من التصميم الخاص بي",
         "titleHint": "5-200 حرف - كن واضحاً وموجزاً",
         "description": "الوصف *",
         "descriptionPlaceholder": "صف مشروعك بالتفصيل. قم بتضمين أي متطلبات محددة أو تفضيلات أو مراجع...",
@@ -1249,6 +1259,11 @@
         "subscribed": "تم إنشاء الاشتراك! يرجى إكمال الدفع.",
         "cancelled": "تم إلغاء الاشتراك بنجاح."
       }
+    },
+    "deliverables": {
+      "title": "تسليمات المزود",
+      "badge": "تسليم",
+      "filesLabel": "{count, plural, zero {لا توجد ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفاً} other {# ملف}}"
     },
     "transactions": {
       "title": "سجل المعاملات",
