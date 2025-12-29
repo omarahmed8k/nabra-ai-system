@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { NotificationPermissionBanner } from "@/components/ui/notification-permission-banner";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { NabarawyAssistant } from "@/components/ui/nabarawy-assistant";
 import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import {
   LayoutDashboard,
@@ -234,6 +235,9 @@ export default function DashboardLayout({
           {children}
         </div>
       </main>
+
+      {/* Nabarawy AI Assistant */}
+      <NabarawyAssistant />
     </div>
   );
 }

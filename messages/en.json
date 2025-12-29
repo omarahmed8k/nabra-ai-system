@@ -34,6 +34,18 @@
       "HIGH": "High"
     }
   },
+  "nabarawy": {
+    "welcome": "Hi! I'm Nabarawy, your AI assistant!",
+    "help": "How can I help you today?",
+    "explore": "Feel free to explore our services!",
+    "online": "Online & Ready to Help",
+    "quickActions": "Quick Actions:",
+    "services": "View Services",
+    "pricing": "See Pricing",
+    "getStarted": "Get Started",
+    "contact": "Contact Us",
+    "footer": "Powered by Nabra AI • Always here to help"
+  },
   "landing": {
     "nav": {
       "features": "Features",

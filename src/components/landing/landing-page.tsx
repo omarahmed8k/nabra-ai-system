@@ -9,6 +9,7 @@ import type { ComponentType } from "react";
 
 import { Button } from "@/components/ui/button";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
+import { NabarawyAssistant } from "@/components/ui/nabarawy-assistant";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { ImageCarousel } from "@/components/landing/image-carousel";
 import {
@@ -212,81 +213,112 @@ export default function LandingPage() {
             }}
           />
 
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={staggerContainer}
-            className="mx-auto flex max-w-[980px] flex-col items-center gap-6 text-center"
-          >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+            {/* Nabarawy AI Character */}
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl"
+              initial={{ opacity: 0, scale: 0.8, x: -50 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="flex justify-center lg:justify-end order-2 lg:order-1"
             >
-              <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-              <span className="text-sm font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Creative Solutions Platform
-              </span>
+              <motion.div
+                animate={{
+                  y: [0, -20, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <Image
+                  src="/images/nabarawy.png"
+                  alt="Nabarawy AI Assistant"
+                  width={300}
+                  height={300}
+                  className="w-64 h-64 md:w-80 md:h-80 object-contain bg-transparent"
+                  priority
+                />
+              </motion.div>
             </motion.div>
 
-            <motion.h1
-              variants={fadeInUp}
-              transition={{ duration: 0.8 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-black leading-none"
-            >
-              <span className="block mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                {t("hero.title")}
-              </span>
-              <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
-                {t("hero.accent")}
-              </span>
-            </motion.h1>
-
-            <motion.p
-              variants={fadeInUp}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="max-w-[750px] text-xl text-muted-foreground leading-relaxed"
-            >
-              {t("hero.subtitle")}
-            </motion.p>
-
+            {/* Hero Text Content */}
             <motion.div
-              variants={fadeInUp}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex flex-wrap items-center justify-center gap-4 pt-6"
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              className="flex flex-col items-start gap-6 lg:text-left text-center order-1 lg:order-2"
             >
-              <Link href="/auth/register">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    size="lg"
-                    className="h-13 px-8 bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 font-semibold"
-                  >
-                    {tCommon("buttons.startFreeTrial")} <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <Link href="#how-it-works">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-13 px-8 border-white/20 hover:bg-white/5"
-                  >
-                    {tCommon("buttons.learnMore")}
-                  </Button>
-                </motion.div>
-              </Link>
-            </motion.div>
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 border border-primary/30 rounded-full backdrop-blur-xl"
+              >
+                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                <span className="text-sm font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  Creative Solutions Platform
+                </span>
+              </motion.div>
 
-            <motion.p
-              variants={fadeInUp}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-sm text-muted-foreground italic"
-            >
-              {t("hero.note")}
-            </motion.p>
-          </motion.div>
+              <motion.h1
+                variants={fadeInUp}
+                transition={{ duration: 0.8 }}
+                className="text-5xl md:text-7xl lg:text-8xl font-black leading-none"
+              >
+                <span className="block mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  {t("hero.title")}
+                </span>
+                <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
+                  {t("hero.accent")}
+                </span>
+              </motion.h1>
+
+              <motion.p
+                variants={fadeInUp}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="max-w-[750px] text-xl text-muted-foreground leading-relaxed"
+              >
+                {t("hero.subtitle")}
+              </motion.p>
+
+              <motion.div
+                variants={fadeInUp}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="flex flex-wrap items-center lg:justify-start justify-center gap-4 pt-6 w-full"
+              >
+                <Link href="/auth/register">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      size="lg"
+                      className="h-13 px-8 bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:opacity-90 font-semibold"
+                    >
+                      {tCommon("buttons.startFreeTrial")} <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </motion.div>
+                </Link>
+                <Link href="#how-it-works">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="h-13 px-8 border-white/20 hover:bg-white/5"
+                    >
+                      {tCommon("buttons.learnMore")}
+                    </Button>
+                  </motion.div>
+                </Link>
+              </motion.div>
+
+              <motion.p
+                variants={fadeInUp}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="text-sm text-muted-foreground italic"
+              >
+                {t("hero.note")}
+              </motion.p>
+            </motion.div>
+          </div>
         </section>
 
         {/* Features Section */}
@@ -702,6 +734,9 @@ export default function LandingPage() {
           </div>
         </div>
       </motion.footer>
+
+      {/* Nabarawy AI Assistant */}
+      <NabarawyAssistant autoShow={true} showDelay={5000} />
 
       {/* WhatsApp Floating Button */}
       <WhatsAppSupport />
