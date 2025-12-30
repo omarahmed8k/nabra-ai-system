@@ -833,6 +833,7 @@
       "attachmentsPending": "{count, plural, one {# attachment pending} other {# attachments pending}}",
       "attachmentsSendHint": "Press Send to include attachments",
       "voiceNote": "Voice note",
+      "video": "Video",
       "image": "Image",
       "file": "File",
       "recordVoice": "Record voice note",
