@@ -177,3 +177,56 @@
     animation-delay: 1000ms;
   }
 }
+/* Swiper 3D Carousel Styles */
+.swiper-3d-video,
+.swiper-3d-images {
+  width: 100%;
+  padding: 60px 0 !important;
+}
+
+.swiper-3d-video .swiper-slide,
+.swiper-3d-images .swiper-slide {
+  width: 320px;
+  height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiper-3d-video .swiper-slide-shadow-left,
+.swiper-3d-video .swiper-slide-shadow-right,
+.swiper-3d-images .swiper-slide-shadow-left,
+.swiper-3d-images .swiper-slide-shadow-right {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+  border-radius: 50px;
+}
+
+.swiper-3d-video .swiper-button-next,
+.swiper-3d-video .swiper-button-prev,
+.swiper-3d-images .swiper-button-next,
+.swiper-3d-images .swiper-button-prev {
+  color: #06b6d4;
+  background: rgba(0, 0, 0, 0.5);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  transition: all 0.3s ease;
+}
+
+.swiper-3d-video .swiper-button-next:hover,
+.swiper-3d-video .swiper-button-prev:hover,
+.swiper-3d-images .swiper-button-next:hover,
+.swiper-3d-images .swiper-button-prev:hover {
+  background: rgba(236, 72, 153, 0.2);
+  border-color: rgba(6, 182, 212, 0.6);
+  transform: scale(1.1);
+}
+
+.swiper-3d-video .swiper-button-next::after,
+.swiper-3d-video .swiper-button-prev::after,
+.swiper-3d-images .swiper-button-next::after,
+.swiper-3d-images .swiper-button-prev::after {
+  font-size: 20px;
+  font-weight: bold;
+}

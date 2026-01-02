@@ -5,8 +5,8 @@ import { useRouter, usePathname } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 
 const locales = [
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "en", label: "EN", flag: "🇺🇸" },
+  { code: "ar", label: "AR", flag: "🇸🇦" },
 ] as const;
 
 export function LanguageSwitcher() {
