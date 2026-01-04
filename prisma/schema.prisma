@@ -182,6 +182,7 @@ model ClientSubscription {
   paymentProof              PaymentProof?
 
   @@index([userId, isActive])
+  @@index([userId, endDate]) // For credit availability checks
 }
 
 model PaymentProof {
@@ -244,8 +245,10 @@ model Request {
   watchers             RequestWatcher[]
 
   @@index([clientId, status])
+  @@index([clientId, createdAt]) // For client dashboard pagination
   @@index([providerId, status])
-  @@index([status])
+  @@index([providerId, createdAt]) // For provider dashboard pagination
+  @@index([status, createdAt]) // For filtering by status and sorting
   @@index([deletedAt])
 }
 
@@ -293,6 +296,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, createdAt]) // For notification feed pagination
 }
 
 model SystemSettings {
