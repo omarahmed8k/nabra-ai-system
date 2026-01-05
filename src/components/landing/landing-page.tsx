@@ -183,7 +183,8 @@ export default function LandingPage() {
 
   const [packages, setPackages] = useState<Package[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const videoCarouselRef = useRef<HTMLDivElement>(null);
+  const videoSwiperRef = useRef<any>(null);
 
   const { data: packagesData } = trpc.admin.getPublicPackages.useQuery(undefined, {
     enabled: true,
@@ -195,6 +196,36 @@ export default function LandingPage() {
       setLoadingPackages(false);
     }
   }, [packagesData]);
+
+  // Stop videos when scrolling to another section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!videoCarouselRef.current) return;
+
+      const rect = videoCarouselRef.current.getBoundingClientRect();
+      const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+
+      // If video carousel is not in view, pause all videos
+      if (!isInView) {
+        const iframes = document.querySelectorAll(".swiper-3d-video iframe");
+        iframes.forEach((iframe) => {
+          try {
+            const target = (iframe as HTMLIFrameElement).contentWindow;
+            if (target) {
+              // We intentionally use '*' for Vimeo cross-origin communication
+              // eslint-disable-next-line no-restricted-globals
+              target.postMessage(JSON.stringify({ method: "pause" }), "*");
+            }
+          } catch {
+            // Cross-origin error expected, silently fail
+          }
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const getLocalizedText = (
     text: string | undefined,
@@ -211,16 +242,29 @@ export default function LandingPage() {
     return pkg.features || [];
   };
 
-  const scrollCarousel = (direction: "left" | "right") => {
-    if (carouselRef.current) {
-      const itemWidth = carouselRef.current.querySelector("[data-carousel-item]")?.clientWidth || 0;
-      const scrollAmount = itemWidth + 24;
-      carouselRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
+  // Define video carousel data with stable IDs
+  const videoCarouselData = [
+    { id: "video-1", url: "https://player.vimeo.com/video/1146874831" },
+    { id: "video-2", url: "https://player.vimeo.com/video/1146880306" },
+    { id: "video-3", url: "https://player.vimeo.com/video/1146877824" },
+    { id: "video-4", url: "https://player.vimeo.com/video/1146877120" },
+    { id: "video-5", url: "https://player.vimeo.com/video/1146876337" },
+    { id: "video-6", url: "https://player.vimeo.com/video/1146874831" },
+    { id: "video-7", url: "https://player.vimeo.com/video/1146880306" },
+    { id: "video-8", url: "https://player.vimeo.com/video/1146877824" },
+    { id: "video-9", url: "https://player.vimeo.com/video/1146877120" },
+    { id: "video-10", url: "https://player.vimeo.com/video/1146876337" },
+    { id: "video-11", url: "https://player.vimeo.com/video/1146874831" },
+    { id: "video-12", url: "https://player.vimeo.com/video/1146880306" },
+    { id: "video-13", url: "https://player.vimeo.com/video/1146877824" },
+    { id: "video-14", url: "https://player.vimeo.com/video/1146877120" },
+    { id: "video-15", url: "https://player.vimeo.com/video/1146876337" },
+    { id: "video-16", url: "https://player.vimeo.com/video/1146874831" },
+    { id: "video-17", url: "https://player.vimeo.com/video/1146880306" },
+    { id: "video-18", url: "https://player.vimeo.com/video/1146877824" },
+    { id: "video-19", url: "https://player.vimeo.com/video/1146877120" },
+    { id: "video-20", url: "https://player.vimeo.com/video/1146876337" },
+  ];
 
   return (
     <div className="flex min-h-screen flex-col bg-black overflow-hidden">
@@ -428,18 +472,39 @@ export default function LandingPage() {
             </div>
 
             <motion.div
+              ref={videoCarouselRef}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
             >
               <Swiper
+                onSwiper={(swiper) => {
+                  videoSwiperRef.current = swiper;
+                }}
                 effect="coverflow"
                 grabCursor={true}
                 centeredSlides={true}
                 slidesPerView="auto"
                 loop={true}
                 loopAdditionalSlides={3}
+                touchEventsTarget="container"
+                onSlideChange={() => {
+                  // Pause all videos when slide changes
+                  const iframes = document.querySelectorAll(".swiper-3d-video iframe");
+                  iframes.forEach((iframe) => {
+                    try {
+                      const target = (iframe as HTMLIFrameElement).contentWindow;
+                      if (target) {
+                        // We intentionally use '*' for Vimeo cross-origin communication
+                        // eslint-disable-next-line no-restricted-globals
+                        target.postMessage(JSON.stringify({ method: "pause" }), "*");
+                      }
+                    } catch {
+                      // Cross-origin error expected, silently fail
+                    }
+                  });
+                }}
                 coverflowEffect={{
                   rotate: 0,
                   stretch: 0,
@@ -447,25 +512,15 @@ export default function LandingPage() {
                   modifier: 2.5,
                   slideShadows: true,
                 }}
-                autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                }}
-                modules={[EffectCoverflow, Autoplay]}
+                modules={[EffectCoverflow]}
                 className="swiper-3d-video"
               >
-                {[
-                  "https://player.vimeo.com/video/1146874831",
-                  "https://player.vimeo.com/video/1146880306",
-                  "https://player.vimeo.com/video/1146877824",
-                  "https://player.vimeo.com/video/1146877120",
-                  "https://player.vimeo.com/video/1146876337",
-                ].map((videoUrl, idx) => (
-                  <SwiperSlide key={`video-${idx}`}>
+                {videoCarouselData.map((video, idx) => (
+                  <SwiperSlide key={video.id}>
                     <div className="w-[230px] h-[406px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
                       <iframe
                         title={`Video ${idx + 1}`}
-                        src={`${videoUrl}?badge=0&autopause=0&player_id=0&app_id=58479&controls=1`}
+                        src={`${video.url}?badge=0&autopause=1&background=0&controls=1`}
                         allow="autoplay; fullscreen; picture-in-picture"
                         allowFullScreen
                         className="w-full h-full"
@@ -474,6 +529,13 @@ export default function LandingPage() {
                   </SwiperSlide>
                 ))}
               </Swiper>
+
+              <div className="opacity-30 hover:opacity-100 transition-opacity duration-300">
+                <CarouselNav
+                  onPrev={() => videoSwiperRef.current?.slidePrev()}
+                  onNext={() => videoSwiperRef.current?.slideNext()}
+                />
+              </div>
             </motion.div>
           </div>
 
@@ -522,8 +584,8 @@ export default function LandingPage() {
                 className="swiper-3d-images"
               >
                 {Array.from({ length: 31 }).map((_, idx) => (
-                  <SwiperSlide key={`portfolio-${idx}`}>
-                    <div className="w-[320px] h-[420px] rounded-[50px] overflow-hidden border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] cursor-pointer group">
+                  <SwiperSlide key={`portfolio-${idx + 1}`}>
+                    <div className="w-[320px] h-[420px] rounded-3xl overflow-hidden border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] cursor-pointer group">
                       <Image
                         src={`/images/landing/${idx + 1}.jpg`}
                         alt={`Portfolio ${idx + 1}`}
@@ -580,9 +642,9 @@ export default function LandingPage() {
                       label: "Portfolio Items",
                       color: "from-purple-400 to-orange-400",
                     },
-                  ].map((stat, idx) => (
+                  ].map((stat) => (
                     <motion.div
-                      key={`stat-${idx}`}
+                      key={`stat-${stat.label}`}
                       variants={fadeInUp}
                       className="p-6 rounded-3xl border border-gray-700/50 bg-black/50 hover:border-cyan-500/30 hover:bg-black/70 transition-all"
                     >
