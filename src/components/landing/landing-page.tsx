@@ -183,6 +183,7 @@ export default function LandingPage() {
 
   const [packages, setPackages] = useState<Package[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const videoCarouselRef = useRef<HTMLDivElement>(null);
   const videoSwiperRef = useRef<any>(null);
 
@@ -477,10 +478,28 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
+              className="relative"
             >
+              {/* Left Arrow */}
+              <motion.button
+                onClick={() => videoSwiperRef.current?.slidePrev()}
+                className="absolute -left-5 top-[50%] -translate-y-1/2 z-30 p-4 rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
+              >
+                <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
+              </motion.button>
+
+              {/* Right Arrow */}
+              <motion.button
+                onClick={() => videoSwiperRef.current?.slideNext()}
+                className="absolute -right-5 top-[50%] -translate-y-1/2 z-30 p-4 rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
+              >
+                <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
+              </motion.button>
+
               <Swiper
                 onSwiper={(swiper) => {
                   videoSwiperRef.current = swiper;
+                  setActiveVideoIndex(swiper.realIndex);
                 }}
                 effect="coverflow"
                 grabCursor={true}
@@ -489,7 +508,8 @@ export default function LandingPage() {
                 loop={true}
                 loopAdditionalSlides={3}
                 touchEventsTarget="container"
-                onSlideChange={() => {
+                onSlideChange={(swiper) => {
+                  setActiveVideoIndex(swiper.realIndex);
                   // Pause all videos when slide changes
                   const iframes = document.querySelectorAll(".swiper-3d-video iframe");
                   iframes.forEach((iframe) => {
@@ -510,32 +530,36 @@ export default function LandingPage() {
                   stretch: 0,
                   depth: 100,
                   modifier: 2.5,
-                  slideShadows: true,
+                  slideShadows: false,
                 }}
                 modules={[EffectCoverflow]}
                 className="swiper-3d-video"
               >
                 {videoCarouselData.map((video, idx) => (
                   <SwiperSlide key={video.id}>
-                    <div className="w-[230px] h-[406px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+                    <div className="w-[230px] h-[406px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative">
                       <iframe
                         title={`Video ${idx + 1}`}
                         src={`${video.url}?badge=0&autopause=1&background=0&controls=1`}
                         allow="autoplay; fullscreen; picture-in-picture"
                         allowFullScreen
                         className="w-full h-full"
+                        style={{ pointerEvents: activeVideoIndex === idx ? "auto" : "none" }}
                       />
+                      {/* Overlay to block clicks on non-active videos */}
+                      {activeVideoIndex !== idx && (
+                        <div
+                          className="absolute inset-0 bg-transparent cursor-grabbing"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        />
+                      )}
                     </div>
                   </SwiperSlide>
                 ))}
               </Swiper>
-
-              <div className="opacity-30 hover:opacity-100 transition-opacity duration-300">
-                <CarouselNav
-                  onPrev={() => videoSwiperRef.current?.slidePrev()}
-                  onNext={() => videoSwiperRef.current?.slideNext()}
-                />
-              </div>
             </motion.div>
           </div>
 
