@@ -29,6 +29,40 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 
+// Font size and weight standardization constants
+const FONT_SIZES = {
+  // Hero
+  hero: {
+    title: "text-4xl sm:text-5xl md:text-6xl lg:text-7xl",
+    subtitle: "text-sm sm:text-base md:text-lg",
+  },
+  // Section headings
+  sectionTitle: {
+    primary: "text-3xl sm:text-4xl md:text-5xl lg:text-5xl",
+    secondary: "text-2xl sm:text-3xl md:text-4xl",
+  },
+  // Feature/Card titles
+  cardTitle: {
+    main: "text-base sm:text-lg md:text-lg",
+    small: "text-sm md:text-base",
+  },
+  // Body text
+  body: {
+    large: "text-base sm:text-lg",
+    normal: "text-sm sm:text-base",
+    small: "text-xs sm:text-sm",
+  },
+} as const;
+
+const FONT_WEIGHTS = {
+  bold: "font-bold",
+  black: "font-black",
+  semibold: "font-semibold",
+  medium: "font-medium",
+  normal: "font-normal",
+  light: "font-light",
+} as const;
+
 type FeatureKey = "credit" | "quality" | "speed" | "revisions" | "experts";
 
 interface Package {
@@ -274,9 +308,9 @@ export default function LandingPage() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="fixed top-6 left-0 right-0 mx-auto w-[95%] max-w-7xl z-50 rounded-full backdrop-blur-3xl bg-transparent shadow"
+        className="fixed top-4 sm:top-6 left-0 right-0 mx-auto w-[95%] max-w-7xl z-50 rounded-full backdrop-blur-3xl bg-transparent shadow px-4 sm:px-6"
       >
-        <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2 relative z-10">
             <motion.div whileHover={{ scale: 1.1, rotate: 5 }}>
               <Image
@@ -284,12 +318,12 @@ export default function LandingPage() {
                 alt="Nabra Logo"
                 width={32}
                 height={32}
-                className="h-8 w-auto"
+                className="h-7 sm:h-8 w-auto"
               />
             </motion.div>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
             {[
               { href: "#features", label: "Features" },
               { href: "#gallery", label: "Gallery" },
@@ -297,7 +331,7 @@ export default function LandingPage() {
             ].map((item) => (
               <Link key={item.href} href={item.href}>
                 <motion.span
-                  className="text-sm font-medium text-gray-300 hover:text-pink-400 transition-colors cursor-pointer"
+                  className={`${FONT_SIZES.body.small} ${FONT_WEIGHTS.medium} text-gray-300 hover:text-pink-400 transition-colors cursor-pointer`}
                   whileHover={{ y: -2 }}
                 >
                   {item.label}
@@ -306,19 +340,21 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          <div className="flex items-center space-x-3 relative z-10">
+          <div className="flex items-center space-x-2 sm:space-x-3 relative z-10">
             <LanguageSwitcher />
             <Link href="/auth/login">
               <Button
                 variant="ghost"
-                className="text-gray-300 hover:text-white hover:bg-white/5 text-sm"
+                className={`text-gray-300 hover:text-white hover:bg-white/5 ${FONT_SIZES.body.small}`}
               >
                 Sign In
               </Button>
             </Link>
             <Link href="/auth/register">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-semibold text-sm">
+                <Button
+                  className={`rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-semibold ${FONT_SIZES.body.small}`}
+                >
                   Get Started
                 </Button>
               </motion.div>
@@ -329,36 +365,41 @@ export default function LandingPage() {
 
       <main className="relative z-10">
         {/* 1. HERO SECTION */}
-        <section className="relative w-full min-h-screen flex items-end justify-center overflow-hidden pb-20">
+        <section className="relative w-full min-h-screen flex items-end justify-center overflow-hidden pb-12 sm:pb-16 md:pb-20">
           <VideoBackground src="/images/landing/hero-section.mp4" bottomShadow={true} />
 
-          <div className="container relative z-10">
+          <div className="container relative z-10 px-4 sm:px-6">
             <div className="flex items-end justify-center">
               {/* Centered Content */}
               <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={staggerContainer}
-                className="flex flex-col items-center gap-8 text-center max-w-4xl mx-auto"
+                className="flex flex-col items-center gap-6 sm:gap-8 text-center max-w-4xl mx-auto"
               >
-                <motion.div variants={fadeInUp} className="space-y-6">
-                  <h1 className="text-6xl md:text-7xl lg:text-8xl font-black leading-tight">
+                <motion.div variants={fadeInUp} className="space-y-4 sm:space-y-6">
+                  <h1 className={`${FONT_SIZES.hero.title} ${FONT_WEIGHTS.black} leading-tight`}>
                     <span className="text-white">Nabrawy</span>
                   </h1>
-                  <p className="font-light text-lg text-gray-300 max-w-2xl mx-auto">
+                  <p
+                    className={`${FONT_SIZES.hero.subtitle} ${FONT_WEIGHTS.light} text-gray-300 max-w-2xl mx-auto`}
+                  >
                     What can you create with Nabrawy..
-                    <br />
+                    <br className="hidden sm:block" />
                     Connect with expert designers, developers, and content creators through our
                     credit-based platform. No negotiations, no surprises just quality work delivered
                     fast.
                   </p>
                 </motion.div>
 
-                <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 justify-center">
+                <motion.div
+                  variants={fadeInUp}
+                  className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center w-full sm:w-auto"
+                >
                   <Link href="/auth/register">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-8 py-3">
-                        Start Free Trial <ArrowRight className="w-4 h-4 ml-2" />
+                      <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        Start Free Trial <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                       </Button>
                     </motion.div>
                   </Link>
@@ -366,7 +407,7 @@ export default function LandingPage() {
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button
                         variant="outline"
-                        className="rounded-full bg-transparent border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-8 py-3"
+                        className="rounded-full bg-transparent border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
                       >
                         Learn More
                       </Button>
@@ -379,8 +420,8 @@ export default function LandingPage() {
         </section>
 
         {/* 2. FEATURES SECTION */}
-        <section id="features" className="relative w-full py-24 md:py-32">
-          <div className="h-[1000px] absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent" />
+        <section id="features" className="relative w-full py-16 sm:py-24 md:py-32">
+          <div className="h-[500px] sm:h-[750px] md:h-[1000px] absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent" />
           <VideoBackground
             src="/images/landing/videos-section.mp4"
             topShadow={true}
@@ -388,18 +429,22 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/90" />
 
-          <div className="container relative z-10 pb-96">
+          <div className="container relative z-10 pb-24 sm:pb-48 md:pb-96 px-4 sm:px-6">
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeInUp}
-              className="mb-20 text-center"
+              className="mb-12 sm:mb-16 md:mb-20 text-center"
             >
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+              <h2
+                className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
+              >
                 Everything you need to get work done
-                <br />
-                <span className="font-light mt-4 block">
+                <br className="hidden sm:block" />
+                <span
+                  className={`${FONT_WEIGHTS.light} mt-2 sm:mt-4 block ${FONT_SIZES.body.large}`}
+                >
                   One platform for all your digital service needs
                 </span>
               </h2>
@@ -410,7 +455,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="grid gap-5 md:grid-cols-5 max-w-6xl mx-auto"
+              className="grid gap-3 sm:gap-4 md:gap-5 md:grid-cols-5 max-w-6xl mx-auto"
             >
               {featureItems.map((feature, idx) => {
                 const Icon = feature.icon;
@@ -428,13 +473,19 @@ export default function LandingPage() {
                     key={feature.key}
                     variants={scaleIn}
                     whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                    className={`group p-4 rounded-3xl border transition-all ${colorClass}`}
+                    className={`group p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all ${colorClass}`}
                   >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-cyan-500/20">
-                      <Icon className="h-6 w-6 text-cyan-400" />
+                    <div className="mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-cyan-500/20">
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
                     </div>
-                    <h3 className="text-sm font-bold text-white capitalize mb-2">{feature.key}</h3>
-                    <p className="text-xs text-gray-400">{feature.description}</p>
+                    <h3
+                      className={`${FONT_SIZES.cardTitle.small} ${FONT_WEIGHTS.bold} text-white capitalize mb-2`}
+                    >
+                      {feature.key}
+                    </h3>
+                    <p className={`${FONT_SIZES.body.small} text-gray-400`}>
+                      {feature.description}
+                    </p>
                   </motion.div>
                 );
               })}
@@ -443,29 +494,31 @@ export default function LandingPage() {
         </section>
 
         {/* 3. VIDEO CAROUSEL 3D & 4. IMAGES CAROUSEL 3D */}
-        <section id="gallery" className="relative w-full py-24 md:py-32 overflow-hidden">
-          <div className="h-[1000px] absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent" />
+        <section id="gallery" className="relative w-full py-16 sm:py-24 md:py-32 overflow-hidden">
+          <div className="h-[500px] sm:h-[750px] md:h-[1000px] absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent" />
           <VideoBackground
             src="/images/landing/videos-images-section.mp4"
             topShadow={true}
             bottomShadow={true}
           />
-          <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
+          <div className="absolute bottom-0 left-0 right-0 h-48 sm:h-72 md:h-96 bg-gradient-to-t from-black via-black/50 to-transparent pointer-events-none z-20" />
 
           {/* VIDEO CAROUSEL 3D */}
-          <div className="relative z-10 mb-32">
-            <div className="container">
+          <div className="relative z-10 mb-20 sm:mb-24 md:mb-32">
+            <div className="container px-4 sm:px-6">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeInUp}
-                className="mb-12 text-center"
+                className="mb-8 sm:mb-12 text-center"
               >
-                <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+                <h2
+                  className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
+                >
                   Stunning Creations
                 </h2>
-                <p className="text-lg text-gray-400">
+                <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
                   Discover extraordinary projects crafted by our elite network of creative
                   professionals
                 </p>
@@ -478,22 +531,22 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
-              className="relative"
+              className="relative px-4 sm:px-6"
             >
               {/* Left Arrow */}
               <motion.button
                 onClick={() => videoSwiperRef.current?.slidePrev()}
-                className="absolute -left-5 top-[50%] -translate-y-1/2 z-30 p-4 rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
+                className="absolute -left-2 sm:left-0 md:-left-5 top-[50%] -translate-y-1/2 z-30 p-2 sm:p-3 md:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
               >
-                <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
               </motion.button>
 
               {/* Right Arrow */}
               <motion.button
                 onClick={() => videoSwiperRef.current?.slideNext()}
-                className="absolute -right-5 top-[50%] -translate-y-1/2 z-30 p-4 rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
+                className="absolute -right-2 sm:right-0 md:-right-5 top-[50%] -translate-y-1/2 z-30 p-2 sm:p-3 md:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-pink-500/50 to-cyan-500/50 backdrop-blur-md border-2 border-pink-500/70 hover:border-cyan-500/90 transition-all opacity-70 hover:opacity-100 duration-300 shadow-[0_8px_32px_rgba(236,72,153,0.3)]"
               >
-                <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white drop-shadow-[0_2px_8px_rgba(255,255,255,0.5)]" />
               </motion.button>
 
               <Swiper
@@ -537,7 +590,7 @@ export default function LandingPage() {
               >
                 {videoCarouselData.map((video, idx) => (
                   <SwiperSlide key={video.id}>
-                    <div className="w-[230px] h-[406px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative">
+                    <div className="w-[180px] h-[320px] sm:w-[230px] sm:h-[406px] rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative">
                       <iframe
                         title={`Video ${idx + 1}`}
                         src={`${video.url}?badge=0&autopause=1&background=0&controls=1`}
@@ -565,16 +618,20 @@ export default function LandingPage() {
 
           {/* IMAGES CAROUSEL 3D */}
           <div className="relative z-10">
-            <div className="container">
+            <div className="container px-4 sm:px-6">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeInUp}
-                className="mb-12 text-center"
+                className="mb-8 sm:mb-12 text-center"
               >
-                <h2 className="text-5xl md:text-6xl font-black text-white mb-6">Featured Works</h2>
-                <p className="text-lg text-gray-400">
+                <h2
+                  className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
+                >
+                  Featured Works
+                </h2>
+                <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
                   Explore our stunning portfolio of creative excellence
                 </p>
               </motion.div>
@@ -609,7 +666,7 @@ export default function LandingPage() {
               >
                 {Array.from({ length: 31 }).map((_, idx) => (
                   <SwiperSlide key={`portfolio-${idx + 1}`}>
-                    <div className="w-[320px] h-[420px] rounded-3xl overflow-hidden border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] cursor-pointer group">
+                    <div className="w-[240px] h-[315px] sm:w-[320px] sm:h-[420px] rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] cursor-pointer group">
                       <Image
                         src={`/images/landing/${idx + 1}.jpg`}
                         alt={`Portfolio ${idx + 1}`}
@@ -626,9 +683,9 @@ export default function LandingPage() {
         </section>
 
         {/* 5. STATS SECTION */}
-        <section className="relative w-full py-24 md:py-32">
-          <div className="container relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <section className="relative w-full py-16 sm:py-24 md:py-32">
+          <div className="container relative z-10 px-4 sm:px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
               {/* Character with GIF */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -643,7 +700,7 @@ export default function LandingPage() {
                   width={400}
                   height={400}
                   unoptimized
-                  className="w-96 h-96 object-contain drop-shadow-2xl filter saturate-110"
+                  className="w-64 sm:w-80 md:w-96 h-64 sm:h-80 md:h-96 object-contain drop-shadow-2xl filter saturate-110"
                 />
               </motion.div>
 
@@ -654,9 +711,13 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={staggerContainer}
               >
-                <h2 className="text-5xl md:text-6xl font-black text-white mb-12">By The Numbers</h2>
+                <h2
+                  className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-8 sm:mb-12`}
+                >
+                  By The Numbers
+                </h2>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   {[
                     { num: "4.9", label: "Happy Clients", color: "from-cyan-500 to-blue-500" },
                     { num: "+500", label: "Expert Creators", color: "from-pink-500 to-purple-500" },
@@ -670,14 +731,14 @@ export default function LandingPage() {
                     <motion.div
                       key={`stat-${stat.label}`}
                       variants={fadeInUp}
-                      className="p-6 rounded-3xl border border-gray-700/50 bg-black/50 hover:border-cyan-500/30 hover:bg-black/70 transition-all"
+                      className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-700/50 bg-black/50 hover:border-cyan-500/30 hover:bg-black/70 transition-all"
                     >
                       <div
-                        className={`text-3xl font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2`}
+                        className={`text-2xl sm:text-3xl ${FONT_WEIGHTS.black} bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2`}
                       >
                         {stat.num}
                       </div>
-                      <p className="text-sm text-gray-400">{stat.label}</p>
+                      <p className={`${FONT_SIZES.body.small} text-gray-400`}>{stat.label}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -687,19 +748,23 @@ export default function LandingPage() {
         </section>
 
         {/* 6. PRICING SECTION */}
-        <section id="pricing" className="relative w-full py-24 md:py-32">
-          <div className="container relative z-10">
+        <section id="pricing" className="relative w-full py-16 sm:py-24 md:py-32">
+          <div className="container relative z-10 px-4 sm:px-6">
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeInUp}
-              className="mb-16 text-center"
+              className="mb-12 sm:mb-16 text-center"
             >
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+              <h2
+                className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
+              >
                 Simple, transparent pricing
               </h2>
-              <p className="text-lg text-gray-400">Choose the perfect plan for your needs</p>
+              <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
+                Choose the perfect plan for your needs
+              </p>
             </motion.div>
 
             <motion.div
@@ -707,7 +772,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
+              className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
             >
               {loadingPackages && (
                 <div className="col-span-full flex justify-center py-12">
@@ -732,13 +797,15 @@ export default function LandingPage() {
                       whileHover={{ y: -8, transition: { duration: 0.3 } }}
                       className="group relative"
                     >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500/20 to-cyan-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500/20 to-cyan-500/20 rounded-2xl sm:rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                      <div className="relative bg-black border border-gray-700/60 hover:border-cyan-500/60 rounded-3xl p-8 transition-all h-full flex flex-col">
-                        <h3 className="text-xl font-bold text-white mb-2">
+                      <div className="relative bg-black border border-gray-700/60 hover:border-cyan-500/60 rounded-2xl sm:rounded-3xl p-6 sm:p-8 transition-all h-full flex flex-col">
+                        <h3
+                          className={`${FONT_SIZES.cardTitle.main} ${FONT_WEIGHTS.bold} text-white mb-2`}
+                        >
                           {getLocalizedText(pkg.name, pkg.nameI18n)}
                         </h3>
-                        <p className="text-sm text-gray-400 mb-6 flex-grow">
+                        <p className={`${FONT_SIZES.body.small} text-gray-400 mb-6 flex-grow`}>
                           {pkg.credits} Credits
                         </p>
 
@@ -748,20 +815,20 @@ export default function LandingPage() {
 
                         <div className="mb-6">
                           <div
-                            className={`text-4xl font-black bg-gradient-to-r ${gradient} bg-clip-text text-transparent mb-1`}
+                            className={`text-3xl sm:text-4xl ${FONT_WEIGHTS.black} bg-gradient-to-r ${gradient} bg-clip-text text-transparent mb-1`}
                           >
                             ${pkg.price}
                           </div>
-                          <p className="text-xs text-gray-500">per month</p>
+                          <p className={`${FONT_SIZES.body.small} text-gray-500`}>per month</p>
                         </div>
 
-                        <ul className="space-y-3 mb-8 flex-grow">
+                        <ul className="space-y-2 sm:space-y-3 mb-8 flex-grow">
                           {getPackageFeatures(pkg)
                             .slice(0, 4)
                             .map((feature, featureIdx) => (
                               <li
                                 key={`${pkg.id}-${featureIdx}`}
-                                className="flex items-start gap-2 text-sm text-gray-400"
+                                className={`flex items-start gap-2 ${FONT_SIZES.body.small} text-gray-400`}
                               >
                                 <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
                                 <span>{feature}</span>
@@ -771,7 +838,7 @@ export default function LandingPage() {
 
                         <Link href="/auth/register" className="w-full">
                           <Button
-                            className={`w-full rounded-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white font-bold`}
+                            className={`w-full rounded-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white font-bold text-sm sm:text-base`}
                           >
                             Get Started
                           </Button>
@@ -785,8 +852,8 @@ export default function LandingPage() {
         </section>
 
         {/* 7. CTA SECTION */}
-        <section className="relative w-full py-24 md:py-32">
-          <div className="container relative z-10">
+        <section className="relative w-full py-16 sm:py-24 md:py-32">
+          <div className="container relative z-10 px-4 sm:px-6">
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -794,10 +861,12 @@ export default function LandingPage() {
               variants={scaleIn}
               className="text-center max-w-2xl mx-auto"
             >
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-6">
+              <h2
+                className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
+              >
                 Ready to get started?
               </h2>
-              <p className="text-lg text-gray-400 mb-10">
+              <p className={`${FONT_SIZES.body.normal} text-gray-400 mb-8 sm:mb-10`}>
                 Join thousands of creators using Nabrawy to bring their ideas to life
               </p>
 
@@ -806,17 +875,17 @@ export default function LandingPage() {
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
               >
                 <Link href="/auth/register">
-                  <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-10 py-3">
-                    Start Free Trial <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-8 sm:px-10 py-2 sm:py-3 text-sm sm:text-base">
+                    Start Free Trial <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link href="#pricing">
                   <Button
                     variant="outline"
-                    className="rounded-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-10 py-3"
+                    className="rounded-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-8 sm:px-10 py-2 sm:py-3 text-sm sm:text-base"
                   >
                     View Plans
                   </Button>
@@ -833,27 +902,35 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="border-t border-pink-500/20 py-8 relative z-10 bg-black/50 backdrop-blur-sm mt-12"
+        className="border-t border-pink-500/20 py-6 sm:py-8 relative z-10 bg-black/50 backdrop-blur-sm mt-12"
       >
-        <div className="container flex flex-col items-center justify-between gap-4 md:flex-row text-sm text-gray-400">
+        <div className="container flex flex-col items-center justify-between gap-4 md:flex-row px-4 sm:px-6">
           <div className="flex items-center space-x-2">
-            <Image src="/images/logo.svg" alt="Nabra Logo" width={24} height={24} />
-            <span className="font-bold text-white">Nabra</span>
+            <Image src="/images/logo.svg" alt="Nabra Logo" width={120} height={24} />
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-pink-400 transition-colors">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <Link
+              href="#"
+              className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
+            >
               Privacy
             </Link>
-            <Link href="#" className="hover:text-pink-400 transition-colors">
+            <Link
+              href="#"
+              className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
+            >
               Terms
             </Link>
-            <Link href="#" className="hover:text-pink-400 transition-colors">
+            <Link
+              href="#"
+              className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
+            >
               Contact
             </Link>
           </div>
 
-          <p>© 2025 Nabra. All rights reserved.</p>
+          <p className="text-xs sm:text-sm text-gray-400">© 2026 Nabra. All rights reserved.</p>
         </div>
       </motion.footer>
 
