@@ -1,6 +1,8 @@
 import { createClient, type RedisClientType } from "redis";
+import { Redis as UpstashRedis } from "@upstash/redis";
 
-let redisClient: RedisClientType | null = null;
+let redisClient: RedisClientType | UpstashRedis | null = null;
+let isUpstash = false;
 
 const CACHE_KEYS = {
   // User cache
@@ -48,14 +50,36 @@ const CACHE_TTL = {
   REQUEST_LIST: 300, // 5 minutes
 } as const;
 
-export async function getRedisClient(): Promise<RedisClientType> {
-  if (redisClient?.isOpen) {
-    return redisClient;
+export async function getRedisClient(): Promise<RedisClientType | UpstashRedis | null> {
+  if (redisClient) {
+    // For Upstash, no need to check connection status
+    if (isUpstash) return redisClient;
+    // For traditional Redis, check if still connected
+    if ((redisClient as RedisClientType).isOpen) {
+      return redisClient;
+    }
   }
 
+  // Check for Upstash (Vercel/Serverless) - Priority 1
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      redisClient = new UpstashRedis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+      isUpstash = true;
+      console.log("✅ Upstash Redis connected (serverless mode)");
+      return redisClient;
+    } catch (error) {
+      console.error("Failed to connect to Upstash Redis:", error);
+      return null;
+    }
+  }
+
+  // Traditional Redis (Local/Railway/Redis Cloud) - Priority 2
   if (!process.env.REDIS_URL && !process.env.REDIS_HOST) {
     console.warn("Redis not configured. Caching disabled.");
-    return null as any;
+    return null;
   }
 
   try {
@@ -80,14 +104,15 @@ export async function getRedisClient(): Promise<RedisClientType> {
     });
 
     redisClient.on("connect", () => {
-      console.log("Redis connected");
+      console.log("✅ Traditional Redis connected");
     });
 
     await redisClient.connect();
+    isUpstash = false;
     return redisClient;
   } catch (error) {
     console.error("Failed to connect to Redis:", error);
-    return null as any;
+    return null;
   }
 }
 
@@ -102,7 +127,12 @@ export async function getCached<T>(key: string): Promise<T | null> {
     const data = await client.get(key);
     if (!data) return null;
 
-    return JSON.parse(data) as T;
+    // Upstash automatically handles JSON, traditional Redis needs parsing
+    if (isUpstash) {
+      return data as T;
+    } else {
+      return JSON.parse(data as string) as T;
+    }
   } catch (error) {
     console.error(`Cache get error for key ${key}:`, error);
     return null;
@@ -117,11 +147,21 @@ export async function setCached<T>(key: string, value: T, ttl?: number): Promise
     const client = await getRedisClient();
     if (!client) return;
 
-    const serialized = JSON.stringify(value);
-    if (ttl) {
-      await client.setEx(key, ttl, serialized);
+    if (isUpstash) {
+      // Upstash handles JSON automatically
+      if (ttl) {
+        await (client as UpstashRedis).set(key, value, { ex: ttl });
+      } else {
+        await (client as UpstashRedis).set(key, value);
+      }
     } else {
-      await client.set(key, serialized);
+      // Traditional Redis needs JSON serialization
+      const serialized = JSON.stringify(value);
+      if (ttl) {
+        await (client as RedisClientType).setEx(key, ttl, serialized);
+      } else {
+        await (client as RedisClientType).set(key, serialized);
+      }
     }
   } catch (error) {
     console.error(`Cache set error for key ${key}:`, error);
@@ -136,7 +176,15 @@ export async function deleteCached(key: string | string[]): Promise<void> {
     const client = await getRedisClient();
     if (!client) return;
 
-    await client.del(Array.isArray(key) ? key : [key]);
+    const keys = Array.isArray(key) ? key : [key];
+
+    if (isUpstash) {
+      // Upstash del accepts multiple string arguments
+      await (client as UpstashRedis).del(...keys);
+    } else {
+      // Traditional Redis del accepts array
+      await (client as RedisClientType).del(keys);
+    }
   } catch (error) {
     console.error(`Cache delete error:`, error);
   }
@@ -152,7 +200,11 @@ export async function deleteCachedPattern(pattern: string): Promise<void> {
 
     const keys = await client.keys(pattern);
     if (keys.length > 0) {
-      await client.del(keys);
+      if (isUpstash) {
+        await (client as UpstashRedis).del(...keys);
+      } else {
+        await (client as RedisClientType).del(keys);
+      }
     }
   } catch (error) {
     console.error(`Cache pattern delete error:`, error);
@@ -167,7 +219,12 @@ export async function incrementCached(key: string, increment = 1): Promise<numbe
     const client = await getRedisClient();
     if (!client) return 0;
 
-    return await client.incrBy(key, increment);
+    if (isUpstash) {
+      // Upstash uses incrby (lowercase)
+      return await (client as UpstashRedis).incrby(key, increment);
+    } else {
+      return await (client as RedisClientType).incrBy(key, increment);
+    }
   } catch (error) {
     console.error(`Cache increment error for key ${key}:`, error);
     return 0;

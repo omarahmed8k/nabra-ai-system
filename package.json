@@ -48,6 +48,7 @@
     "@trpc/server": "^11.0.0-rc.660",
     "@types/nodemailer": "^7.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "@upstash/redis": "^1.36.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
