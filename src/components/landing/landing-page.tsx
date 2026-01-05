@@ -292,7 +292,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center space-x-8">
             {[
               { href: "#features", label: "Features" },
-              { href: "#portfolio", label: "Portfolio" },
+              { href: "#gallery", label: "Gallery" },
               { href: "#pricing", label: "Pricing" },
             ].map((item) => (
               <Link key={item.href} href={item.href}>
@@ -345,7 +345,7 @@ export default function LandingPage() {
                   <h1 className="text-6xl md:text-7xl lg:text-8xl font-black leading-tight">
                     <span className="text-white">Nabrawy</span>
                   </h1>
-                  <p className="font-light text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">
+                  <p className="font-light text-lg text-gray-300 max-w-2xl mx-auto">
                     What can you create with Nabrawy..
                     <br />
                     Connect with expert designers, developers, and content creators through our
@@ -443,7 +443,7 @@ export default function LandingPage() {
         </section>
 
         {/* 3. VIDEO CAROUSEL 3D & 4. IMAGES CAROUSEL 3D */}
-        <section id="portfolio" className="relative w-full py-24 md:py-32 overflow-hidden">
+        <section id="gallery" className="relative w-full py-24 md:py-32 overflow-hidden">
           <div className="h-[1000px] absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent" />
           <VideoBackground
             src="/images/landing/videos-images-section.mp4"
@@ -638,7 +638,7 @@ export default function LandingPage() {
                 className="flex justify-center"
               >
                 <Image
-                  src="/images/nabarawy.gif"
+                  src="/images/nabarawy.png"
                   alt="Nabarawy Animation"
                   width={400}
                   height={400}
