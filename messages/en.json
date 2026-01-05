@@ -9,11 +9,12 @@
       "goBack": "Go Back",
       "backHome": "Back to Home"
     },
+    "credits": "Credits",
     "footer": {
       "privacy": "Privacy",
       "terms": "Terms",
       "contact": "Contact",
-      "copyright": "© 2024 Nabra AI System. All rights reserved."
+      "copyright": "© 2026 Nabra. All rights reserved."
     },
     "requestStatus": {
       "PENDING": "Pending",
@@ -49,102 +50,66 @@
   "landing": {
     "nav": {
       "features": "Features",
-      "pricing": "Pricing",
-      "how": "How It Works"
+      "gallery": "Gallery",
+      "pricing": "Pricing"
     },
     "hero": {
-      "title": "Digital Services,",
-      "accent": "Simplified",
-      "subtitle": "Connect with expert designers, developers, and content creators through our credit-based platform. No negotiations, no surprises – just quality work delivered fast.",
-      "note": "No credit card required • Cancel anytime"
+      "title": "Nabrawy",
+      "subtitle": "What can you create with Nabrawy..\nConnect with expert designers, developers, and content creators through our credit-based platform. No negotiations, no surprises just quality work delivered fast.",
+      "startFreeTrial": "Start Free Trial",
+      "learnMore": "Learn More"
     },
     "features": {
       "heading": "Everything you need to get work done",
       "subheading": "One platform for all your digital service needs",
-      "items": {
-        "credit": {
-          "title": "Credit-Based System",
-          "description": "Purchase credits and use them for any service. No per-project negotiations."
-        },
-        "quality": {
-          "title": "Quality Guaranteed",
-          "description": "All providers are vetted professionals. Satisfaction guaranteed on every request."
-        },
-        "speed": {
-          "title": "Fast Turnaround",
-          "description": "Most requests completed within 48-72 hours. Rush options available."
-        },
-        "revisions": {
-          "title": "Smart Revisions",
-          "description": "Free revisions included with every package. Additional revisions at a fair rate."
-        },
-        "experts": {
-          "title": "Expert Team",
-          "description": "Access designers, developers, and content creators all in one platform."
-        }
+      "credit": {
+        "title": "Credit-Based System",
+        "description": "Purchase credits and use them for any service. No per-project negotiations."
+      },
+      "quality": {
+        "title": "Quality Guaranteed",
+        "description": "All providers are vetted professionals. Satisfaction guaranteed on every request."
+      },
+      "speed": {
+        "title": "Fast Turnaround",
+        "description": "Most requests completed within 48-72 hours. Rush options available."
+      },
+      "revisions": {
+        "title": "Smart Revisions",
+        "description": "Free revisions included with every package. Additional revisions at a fair rate."
+      },
+      "experts": {
+        "title": "Expert Team",
+        "description": "Access designers, developers, and content creators all in one platform."
       }
+    },
+    "gallery": {
+      "videos": {
+        "heading": "Stunning Creations",
+        "subheading": "Discover extraordinary projects crafted by our elite network of creative professionals"
+      },
+      "images": {
+        "heading": "Featured Works",
+        "subheading": "Explore our stunning portfolio of creative excellence"
+      }
+    },
+    "stats": {
+      "heading": "By The Numbers",
+      "happyClients": "Happy Clients",
+      "expertCreators": "Expert Creators",
+      "qualityScore": "Quality Score",
+      "portfolioItems": "Portfolio Items"
     },
     "pricing": {
       "heading": "Simple, transparent pricing",
-      "subheading": "Choose the plan that fits your needs. Upgrade or downgrade anytime.",
-      "mostPopular": "Most Popular",
-      "perMonth": "/month",
-      "packages": {
-        "starter": {
-          "name": "Starter",
-          "features": [
-            "5 request credits",
-            "2 free revisions per request",
-            "Email support",
-            "48-hour response time"
-          ]
-        },
-        "professional": {
-          "name": "Professional",
-          "features": [
-            "20 request credits",
-            "3 free revisions per request",
-            "Priority support",
-            "24-hour response time",
-            "Dedicated account manager"
-          ]
-        },
-        "enterprise": {
-          "name": "Enterprise",
-          "features": [
-            "50 request credits",
-            "5 free revisions per request",
-            "24/7 priority support",
-            "12-hour response time",
-            "Dedicated account manager",
-            "Custom integrations",
-            "API access"
-          ]
-        }
-      }
-    },
-    "how": {
-      "heading": "How It Works",
-      "subheading": "Get started in just 3 simple steps",
-      "steps": {
-        "subscribe": {
-          "title": "Subscribe",
-          "description": "Choose a plan that fits your needs and get your credits instantly."
-        },
-        "create": {
-          "title": "Create Request",
-          "description": "Describe what you need. Our providers will pick up your request."
-        },
-        "results": {
-          "title": "Get Results",
-          "description": "Review deliverables, request revisions if needed, and approve when satisfied."
-        }
-      }
+      "subheading": "Choose the perfect plan for your needs",
+      "perMonth": "/month"
     },
     "cta": {
       "heading": "Ready to get started?",
-      "subheading": "Join thousands of businesses already using Nabra to streamline their digital services.",
-      "button": "Start Your Free Trial"
+      "subheading": "Join thousands of creators using Nabrawy to bring their ideas to life",
+      "startTrial": "Start Free Trial",
+      "viewPlans": "View Plans"
     },
     "footer": {
       "privacy": "Privacy",

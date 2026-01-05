@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useRef } from "react";
 import type { ComponentType } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -90,41 +90,28 @@ interface Package {
 interface FeatureItem {
   icon: ComponentType<{ className?: string }>;
   key: FeatureKey;
-  title: string;
-  description: string;
 }
 
 const featureItems: FeatureItem[] = [
   {
     icon: Zap,
     key: "credit",
-    title: "Credit-Based System",
-    description: "Purchase credits and use them for any service. No per-project negotiations.",
   },
   {
     icon: Shield,
     key: "quality",
-    title: "Quality Guaranteed",
-    description:
-      "All providers are vetted professionals. Satisfaction guaranteed on every request.",
   },
   {
     icon: Clock,
     key: "speed",
-    title: "Fast Turnaround",
-    description: "Most requests completed within 48-72 hours. Rush options available.",
   },
   {
     icon: Star,
     key: "revisions",
-    title: "Smart Revisions",
-    description: "Free revisions included with every package. Additional revisions at a fair rate.",
   },
   {
     icon: Users,
     key: "experts",
-    title: "Expert Team",
-    description: "Access designers, developers, and content creators all in one platform.",
   },
 ];
 
@@ -214,6 +201,8 @@ const CarouselNav = ({ onPrev, onNext }: { onPrev: () => void; onNext: () => voi
 
 export default function LandingPage() {
   const locale = useLocale();
+  const t = useTranslations();
+  const isRTL = locale === "ar";
 
   const [packages, setPackages] = useState<Package[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
@@ -302,7 +291,10 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-black overflow-hidden">
+    <div
+      className={`flex min-h-screen flex-col bg-black overflow-hidden ${isRTL ? "rtl" : "ltr"}`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <motion.header
         initial={{ y: -100 }}
@@ -323,11 +315,11 @@ export default function LandingPage() {
             </motion.div>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          <nav className="hidden md:flex items-center gap-8 lg:gap-10">
             {[
-              { href: "#features", label: "Features" },
-              { href: "#gallery", label: "Gallery" },
-              { href: "#pricing", label: "Pricing" },
+              { href: "#features", label: t("landing.nav.features") },
+              { href: "#gallery", label: t("landing.nav.gallery") },
+              { href: "#pricing", label: t("landing.nav.pricing") },
             ].map((item) => (
               <Link key={item.href} href={item.href}>
                 <motion.span
@@ -347,7 +339,7 @@ export default function LandingPage() {
                 variant="ghost"
                 className={`text-gray-300 hover:text-white hover:bg-white/5 ${FONT_SIZES.body.small}`}
               >
-                Sign In
+                {t("common.buttons.signIn")}
               </Button>
             </Link>
             <Link href="/auth/register">
@@ -355,7 +347,7 @@ export default function LandingPage() {
                 <Button
                   className={`rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-semibold ${FONT_SIZES.body.small}`}
                 >
-                  Get Started
+                  {t("common.buttons.getStarted")}
                 </Button>
               </motion.div>
             </Link>
@@ -379,16 +371,12 @@ export default function LandingPage() {
               >
                 <motion.div variants={fadeInUp} className="space-y-4 sm:space-y-6">
                   <h1 className={`${FONT_SIZES.hero.title} ${FONT_WEIGHTS.black} leading-tight`}>
-                    <span className="text-white">Nabrawy</span>
+                    <span className="text-white">{t("landing.hero.title")}</span>
                   </h1>
                   <p
                     className={`${FONT_SIZES.hero.subtitle} ${FONT_WEIGHTS.light} text-gray-300 max-w-2xl mx-auto`}
                   >
-                    What can you create with Nabrawy..
-                    <br className="hidden sm:block" />
-                    Connect with expert designers, developers, and content creators through our
-                    credit-based platform. No negotiations, no surprises just quality work delivered
-                    fast.
+                    {t("landing.hero.subtitle")}
                   </p>
                 </motion.div>
 
@@ -399,7 +387,8 @@ export default function LandingPage() {
                   <Link href="/auth/register">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
-                        Start Free Trial <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                        {t("landing.hero.startFreeTrial")}{" "}
+                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                       </Button>
                     </motion.div>
                   </Link>
@@ -409,7 +398,7 @@ export default function LandingPage() {
                         variant="outline"
                         className="rounded-full bg-transparent border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
                       >
-                        Learn More
+                        {t("landing.hero.learnMore")}
                       </Button>
                     </motion.div>
                   </Link>
@@ -440,12 +429,12 @@ export default function LandingPage() {
               <h2
                 className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
               >
-                Everything you need to get work done
+                {t("landing.features.heading")}
                 <br className="hidden sm:block" />
                 <span
                   className={`${FONT_WEIGHTS.light} mt-2 sm:mt-4 block ${FONT_SIZES.body.large}`}
                 >
-                  One platform for all your digital service needs
+                  {t("landing.features.subheading")}
                 </span>
               </h2>
             </motion.div>
@@ -455,10 +444,12 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="grid gap-3 sm:gap-4 md:gap-5 md:grid-cols-5 max-w-6xl mx-auto"
+              className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto"
             >
               {featureItems.map((feature, idx) => {
                 const Icon = feature.icon;
+                const title = t(`landing.features.${feature.key}.title`);
+                const description = t(`landing.features.${feature.key}.description`);
                 const colors = [
                   "border-cyan-500/50 bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 hover:from-cyan-500/15 hover:to-cyan-500/10",
                   "border-pink-500/50 bg-gradient-to-br from-pink-500/10 to-pink-500/5 hover:from-pink-500/15 hover:to-pink-500/10",
@@ -473,7 +464,7 @@ export default function LandingPage() {
                     key={feature.key}
                     variants={scaleIn}
                     whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                    className={`group p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all ${colorClass}`}
+                    className={`group p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all flex-1 min-w-[170px] sm:min-w-[180px] md:min-w-[200px] max-w-[220px] ${colorClass}`}
                   >
                     <div className="mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-cyan-500/20">
                       <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400" />
@@ -481,11 +472,9 @@ export default function LandingPage() {
                     <h3
                       className={`${FONT_SIZES.cardTitle.small} ${FONT_WEIGHTS.bold} text-white capitalize mb-2`}
                     >
-                      {feature.key}
+                      {title}
                     </h3>
-                    <p className={`${FONT_SIZES.body.small} text-gray-400`}>
-                      {feature.description}
-                    </p>
+                    <p className={`${FONT_SIZES.body.small} text-gray-400`}>{description}</p>
                   </motion.div>
                 );
               })}
@@ -516,11 +505,10 @@ export default function LandingPage() {
                 <h2
                   className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
                 >
-                  Stunning Creations
+                  {t("landing.gallery.videos.heading")}
                 </h2>
                 <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
-                  Discover extraordinary projects crafted by our elite network of creative
-                  professionals
+                  {t("landing.gallery.videos.subheading")}
                 </p>
               </motion.div>
             </div>
@@ -629,10 +617,10 @@ export default function LandingPage() {
                 <h2
                   className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
                 >
-                  Featured Works
+                  {t("landing.gallery.images.heading")}
                 </h2>
                 <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
-                  Explore our stunning portfolio of creative excellence
+                  {t("landing.gallery.images.subheading")}
                 </p>
               </motion.div>
             </div>
@@ -695,12 +683,12 @@ export default function LandingPage() {
                 className="flex justify-center"
               >
                 <Image
-                  src="/images/nabarawy.png"
+                  src="/images/nabarawy.gif"
                   alt="Nabarawy Animation"
-                  width={400}
-                  height={400}
+                  width={600}
+                  height={600}
                   unoptimized
-                  className="w-64 sm:w-80 md:w-96 h-64 sm:h-80 md:h-96 object-contain drop-shadow-2xl filter saturate-110"
+                  className="w-64 sm:w-80 md:w-[600px] h-64 sm:h-80 md:h-[600px] object-contain drop-shadow-2xl filter saturate-110"
                 />
               </motion.div>
 
@@ -714,22 +702,34 @@ export default function LandingPage() {
                 <h2
                   className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-8 sm:mb-12`}
                 >
-                  By The Numbers
+                  {t("landing.stats.heading")}
                 </h2>
 
                 <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   {[
-                    { num: "4.9", label: "Happy Clients", color: "from-cyan-500 to-blue-500" },
-                    { num: "+500", label: "Expert Creators", color: "from-pink-500 to-purple-500" },
-                    { num: "100%", label: "Quality Score", color: "from-cyan-400 to-pink-400" },
+                    {
+                      num: "4.9",
+                      labelKey: "landing.stats.happyClients",
+                      color: "from-cyan-500 to-blue-500",
+                    },
+                    {
+                      num: "+500",
+                      labelKey: "landing.stats.expertCreators",
+                      color: "from-pink-500 to-purple-500",
+                    },
+                    {
+                      num: "100%",
+                      labelKey: "landing.stats.qualityScore",
+                      color: "from-cyan-400 to-pink-400",
+                    },
                     {
                       num: "+31",
-                      label: "Portfolio Items",
+                      labelKey: "landing.stats.portfolioItems",
                       color: "from-purple-400 to-orange-400",
                     },
                   ].map((stat) => (
                     <motion.div
-                      key={`stat-${stat.label}`}
+                      key={`stat-${stat.labelKey}`}
                       variants={fadeInUp}
                       className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-700/50 bg-black/50 hover:border-cyan-500/30 hover:bg-black/70 transition-all"
                     >
@@ -738,7 +738,7 @@ export default function LandingPage() {
                       >
                         {stat.num}
                       </div>
-                      <p className={`${FONT_SIZES.body.small} text-gray-400`}>{stat.label}</p>
+                      <p className={`${FONT_SIZES.body.small} text-gray-400`}>{t(stat.labelKey)}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -760,10 +760,10 @@ export default function LandingPage() {
               <h2
                 className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
               >
-                Simple, transparent pricing
+                {t("landing.pricing.heading")}
               </h2>
               <p className={`${FONT_SIZES.body.normal} text-gray-400`}>
-                Choose the perfect plan for your needs
+                {t("landing.pricing.subheading")}
               </p>
             </motion.div>
 
@@ -806,7 +806,7 @@ export default function LandingPage() {
                           {getLocalizedText(pkg.name, pkg.nameI18n)}
                         </h3>
                         <p className={`${FONT_SIZES.body.small} text-gray-400 mb-6 flex-grow`}>
-                          {pkg.credits} Credits
+                          {pkg.credits} {t("common.credits")}
                         </p>
 
                         <div
@@ -819,7 +819,9 @@ export default function LandingPage() {
                           >
                             ${pkg.price}
                           </div>
-                          <p className={`${FONT_SIZES.body.small} text-gray-500`}>per month</p>
+                          <p className={`${FONT_SIZES.body.small} text-gray-500`}>
+                            {t("landing.pricing.perMonth")}
+                          </p>
                         </div>
 
                         <ul className="space-y-2 sm:space-y-3 mb-8 flex-grow">
@@ -840,7 +842,7 @@ export default function LandingPage() {
                           <Button
                             className={`w-full rounded-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white font-bold text-sm sm:text-base`}
                           >
-                            Get Started
+                            {t("common.buttons.getStarted")}
                           </Button>
                         </Link>
                       </div>
@@ -864,10 +866,10 @@ export default function LandingPage() {
               <h2
                 className={`${FONT_SIZES.sectionTitle.primary} ${FONT_WEIGHTS.black} text-white mb-4 sm:mb-6`}
               >
-                Ready to get started?
+                {t("landing.cta.heading")}
               </h2>
               <p className={`${FONT_SIZES.body.normal} text-gray-400 mb-8 sm:mb-10`}>
-                Join thousands of creators using Nabrawy to bring their ideas to life
+                {t("landing.cta.subheading")}
               </p>
 
               <motion.div
@@ -879,7 +881,8 @@ export default function LandingPage() {
               >
                 <Link href="/auth/register">
                   <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-8 sm:px-10 py-2 sm:py-3 text-sm sm:text-base">
-                    Start Free Trial <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                    {t("landing.cta.startTrial")}{" "}
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                   </Button>
                 </Link>
                 <Link href="#pricing">
@@ -887,7 +890,7 @@ export default function LandingPage() {
                     variant="outline"
                     className="rounded-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 px-8 sm:px-10 py-2 sm:py-3 text-sm sm:text-base"
                   >
-                    View Plans
+                    {t("landing.cta.viewPlans")}
                   </Button>
                 </Link>
               </motion.div>
@@ -914,23 +917,23 @@ export default function LandingPage() {
               href="#"
               className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
             >
-              Privacy
+              {t("common.footer.privacy")}
             </Link>
             <Link
               href="#"
               className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
             >
-              Terms
+              {t("common.footer.terms")}
             </Link>
             <Link
               href="#"
               className="hover:text-pink-400 transition-colors text-xs sm:text-sm text-gray-400"
             >
-              Contact
+              {t("common.footer.contact")}
             </Link>
           </div>
 
-          <p className="text-xs sm:text-sm text-gray-400">© 2026 Nabra. All rights reserved.</p>
+          <p className="text-xs sm:text-sm text-gray-400">{t("common.footer.copyright")}</p>
         </div>
       </motion.footer>
 
