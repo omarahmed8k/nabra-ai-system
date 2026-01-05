@@ -439,11 +439,12 @@ export default function LandingPage() {
                 centeredSlides={true}
                 slidesPerView="auto"
                 loop={true}
+                loopAdditionalSlides={3}
                 coverflowEffect={{
-                  rotate: 50,
+                  rotate: 0,
                   stretch: 0,
-                  depth: 400,
-                  modifier: 1,
+                  depth: 100,
+                  modifier: 2.5,
                   slideShadows: true,
                 }}
                 autoplay={{
@@ -459,33 +460,9 @@ export default function LandingPage() {
                   "https://player.vimeo.com/video/1146877824",
                   "https://player.vimeo.com/video/1146877120",
                   "https://player.vimeo.com/video/1146876337",
-                  "https://player.vimeo.com/video/1147327436",
-                  "https://player.vimeo.com/video/1147325925",
-                  "https://player.vimeo.com/video/1147325250",
-                  "https://player.vimeo.com/video/1147323924",
-                  "https://player.vimeo.com/video/1147320566",
-                  "https://player.vimeo.com/video/1147319044",
-                  "https://player.vimeo.com/video/1147306954",
-                  "https://player.vimeo.com/video/1147305069",
-                  "https://player.vimeo.com/video/1147295093",
-                  "https://player.vimeo.com/video/1147303033",
-                  "https://player.vimeo.com/video/1147293615",
-                  "https://player.vimeo.com/video/1147292737",
-                  "https://player.vimeo.com/video/1147291356",
-                  "https://player.vimeo.com/video/1147289707",
-                  "https://player.vimeo.com/video/1147286601",
-                  "https://player.vimeo.com/video/1147282926",
-                  "https://player.vimeo.com/video/1147274345",
-                  "https://player.vimeo.com/video/1147270455",
-                  "https://player.vimeo.com/video/1147268083",
-                  "https://player.vimeo.com/video/1147603986",
-                  "https://player.vimeo.com/video/1147605148",
-                  "https://player.vimeo.com/video/1147617298",
-                  "https://player.vimeo.com/video/1147627544",
-                  "https://player.vimeo.com/video/1147630493",
                 ].map((videoUrl, idx) => (
                   <SwiperSlide key={`video-${idx}`}>
-                    <div className="w-[320px] h-[420px] rounded-[50px] overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+                    <div className="w-[230px] h-[406px] rounded-3xl overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
                       <iframe
                         title={`Video ${idx + 1}`}
                         src={`${videoUrl}?badge=0&autopause=0&player_id=0&app_id=58479&controls=1`}
@@ -529,11 +506,12 @@ export default function LandingPage() {
                 centeredSlides={true}
                 slidesPerView="auto"
                 loop={true}
+                loopAdditionalSlides={3}
                 coverflowEffect={{
-                  rotate: 50,
+                  rotate: 0,
                   stretch: 0,
-                  depth: 400,
-                  modifier: 1,
+                  depth: 100,
+                  modifier: 2.5,
                   slideShadows: true,
                 }}
                 autoplay={{
@@ -543,11 +521,11 @@ export default function LandingPage() {
                 modules={[EffectCoverflow, Autoplay]}
                 className="swiper-3d-images"
               >
-                {Array.from({ length: 12 }).map((_, idx) => (
+                {Array.from({ length: 31 }).map((_, idx) => (
                   <SwiperSlide key={`portfolio-${idx}`}>
                     <div className="w-[320px] h-[420px] rounded-[50px] overflow-hidden border-2 border-pink-500/40 hover:border-cyan-500/60 transition-all shadow-[0_20px_60px_rgba(0,0,0,0.8)] cursor-pointer group">
                       <Image
-                        src={`/images/landing/${(idx % 31) + 1}.jpg`}
+                        src={`/images/landing/${idx + 1}.jpg`}
                         alt={`Portfolio ${idx + 1}`}
                         width={400}
                         height={520}
