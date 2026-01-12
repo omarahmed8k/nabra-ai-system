@@ -334,7 +334,8 @@ export default function LandingPage() {
 
           <div className="flex items-center space-x-2 sm:space-x-3 relative z-10">
             <LanguageSwitcher />
-            <Link href="/auth/login">
+            {/* Authentication is currently disabled - uncomment to enable */}
+            {/* <Link href="/auth/login">
               <Button
                 variant="ghost"
                 className={`text-gray-300 hover:text-white hover:bg-white/5 ${FONT_SIZES.body.small}`}
@@ -350,7 +351,7 @@ export default function LandingPage() {
                   {t("common.buttons.getStarted")}
                 </Button>
               </motion.div>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </motion.header>
@@ -384,14 +385,15 @@ export default function LandingPage() {
                   variants={fadeInUp}
                   className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center w-full sm:w-auto"
                 >
-                  <Link href="/auth/register">
+                  {/* Registration is currently disabled - uncomment to enable */}
+                  {/* <Link href="/auth/register">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                         {t("landing.hero.startFreeTrial")}{" "}
                         <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                       </Button>
                     </motion.div>
-                  </Link>
+                  </Link> */}
                   <Link href="#features">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button
@@ -838,13 +840,14 @@ export default function LandingPage() {
                             ))}
                         </ul>
 
-                        <Link href="/auth/register" className="w-full">
+                        {/* Registration is currently disabled - uncomment to enable */}
+                        {/* <Link href="/auth/register" className="w-full">
                           <Button
                             className={`w-full rounded-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white font-bold text-sm sm:text-base`}
                           >
                             {t("common.buttons.getStarted")}
                           </Button>
-                        </Link>
+                        </Link> */}
                       </div>
                     </motion.div>
                   );
@@ -879,12 +882,13 @@ export default function LandingPage() {
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
               >
-                <Link href="/auth/register">
+                {/* Registration is currently disabled - uncomment to enable */}
+                {/* <Link href="/auth/register">
                   <Button className="rounded-full bg-gradient-to-r from-pink-500 to-cyan-500 hover:opacity-90 text-white font-bold px-8 sm:px-10 py-2 sm:py-3 text-sm sm:text-base">
                     {t("landing.cta.startTrial")}{" "}
                     <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                   </Button>
-                </Link>
+                </Link> */}
                 <Link href="#pricing">
                   <Button
                     variant="outline"

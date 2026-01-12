@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ export default function RegisterPage() {
   const { data: session, status } = useSession();
   const [error, setError] = useState("");
   const t = useTranslations("auth.register");
+  const searchParams = useSearchParams();
+  const isPrivate = searchParams?.get("private") === "true";
 
   // All hooks must be called before any conditional returns
   const registerMutation = trpc.auth.register.useMutation({
@@ -42,7 +45,7 @@ export default function RegisterPage() {
       toast.success(t("accountCreated"), {
         description: t("successMessage"),
       });
-      router.push(`/${locale}/auth/login?registered=true`);
+      router.push(`/${locale}/auth/login?registered=true&private=true`);
     },
     onError: (err) => {
       setError(err.message);
@@ -61,6 +64,13 @@ export default function RegisterPage() {
     setHasWhatsapp(false);
   }, [phoneInput]);
 
+  // Redirect to home if not accessing with private param
+  useEffect(() => {
+    if (!isPrivate) {
+      router.push(`/${locale}`);
+    }
+  }, [isPrivate, router, locale]);
+
   // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
@@ -76,7 +86,7 @@ export default function RegisterPage() {
   }, [status, session, router, locale]);
 
   // Show loading state while checking authentication
-  if (status === "loading") {
+  if (status === "loading" || !isPrivate) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -280,7 +290,7 @@ export default function RegisterPage() {
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
               {t("haveAccount")}{" "}
-              <Link href="/auth/login" className="text-primary hover:underline">
+              <Link href="/auth/login?private=true" className="text-primary hover:underline">
                 {t("signInLink")}
               </Link>
             </p>
