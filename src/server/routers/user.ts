@@ -70,7 +70,7 @@ export const userRouter = router({
 
       return {
         ...user,
-        image: user.image || DEFAULT_AVATAR,
+        image: user.role === "CLIENT" ? user.image : DEFAULT_AVATAR,
       };
     }),
 
@@ -111,17 +111,31 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
+      const existingUser = await ctx.db.user.findUnique({
+        where: { id: userId },
+        select: { role: true, image: true },
+      });
+
+      if (!existingUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const isClient = existingUser.role === "CLIENT";
+
       // If email is being changed, check if it's already taken
       if (input.email) {
         const normalizedEmail = input.email.toLowerCase().trim();
-        const existingUser = await ctx.db.user.findFirst({
+        const conflictingUser = await ctx.db.user.findFirst({
           where: {
             email: normalizedEmail,
             id: { not: userId },
           },
         });
 
-        if (existingUser) {
+        if (conflictingUser) {
           throw new TRPCError({
             code: "CONFLICT",
             message: "Email already in use by another account",
@@ -136,7 +150,8 @@ export const userRouter = router({
           ...(input.email && { email: input.email }),
           ...(input.phone !== undefined && { phone: input.phone }),
           ...(input.hasWhatsapp !== undefined && { hasWhatsapp: input.hasWhatsapp }),
-          ...(input.image !== undefined && { image: input.image }),
+          ...(isClient && input.image !== undefined && { image: input.image }),
+          ...(!isClient && { image: DEFAULT_AVATAR }),
         },
         select: {
           id: true,
@@ -154,7 +169,7 @@ export const userRouter = router({
         message: "Profile updated successfully",
         user: {
           ...updatedUser,
-          image: updatedUser.image || DEFAULT_AVATAR,
+          image: isClient ? updatedUser.image : DEFAULT_AVATAR,
         },
       };
     }),

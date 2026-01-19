@@ -24,11 +24,21 @@ import { showError } from "@/lib/error-handler";
 
 const DEFAULT_AVATAR = "/images/nabarawy.png";
 
+const getInitials = (value?: string | null) =>
+  value
+    ?.trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "?";
+
 export function EditProfileForm() {
   const t = useTranslations("profile.editProfile");
   const { data: profile, isLoading, refetch } = trpc.user.getProfile.useQuery();
   const updateProfile = trpc.user.updateProfile.useMutation();
   const { update: updateSession } = useSession();
+
+  const isClient = profile?.role === "CLIENT";
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,9 +56,10 @@ export function EditProfileForm() {
   // Set form values when profile loads
   useEffect(() => {
     if (!profile) return;
+    const isClientProfile = profile.role === "CLIENT";
     setName(profile.name || "");
     setEmail(profile.email);
-    setProfileImage(profile.image || null);
+    setProfileImage(isClientProfile ? profile.image || null : DEFAULT_AVATAR);
     if (profile.phone) {
       const parts = profile.phone.split(" ");
       if (parts.length > 1 && parts[0].startsWith("+")) {
@@ -116,13 +127,13 @@ export function EditProfileForm() {
         updates.hasWhatsapp = hasWhatsapp;
       }
 
-      if (profileImage && profileImage !== profile?.image) {
+      if (isClient && profileImage && profileImage !== profile?.image) {
         updates.image = profileImage;
       }
 
       const result = await updateProfile.mutateAsync(updates);
 
-      toast.success(result.message);
+      toast.success(t("successMessage"));
 
       // Update NextAuth session with new data
       await updateSession({
@@ -136,6 +147,8 @@ export function EditProfileForm() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isClient) return;
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -147,8 +160,16 @@ export function EditProfileForm() {
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       setProfileImage(data.url);
+
+      const result = await updateProfile.mutateAsync({ image: data.url });
       toast.success(t("uploadMessages.success"));
+
+      await updateSession({
+        ...result.user,
+      });
+      refetch();
     } catch (error) {
+      setProfileImage(isClient ? profile?.image || null : DEFAULT_AVATAR);
       showError(error, t("uploadMessages.failed"));
     } finally {
       setIsUploadingImage(false);
@@ -254,50 +275,52 @@ export function EditProfileForm() {
             <div className="flex items-center gap-3 rounded-md border p-3">
               <Avatar className="h-14 w-14">
                 <AvatarImage
-                  src={profileImage || profile?.image || DEFAULT_AVATAR}
+                  src={isClient ? profileImage || profile?.image || undefined : DEFAULT_AVATAR}
                   alt="Profile avatar"
                 />
-                <AvatarFallback>NB</AvatarFallback>
+                <AvatarFallback>{isClient ? getInitials(name) : "NB"}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">{t("helperText.currentPhoto")}</p>
-                <div className="flex gap-2 mt-2">
-                  <label htmlFor="profileImageInput">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 cursor-pointer"
-                      disabled={isUploadingImage}
-                      onClick={() => document.getElementById("profileImageInput")?.click()}
-                    >
-                      {isUploadingImage ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4" />
-                      )}
-                      {t("buttons.changePhoto")}
-                    </Button>
-                  </label>
-                  {profileImage && profileImage !== profile?.image && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setProfileImage(profile?.image || null)}
-                    >
-                      <X className="h-4 w-4" />
-                      {t("buttons.reset")}
-                    </Button>
-                  )}
-                </div>
+                {isClient && (
+                  <div className="flex gap-2 mt-2">
+                    <label htmlFor="profileImageInput">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 cursor-pointer"
+                        disabled={isUploadingImage}
+                        onClick={() => document.getElementById("profileImageInput")?.click()}
+                      >
+                        {isUploadingImage ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        {t("buttons.changePhoto")}
+                      </Button>
+                    </label>
+                    {profileImage && profileImage !== profile?.image && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setProfileImage(profile?.image || null)}
+                      >
+                        <X className="h-4 w-4" />
+                        {t("buttons.reset")}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
               <input
                 id="profileImageInput"
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={isUploadingImage}
+                disabled={isUploadingImage || !isClient}
                 className="hidden"
               />
             </div>
@@ -310,7 +333,7 @@ export function EditProfileForm() {
               onClick={() => {
                 setName(profile?.name || "");
                 setEmail(profile?.email || "");
-                setProfileImage(profile?.image || null);
+                setProfileImage(isClient ? profile?.image || null : DEFAULT_AVATAR);
                 if (profile?.phone) {
                   const parts = profile.phone.split(" ");
                   if (parts.length > 1 && parts[0].startsWith("+")) {
