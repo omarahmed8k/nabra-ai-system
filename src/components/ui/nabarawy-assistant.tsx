@@ -65,7 +65,7 @@ export function NabarawyAssistant({
           >
             <Button
               onClick={() => setIsOpen(true)}
-              className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary via-purple-500 to-pink-500 hover:opacity-90 shadow-lg hover:shadow-xl transition-all p-0 overflow-hidden group"
+              className="relative w-16 h-16 rounded-full bg-white hover:opacity-90 shadow-lg hover:shadow-xl transition-all p-0 overflow-hidden group"
               aria-label="Open Nabarawy Assistant"
             >
               <motion.div
@@ -84,6 +84,7 @@ export function NabarawyAssistant({
                   alt="Nabarawy"
                   width={64}
                   height={64}
+                  unoptimized
                   className="w-full h-full object-contain"
                 />
               </motion.div>
@@ -147,6 +148,7 @@ export function NabarawyAssistant({
                       alt="Nabarawy"
                       width={48}
                       height={48}
+                      unoptimized
                       className="w-12 h-12 object-contain"
                     />
                   </motion.div>
@@ -277,6 +279,7 @@ export function NabarawyAvatar({ size = 40 }: { readonly size?: number }) {
         alt="Nabarawy"
         width={size}
         height={size}
+        unoptimized
         className="relative z-10 object-contain"
         style={{ width: size, height: size }}
       />

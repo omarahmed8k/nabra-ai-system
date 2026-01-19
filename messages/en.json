@@ -454,6 +454,7 @@
         "featuresPlaceholder": "Feature 1\nFeature 2\nFeature 3",
         "localizedDescription": "Localized Description",
         "localizedFeatures": "Localized Features",
+        "supportAllServices": "Support All Services",
         "includedServices": "Included Services",
         "noServicesConfigured": "No services configured"
       },
@@ -852,6 +853,7 @@
       },
       "buttons": {
         "uploadPhoto": "Upload Photo",
+        "changePhoto": "Change Photo",
         "uploading": "Uploading...",
         "removePhoto": "Remove",
         "reset": "Reset",

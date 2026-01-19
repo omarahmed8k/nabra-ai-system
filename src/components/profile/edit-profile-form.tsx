@@ -147,9 +147,9 @@ export function EditProfileForm() {
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       setProfileImage(data.url);
-      toast.success("Image uploaded successfully");
+      toast.success(t("uploadMessages.success"));
     } catch (error) {
-      showError(error, "Failed to upload image");
+      showError(error, t("uploadMessages.failed"));
     } finally {
       setIsUploadingImage(false);
     }
@@ -276,7 +276,7 @@ export function EditProfileForm() {
                       ) : (
                         <Upload className="h-4 w-4" />
                       )}
-                      Change Photo
+                      {t("buttons.changePhoto")}
                     </Button>
                   </label>
                   {profileImage && profileImage !== profile?.image && (
@@ -287,7 +287,7 @@ export function EditProfileForm() {
                       onClick={() => setProfileImage(profile?.image || null)}
                     >
                       <X className="h-4 w-4" />
-                      Reset
+                      {t("buttons.reset")}
                     </Button>
                   )}
                 </div>

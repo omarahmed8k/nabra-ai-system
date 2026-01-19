@@ -454,6 +454,7 @@
         "featuresPlaceholder": "ميزة 1\nميزة 2\nميزة 3",
         "localizedDescription": "الوصف المترجم",
         "localizedFeatures": "المزايا المترجمة",
+        "supportAllServices": "يشمل جميع الخدمات",
         "includedServices": "الخدمات المتضمنة",
         "noServicesConfigured": "لم يتم تكوين خدمات"
       },
@@ -852,6 +853,7 @@
       },
       "buttons": {
         "uploadPhoto": "رفع الصورة",
+        "changePhoto": "تغيير الصورة",
         "uploading": "جارٍ الرفع...",
         "removePhoto": "إزالة",
         "reset": "إعادة تعيين",
