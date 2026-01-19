@@ -19,7 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { trpc } from "@/lib/trpc/client";
 import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
 import { toast } from "sonner";
-import { Loader2, User, Mail } from "lucide-react";
+import { Loader2, User, Mail, Upload, X } from "lucide-react";
+import { showError } from "@/lib/error-handler";
 
 const DEFAULT_AVATAR = "/images/nabarawy.png";
 
@@ -34,6 +35,8 @@ export function EditProfileForm() {
   const [countryCode, setCountryCode] = useState("+20");
   const [phone, setPhone] = useState("");
   const [hasWhatsapp, setHasWhatsapp] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   useEffect(() => {
     if (phone) return;
@@ -45,6 +48,7 @@ export function EditProfileForm() {
     if (!profile) return;
     setName(profile.name || "");
     setEmail(profile.email);
+    setProfileImage(profile.image || null);
     if (profile.phone) {
       const parts = profile.phone.split(" ");
       if (parts.length > 1 && parts[0].startsWith("+")) {
@@ -69,6 +73,7 @@ export function EditProfileForm() {
         email?: string;
         phone?: string;
         hasWhatsapp?: boolean;
+        image?: string;
       } = {};
 
       if (name === profile?.name) {
@@ -111,6 +116,10 @@ export function EditProfileForm() {
         updates.hasWhatsapp = hasWhatsapp;
       }
 
+      if (profileImage && profileImage !== profile?.image) {
+        updates.image = profileImage;
+      }
+
       const result = await updateProfile.mutateAsync(updates);
 
       toast.success(result.message);
@@ -122,7 +131,27 @@ export function EditProfileForm() {
 
       refetch();
     } catch (error: any) {
-      toast.error(error.message || t("errorMessage"));
+      showError(error, t("errorMessage"));
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      setProfileImage(data.url);
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      showError(error, "Failed to upload image");
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -224,10 +253,53 @@ export function EditProfileForm() {
             </Label>
             <div className="flex items-center gap-3 rounded-md border p-3">
               <Avatar className="h-14 w-14">
-                <AvatarImage src={profile?.image || DEFAULT_AVATAR} alt="Profile avatar" />
+                <AvatarImage
+                  src={profileImage || profile?.image || DEFAULT_AVATAR}
+                  alt="Profile avatar"
+                />
                 <AvatarFallback>NB</AvatarFallback>
               </Avatar>
-              <p className="text-sm text-muted-foreground">{t("helperText.currentPhoto")}</p>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">{t("helperText.currentPhoto")}</p>
+                <div className="flex gap-2 mt-2">
+                  <label htmlFor="profileImageInput">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 cursor-pointer"
+                      disabled={isUploadingImage}
+                      onClick={() => document.getElementById("profileImageInput")?.click()}
+                    >
+                      {isUploadingImage ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      Change Photo
+                    </Button>
+                  </label>
+                  {profileImage && profileImage !== profile?.image && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setProfileImage(profile?.image || null)}
+                    >
+                      <X className="h-4 w-4" />
+                      Reset
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <input
+                id="profileImageInput"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={isUploadingImage}
+                className="hidden"
+              />
             </div>
           </div>
 
@@ -238,6 +310,7 @@ export function EditProfileForm() {
               onClick={() => {
                 setName(profile?.name || "");
                 setEmail(profile?.email || "");
+                setProfileImage(profile?.image || null);
                 if (profile?.phone) {
                   const parts = profile.phone.split(" ");
                   if (parts.length > 1 && parts[0].startsWith("+")) {

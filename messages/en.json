@@ -770,6 +770,7 @@
       "client": "Client",
       "provider": "Provider",
       "brandProviderName": "Nabarawy",
+      "brandClientName": "Client",
       "waitingForProvider": "Waiting for provider",
       "details": "Details",
       "serviceType": "Service Type",
@@ -809,7 +810,7 @@
       "requestCompleted": "This request has been completed. Comments are no longer available."
     },
     "deliverables": {
-      "title": "Provider Deliverables",
+      "title": "Deliverables",
       "badge": "Deliverable",
       "filesLabel": "{count, plural, one {1 file} other {# files}}"
     },

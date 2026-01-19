@@ -90,6 +90,7 @@ export const userRouter = router({
         email: z.string().email("Invalid email address").toLowerCase().optional(),
         phone: phoneWithCountryCodeSchema,
         hasWhatsapp: z.boolean().optional(),
+        image: z.string().min(1, "Invalid image URL").optional(),
       })
     )
     .output(
@@ -135,6 +136,7 @@ export const userRouter = router({
           ...(input.email && { email: input.email }),
           ...(input.phone !== undefined && { phone: input.phone }),
           ...(input.hasWhatsapp !== undefined && { hasWhatsapp: input.hasWhatsapp }),
+          ...(input.image !== undefined && { image: input.image }),
         },
         select: {
           id: true,

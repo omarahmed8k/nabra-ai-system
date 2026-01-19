@@ -770,6 +770,7 @@
       "client": "العميل",
       "provider": "مقدم الخدمة",
       "brandProviderName": "نبراوي",
+      "brandClientName": "العميل",
       "waitingForProvider": "في انتظار مقدم الخدمة",
       "details": "التفاصيل",
       "serviceType": "نوع الخدمة",
@@ -809,7 +810,7 @@
       "requestCompleted": "تم إكمال هذا الطلب. لم تعد التعليقات متاحة."
     },
     "deliverables": {
-      "title": "تسليمات المزود",
+      "title": "التسليمات",
       "badge": "تسليم",
       "filesLabel": "{count, plural, zero {لا توجد ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفاً} other {# ملف}}"
     },

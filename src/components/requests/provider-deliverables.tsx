@@ -21,11 +21,13 @@ interface Comment {
 interface ProviderDeliverablesProps {
   readonly comments: Comment[];
   readonly providerName?: string;
+  readonly providerImage?: string | null;
 }
 
 export function ProviderDeliverables({
   comments,
   providerName = "Provider",
+  providerImage,
 }: ProviderDeliverablesProps) {
   const t = useTranslations("requests.deliverables");
   const locale = useLocale();
@@ -71,16 +73,12 @@ export function ProviderDeliverables({
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-8 w-8 mt-0.5">
-                <AvatarImage src={comment.user.image || ""} />
-                <AvatarFallback>
-                  {getInitials(comment.user.name || comment.user.email || "")}
-                </AvatarFallback>
+                <AvatarImage src={providerImage || ""} />
+                <AvatarFallback>{getInitials(providerName)}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-green-900">
-                    {comment.user.name || providerName}
-                  </span>
+                  <span className="font-medium text-sm text-green-900">{providerName}</span>
                   <Badge variant="default" className="bg-green-700">
                     {t("badge", { defaultValue: "Deliverable" })}
                   </Badge>

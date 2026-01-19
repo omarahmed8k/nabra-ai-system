@@ -221,14 +221,17 @@ export function MessagesCard({
             {comments.map((comment) => {
               const isSystem = comment.type === "SYSTEM";
               let displayName: string;
+              let displayImage: string | null = null;
               if (isSystem) {
                 displayName = t("system");
               } else if (maskProviderNames && comment.user?.role === "PROVIDER") {
                 displayName = tSidebar("brandProviderName");
+                displayImage = "/images/nabarawy.png";
               } else if (maskClientNames && comment.user?.role === "CLIENT") {
-                displayName = tSidebar("client");
+                displayName = tSidebar("brandClientName");
               } else {
                 displayName = comment.user.name || comment.user.email || "";
+                displayImage = comment.user.image || null;
               }
               return (
                 <div
@@ -239,10 +242,8 @@ export function MessagesCard({
                 >
                   {!isSystem && (
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={comment.user.image || ""} />
-                      <AvatarFallback>
-                        {getInitials(comment.user.name || comment.user.email || "")}
-                      </AvatarFallback>
+                      <AvatarImage src={displayImage || ""} />
+                      <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                     </Avatar>
                   )}
                   <div className="flex-1">

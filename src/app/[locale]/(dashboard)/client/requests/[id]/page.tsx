@@ -25,6 +25,7 @@ const ADMIN_WHATSAPP_NUMBER = "+201207401576";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");
+  const tSidebar = useTranslations("requests.sidebar");
   const locale = useLocale();
   const params = useParams();
   const requestId = params?.id as string;
@@ -183,7 +184,8 @@ export default function RequestDetailPage() {
           {/* Provider Deliverables */}
           <ProviderDeliverables
             comments={request.comments as any}
-            providerName={request.provider?.name || "Provider"}
+            providerName={tSidebar("brandProviderName")}
+            providerImage="/images/nabarawy.png"
           />
 
           {/* Service-Specific Q&A Responses */}

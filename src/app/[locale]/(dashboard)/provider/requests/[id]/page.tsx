@@ -27,6 +27,7 @@ export default function ProviderRequestDetailPage() {
   const params = useParams();
   const t = useTranslations("provider.requestDetail");
   const tMessages = useTranslations("requests.messages");
+  const tSidebar = useTranslations("requests.sidebar");
   const locale = useLocale();
   const requestId = params?.id as string;
   const [comment, setComment] = useState("");
@@ -411,7 +412,11 @@ export default function ProviderRequestDetailPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">
-                              {comment.type === "SYSTEM" ? t("messages.system") : comment.user.name}
+                              {comment.type === "SYSTEM"
+                                ? t("messages.system")
+                                : (comment.user as any).role === "CLIENT"
+                                  ? tSidebar("brandClientName")
+                                  : comment.user.name}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {formatDateTime(comment.createdAt, locale)}
