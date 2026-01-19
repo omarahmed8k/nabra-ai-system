@@ -204,15 +204,17 @@ export default function AdminRequestsPage() {
                   variant="compact"
                   actions={
                     <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAssignClick(request)}
-                        className="flex items-center gap-1"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                        {t("actions.assignProvider")}
-                      </Button>
+                      {request.status !== "COMPLETED" && request.status !== "CANCELLED" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAssignClick(request)}
+                          className="flex items-center gap-1"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          {t("actions.assignProvider")}
+                        </Button>
+                      )}
                       <Link href={`/admin/requests/${request.id}`}>
                         <Button variant="ghost" size="sm" className="flex items-center gap-1">
                           <Eye className="h-4 w-4" />
