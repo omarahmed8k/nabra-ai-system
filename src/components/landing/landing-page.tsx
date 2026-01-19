@@ -335,7 +335,7 @@ export default function LandingPage() {
           <div className="flex items-center space-x-2 sm:space-x-3 relative z-10">
             <LanguageSwitcher />
             {/* Authentication is currently disabled - uncomment to enable */}
-            {/* <Link href="/auth/login">
+            <Link href="/auth/login">
               <Button
                 variant="ghost"
                 className={`text-gray-300 hover:text-white hover:bg-white/5 ${FONT_SIZES.body.small}`}
@@ -351,7 +351,7 @@ export default function LandingPage() {
                   {t("common.buttons.getStarted")}
                 </Button>
               </motion.div>
-            </Link> */}
+            </Link>
           </div>
         </div>
       </motion.header>

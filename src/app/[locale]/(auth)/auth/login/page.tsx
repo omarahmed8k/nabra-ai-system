@@ -27,14 +27,14 @@ export default function LoginPage() {
   const t = useTranslations("auth.login");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isPrivate = searchParams?.get("private") === "true";
+  // const isPrivate = searchParams?.get("private") === "true";
 
   // Redirect to home if not accessing with private param
-  useEffect(() => {
-    if (!isPrivate) {
-      router.push(`/${locale}`);
-    }
-  }, [isPrivate, router, locale]);
+  // useEffect(() => {
+  //   if (!isPrivate) {
+  //     router.push(`/${locale}`);
+  //   }
+  // }, [isPrivate, router, locale]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function LoginPage() {
   }, [status, session, router, locale]);
 
   // Show loading state while checking authentication
-  if (status === "loading" || !isPrivate) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -168,7 +168,7 @@ export default function LoginPage() {
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
               {t("noAccount")}{" "}
-              <Link href="/auth/register?private=true" className="text-primary hover:underline">
+              <Link href="/auth/register" className="text-primary hover:underline">
                 {t("signUp")}
               </Link>
             </p>

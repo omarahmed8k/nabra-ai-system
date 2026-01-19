@@ -37,7 +37,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const t = useTranslations("auth.register");
   const searchParams = useSearchParams();
-  const isPrivate = searchParams?.get("private") === "true";
+  // const isPrivate = searchParams?.get("private") === "true";
 
   // All hooks must be called before any conditional returns
   const registerMutation = trpc.auth.register.useMutation({
@@ -45,7 +45,7 @@ export default function RegisterPage() {
       toast.success(t("accountCreated"), {
         description: t("successMessage"),
       });
-      router.push(`/${locale}/auth/login?registered=true&private=true`);
+      router.push(`/${locale}/auth/login?registered=true`);
     },
     onError: (err) => {
       setError(err.message);
@@ -65,11 +65,11 @@ export default function RegisterPage() {
   }, [phoneInput]);
 
   // Redirect to home if not accessing with private param
-  useEffect(() => {
-    if (!isPrivate) {
-      router.push(`/${locale}`);
-    }
-  }, [isPrivate, router, locale]);
+  // useEffect(() => {
+  //   if (!isPrivate) {
+  //     router.push(`/${locale}`);
+  //   }
+  // }, [isPrivate, router, locale]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function RegisterPage() {
   }, [status, session, router, locale]);
 
   // Show loading state while checking authentication
-  if (status === "loading" || !isPrivate) {
+  if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -290,7 +290,7 @@ export default function RegisterPage() {
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
               {t("haveAccount")}{" "}
-              <Link href="/auth/login?private=true" className="text-primary hover:underline">
+              <Link href="/auth/login" className="text-primary hover:underline">
                 {t("signInLink")}
               </Link>
             </p>
