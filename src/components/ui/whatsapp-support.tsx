@@ -3,7 +3,7 @@
 import { MessageCircle } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
-const WHATSAPP_NUMBER = "201207401576";
+const WHATSAPP_NUMBER = "+966506159409";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 
 export function WhatsAppSupport() {

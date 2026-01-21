@@ -21,7 +21,7 @@ import { showError } from "@/lib/error-handler";
 import { resolveLocalizedText } from "@/lib/i18n";
 import { CheckCircle, RotateCcw, Star, CreditCard, MessageCircle } from "lucide-react";
 
-const ADMIN_WHATSAPP_NUMBER = "+201207401576";
+const ADMIN_WHATSAPP_NUMBER = "+966 50 615 9409";
 
 export default function RequestDetailPage() {
   const t = useTranslations("client.requestDetail");

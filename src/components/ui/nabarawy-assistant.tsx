@@ -227,7 +227,7 @@ export function NabarawyAssistant({
                         🚀 {t("getStarted", { defaultValue: "Get Started" })}
                       </Button>
                     </Link>
-                    <a href="https://wa.me/201207401576" target="_blank" rel="noopener noreferrer">
+                    <a href="https://wa.me/966506159409" target="_blank" rel="noopener noreferrer">
                       <Button
                         variant="outline"
                         size="sm"
