@@ -1,0 +1,20 @@
+---
+description: tRPC, Prisma, auth context — aligned with ADVANCED_TECHNICAL and domain model
+globs: src/server/**/*.ts,src/lib/db.ts,src/lib/auth.ts,prisma/**/*
+alwaysApply: false
+---
+
+# tRPC and server layer
+
+## Grounding
+
+- **Domain context** (roles, credits, requests, payments): `docs/ADVANCED_BUSINESS.md`
+- **Implementation map** (context shape, procedures, integrations): `docs/ADVANCED_TECHNICAL.md` § Stack, repository layout, tRPC path
+
+## Conventions
+
+- **Router composition**: Sub-routers in `src/server/routers/`; register in `src/server/routers/_app.ts` (`appRouter`).
+- **Context** (`src/server/trpc.ts`): `db`, `session`, optional `req`, **`locale`** (cookies via `getLocaleFromCookie`). Pass **`ctx.locale`** into `@/lib/notifications/*` and any user-facing server copy (see `docs/ADVANCED_TECHNICAL.md` § Internationalization).
+- **Procedures**: Use `publicProcedure`, `protectedProcedure`, `adminProcedure`, and role middlewares defined in `trpc.ts` (provider/client/admin). Do not bypass with ad-hoc session checks.
+- **Data**: `ctx.db` (Prisma from `@/lib/db`). Schema: `prisma/schema.prisma`. Production: `npm run db:migrate`; local iteration: `db:push` when appropriate.
+- **Errors**: `TRPCError` with correct codes; Zod errors formatted in `trpc.ts` `errorFormatter` for client consumption.

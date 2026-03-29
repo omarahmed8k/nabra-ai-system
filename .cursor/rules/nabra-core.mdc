@@ -1,0 +1,33 @@
+---
+description: Nabra stack, documentation canon, paths, and quality gates (always apply)
+alwaysApply: true
+---
+
+# Nabra AI System — core context
+
+## Documentation canon (read before large changes)
+
+Use these files as **source of truth** for intent and architecture; `.cursor/rules/*.mdc` files distill them for the agent.
+
+| Doc | Purpose |
+|-----|---------|
+| `docs/ADVANCED_BUSINESS.md` | Actors, credits, packages, request lifecycle, payments, notifications at a business level |
+| `docs/ADVANCED_TECHNICAL.md` | Stack, layers, tRPC flow, i18n wiring, cron, caching, env categories, repo map |
+
+| Code (UX / messaging) | Purpose |
+|----------------------|---------|
+| `src/lib/error-handler.ts` | Sonner toasts; optional `t` from `useTranslations`; `errors.*` keys in `messages/en.json` & `messages/ar.json` |
+| `src/lib/notifications/` | Email, in-app, WhatsApp; pass **`locale`** (e.g. from `ctx`) into `notify*` helpers |
+
+If behavior is unclear in code, **prefer aligning with these docs** or update the doc when product intent changes.
+
+## Stack and layout (summary)
+
+- **Stack**: Next.js 16 (App Router, dev **port 3001**), React 18, TypeScript strict, Tailwind + Radix-style UI, tRPC v11 + TanStack Query, Prisma + PostgreSQL, NextAuth v4, next-intl (`en`/`ar`), Zod, Jest, Playwright.
+- **Source**: `src/` only; alias `@/*` → `./src/*`.
+- **Routes**: `src/app/[locale]/` — groups `(auth)`, `(dashboard)`; segments `client/`, `provider/`, `admin/`. Locale + auth: see `docs/ADVANCED_TECHNICAL.md` and `src/proxy.ts`.
+- **API**: tRPC `src/app/api/trpc/[trpc]/route.ts`; OpenAPI/REST bridge under `src/pages/api/rest/` per technical doc.
+
+## Quality gates
+
+Before finishing substantive work: `npm run lint`, `npm run type-check`; broader: `npm run test:ci`, `npm run test:e2e` as appropriate.
