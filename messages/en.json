@@ -51,13 +51,58 @@
     "nav": {
       "features": "Features",
       "gallery": "Gallery",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "clientForm": "Client form",
+      "providerForm": "Provider form"
     },
     "hero": {
-      "title": "Nabrawy",
-      "subtitle": "What can you create with Nabrawy..\nConnect with expert designers, developers, and content creators through our credit-based platform. No negotiations, no surprises just quality work delivered fast.",
+      "title": "Build with Nabarawy",
+      "subtitle": "Describe what you need. We’ll handle the rest.",
+      "socialProof": "Trusted by teams who ship and launch",
+      "promptPlaceholder": "Ask Nabarawy what you need",
+      "promptHint": "Write a quick brief to get started.",
+      "uploadTooltip": "File upload is available after you sign in.",
+      "submitWrongRole": "Sign in with a client account to create a request from here.",
+      "promptRotate0": "Make my Instagram landing page consistent—a neat style, minimalist colors, and content that feels like my identity.",
+      "promptRotate1": "I want a short video that grabs my attention—text on screen, a modern rhythm, and a clear CTA.",
+      "promptRotate2": "I need a simple yet elegant logo suitable for packaging, profiles, and store signage.",
+      "promptRotate3": "Write and record a natural Arabic voiceover—friendly, clear, and confident.",
+      "promptRotate4": "Design a modern QR code menu—easy to read, organized, and Arabic/English.",
+      "promptRotate5": "A simple translation for a simple animated explanation—smooth motion, a genuine story, mobile-friendly.",
+      "promptRotate6": "Create a clean product rendering video—nice lighting, simple movement, and a sophisticated feel.",
       "startFreeTrial": "Start Free Trial",
       "learnMore": "Learn More"
+    },
+    "meet": {
+      "heading": "Meet Nabrawy",
+      "steps": {
+        "start": {
+          "title": "Start with a brief",
+          "description": "Describe what you need or drop in references, screenshots, and docs."
+        },
+        "work": {
+          "title": "Experts get to work",
+          "description": "Vetted professionals take your request and deliver on time with clear communication."
+        },
+        "ship": {
+          "title": "Refine and ship",
+          "description": "Request revisions, approve the work, and launch—simple feedback, predictable outcomes."
+        }
+      }
+    },
+    "forms": {
+      "heading": "Choose your path",
+      "subheading": "Whether you’re hiring or creating, we’ll route you to the right form.",
+      "client": {
+        "title": "I’m a client",
+        "description": "Share what you need and we’ll reply with next steps.",
+        "cta": "Open client form"
+      },
+      "provider": {
+        "title": "I’m a provider",
+        "description": "Send your details and portfolio links — we’ll review and get back to you.",
+        "cta": "Open provider form"
+      }
     },
     "features": {
       "heading": "Everything you need to get work done",
@@ -94,7 +139,8 @@
       }
     },
     "stats": {
-      "heading": "By The Numbers",
+      "heading": "Nabrawy in numbers",
+      "subheading": "Creators and clients turning ideas into shipped work",
       "happyClients": "Happy Clients",
       "expertCreators": "Expert Creators",
       "qualityScore": "Quality Score",
@@ -115,6 +161,42 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "contact": "Contact"
+    }
+  },
+  "forms": {
+    "toast": {
+      "sentTitle": "Sent",
+      "sentDesc": "Thanks — we’ll get back to you soon.",
+      "errorTitle": "Couldn’t send",
+      "errorDesc": "Please try again in a minute."
+    },
+    "actions": {
+      "send": "Send",
+      "sending": "Sending..."
+    },
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone (optional)",
+      "company": "Company (optional)",
+      "website": "Website / links (optional)",
+      "message": "Message"
+    },
+    "client": {
+      "title": "Client form",
+      "subtitle": "Tell us what you need and we’ll reply by email.",
+      "pitchTitle": "The fastest way to get started",
+      "pitchBullet0": "Share your goal and what “done” looks like",
+      "pitchBullet1": "Add links or references (optional)",
+      "pitchBullet2": "We’ll reply with next steps and a clear plan"
+    },
+    "provider": {
+      "title": "Provider form",
+      "subtitle": "Share your details and portfolio — we’ll review and reply by email.",
+      "pitchTitle": "Join our creator network",
+      "pitchBullet0": "Tell us what you’re great at and your experience",
+      "pitchBullet1": "Drop your portfolio / LinkedIn",
+      "pitchBullet2": "We’ll contact you if you’re a good fit"
     }
   },
   "notFound": {
@@ -1152,6 +1234,8 @@
         "description": "Your current package ({name}) does not include any services. Please upgrade to access services.",
         "upgradePackage": "Upgrade Package"
       },
+      "draftRestored": "We added your message from the home page to this request.",
+      "draftTitleFallback": "New request",
       "fields": {
         "serviceType": "Service Type *",
         "serviceTypePlaceholder": "Select a service type",

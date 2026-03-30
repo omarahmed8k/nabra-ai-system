@@ -29,7 +29,7 @@ export default withAuth(
     const isNext = pathname.startsWith("/_next");
     // Special-case favicon: rewrite to existing SVG asset
     if (pathname === "/favicon.ico") {
-      return NextResponse.rewrite(new URL("/images/favicon.svg", req.url));
+      return NextResponse.rewrite(new URL("/images/logo.png", req.url));
     }
 
     const isKnownFile =

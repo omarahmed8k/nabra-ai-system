@@ -4,6 +4,10 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter, Link } from "@/i18n/routing";
 import { useTranslations, useLocale } from "next-intl";
 import { resolveLocalizedText } from "@/lib/i18n";
+import {
+  clearPendingRequestDescription,
+  getPendingRequestDescription,
+} from "@/lib/landing-request-draft";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +42,23 @@ export default function NewRequestPage() {
   const { data: serviceTypes } = trpc.request.getServiceTypes.useQuery();
   const locale = useLocale();
   const { data: subscription } = trpc.subscription.getActive.useQuery();
+
+  useEffect(() => {
+    const draft = getPendingRequestDescription();
+    if (!draft?.trim()) return;
+    setDescription(draft);
+    const firstLine = draft.split("\n")[0]?.trim() ?? "";
+    let nextTitle = firstLine.slice(0, 200);
+    if (nextTitle.length < 5) {
+      nextTitle = draft.trim().slice(0, 200);
+    }
+    if (nextTitle.length < 5) {
+      nextTitle = t("draftTitleFallback");
+    }
+    setTitle(nextTitle.slice(0, 200));
+    clearPendingRequestDescription();
+    toast.success(t("draftRestored"));
+  }, [t]);
 
   const selectedService = useMemo(
     () => serviceTypes?.find((s: { id: string }) => s.id === selectedServiceType),

@@ -106,11 +106,11 @@ export default function DashboardLayout({
         </Button>
         <Link href={basePath} className="flex items-center gap-2 flex-1">
           <Image
-            src="/images/logo.svg"
+            src="/images/logo.png"
             alt="Nabra"
-            width={32}
+            width={48}
             height={32}
-            className="w-auto h-6 sm:h-8"
+            className="w-auto h-10 sm:h-12"
           />
         </Link>
         <div className="flex items-center gap-2">
@@ -134,11 +134,11 @@ export default function DashboardLayout({
           <div className="flex h-14 sm:h-16 items-center gap-2 border-b px-4 sm:px-6">
             <Link href={basePath} className="flex items-center gap-2">
               <Image
-                src="/images/logo.svg"
+                src="/images/logo.png"
                 alt="Nabra"
-                width={32}
+                width={48}
                 height={32}
-                className="w-auto h-6 sm:h-8"
+                className="w-auto h-10 sm:h-12"
               />
             </Link>
           </div>

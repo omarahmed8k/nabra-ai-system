@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CONTINUE_NEW_REQUEST_PATH, parseContinuePath } from "@/lib/landing-request-draft";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,28 +28,22 @@ export default function LoginPage() {
   const t = useTranslations("auth.login");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  // const isPrivate = searchParams?.get("private") === "true";
+  const continuePath = parseContinuePath(searchParams?.get("continue") ?? null);
 
-  // Redirect to home if not accessing with private param
-  // useEffect(() => {
-  //   if (!isPrivate) {
-  //     router.push(`/${locale}`);
-  //   }
-  // }, [isPrivate, router, locale]);
-
-  // Redirect if already logged in
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      // Redirect based on user role, preserving locale
-      if (session.user.role === "SUPER_ADMIN") {
-        router.push(`/${locale}/admin`);
-      } else if (session.user.role === "PROVIDER") {
-        router.push(`/${locale}/provider`);
-      } else {
-        router.push(`/${locale}/client`);
-      }
+    if (status !== "authenticated" || !session?.user) return;
+    if (session.user.role === "CLIENT" && continuePath === CONTINUE_NEW_REQUEST_PATH) {
+      router.replace("/client/requests/new");
+      return;
     }
-  }, [status, session, router, locale]);
+    if (session.user.role === "SUPER_ADMIN") {
+      router.push(`/${locale}/admin`);
+    } else if (session.user.role === "PROVIDER") {
+      router.push(`/${locale}/provider`);
+    } else {
+      router.push(`/${locale}/client`);
+    }
+  }, [status, session, router, locale, continuePath]);
 
   // Show loading state while checking authentication
   if (status === "loading") {
@@ -94,6 +89,12 @@ export default function LoginPage() {
         description: t("successLogin"),
       });
 
+      const afterLoginContinue = parseContinuePath(searchParams?.get("continue") ?? null);
+      if (session?.user?.role === "CLIENT" && afterLoginContinue === CONTINUE_NEW_REQUEST_PATH) {
+        globalThis.location.href = `/${locale}/client/requests/new`;
+        return;
+      }
+
       // Redirect based on user role with full page reload to ensure proper session initialization
       if (session?.user?.role === "SUPER_ADMIN") {
         globalThis.location.href = `/${locale}/admin`;
@@ -123,7 +124,7 @@ export default function LoginPage() {
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
                 <Image
-                  src="/images/favicon.svg"
+                  src="/images/logo.png"
                   alt="Nabra"
                   width={48}
                   height={48}
@@ -166,12 +167,21 @@ export default function LoginPage() {
                 {isLoading ? t("signingIn") : t("signInButton")}
               </Button>
             </motion.div>
+            {/*
             <p className="text-sm text-muted-foreground text-center">
               {t("noAccount")}{" "}
-              <Link href="/auth/register" className="text-primary hover:underline">
+              <Link
+                href={
+                  continuePath
+                    ? `/auth/register?continue=${encodeURIComponent(continuePath)}`
+                    : "/auth/register"
+                }
+                className="text-primary hover:underline"
+              >
                 {t("signUp")}
               </Link>
             </p>
+            */}
           </CardFooter>
         </form>
       </Card>

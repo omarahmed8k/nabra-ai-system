@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
 import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
+import { CONTINUE_NEW_REQUEST_PATH, parseContinuePath } from "@/lib/landing-request-draft";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const t = useTranslations("auth.register");
   const searchParams = useSearchParams();
-  // const isPrivate = searchParams?.get("private") === "true";
+  const continueAfterAuth = parseContinuePath(searchParams?.get("continue") ?? null);
 
   // All hooks must be called before any conditional returns
   const registerMutation = trpc.auth.register.useMutation({
@@ -45,7 +46,11 @@ export default function RegisterPage() {
       toast.success(t("accountCreated"), {
         description: t("successMessage"),
       });
-      router.push(`/${locale}/auth/login?registered=true`);
+      const qs = new URLSearchParams({ registered: "true" });
+      if (continueAfterAuth) {
+        qs.set("continue", continueAfterAuth);
+      }
+      router.push(`/auth/login?${qs.toString()}`);
     },
     onError: (err) => {
       setError(err.message);
@@ -64,26 +69,21 @@ export default function RegisterPage() {
     setHasWhatsapp(false);
   }, [phoneInput]);
 
-  // Redirect to home if not accessing with private param
-  // useEffect(() => {
-  //   if (!isPrivate) {
-  //     router.push(`/${locale}`);
-  //   }
-  // }, [isPrivate, router, locale]);
-
   // Redirect if already logged in
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      // Redirect based on user role
-      if (session.user.role === "SUPER_ADMIN") {
-        router.push(`/${locale}/admin`);
-      } else if (session.user.role === "PROVIDER") {
-        router.push(`/${locale}/provider`);
-      } else {
-        router.push(`/${locale}/client`);
-      }
+    if (status !== "authenticated" || !session?.user) return;
+    if (session.user.role === "CLIENT" && continueAfterAuth === CONTINUE_NEW_REQUEST_PATH) {
+      router.replace("/client/requests/new");
+      return;
     }
-  }, [status, session, router, locale]);
+    if (session.user.role === "SUPER_ADMIN") {
+      router.push(`/${locale}/admin`);
+    } else if (session.user.role === "PROVIDER") {
+      router.push(`/${locale}/provider`);
+    } else {
+      router.push(`/${locale}/client`);
+    }
+  }, [status, session, router, locale, continueAfterAuth]);
 
   // Show loading state while checking authentication
   if (status === "loading") {
@@ -160,7 +160,7 @@ export default function RegisterPage() {
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
                 <Image
-                  src="/images/favicon.svg"
+                  src="/images/logo.png"
                   alt="Nabra"
                   width={48}
                   height={48}
@@ -290,7 +290,14 @@ export default function RegisterPage() {
             </motion.div>
             <p className="text-sm text-muted-foreground text-center">
               {t("haveAccount")}{" "}
-              <Link href="/auth/login" className="text-primary hover:underline">
+              <Link
+                href={
+                  continueAfterAuth
+                    ? `/auth/login?continue=${encodeURIComponent(continueAfterAuth)}`
+                    : "/auth/login"
+                }
+                className="text-primary hover:underline"
+              >
                 {t("signInLink")}
               </Link>
             </p>

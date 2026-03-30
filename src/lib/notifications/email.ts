@@ -6,6 +6,7 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
 }
 
 // Create reusable transporter
@@ -20,8 +21,9 @@ function getTransporter() {
     port: Number.parseInt(process.env.EMAIL_PORT || "587"),
     secure: process.env.EMAIL_SECURE === "true",
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.EMAIL_USER?.trim(),
+      // Gmail app passwords are often copied with spaces; strip whitespace safely.
+      pass: process.env.EMAIL_PASSWORD?.replaceAll(/\s+/g, ""),
     },
   };
 
@@ -29,7 +31,13 @@ function getTransporter() {
   return transporter;
 }
 
-export async function sendEmail({ to, subject, html, text }: EmailOptions): Promise<boolean> {
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  text,
+  replyTo,
+}: EmailOptions): Promise<boolean> {
   // Skip if email is not configured
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
     console.warn("Email not configured. Skipping email notification.");
@@ -42,6 +50,7 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions): Prom
     await transport?.sendMail({
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to,
+      replyTo,
       subject,
       html,
       text: text || html.replaceAll(/<[^>]*>/g, ""), // Strip HTML if no text provided
@@ -124,7 +133,7 @@ export async function getStatusChangeEmailTemplate(
 
 export async function getAssignmentEmailTemplate(
   requestTitle: string,
-  providerName: string,
+  _providerName: string,
   locale: string = "en"
 ) {
   const subject = await getTranslation(locale, "notifications.assignment.emailSubject", {

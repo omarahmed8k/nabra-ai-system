@@ -138,8 +138,8 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       if (hasPermission && notification.title) {
         new Notification(notification.title, {
           body: notification.message,
-          icon: "/favicon.ico",
-          badge: "/favicon.ico",
+          icon: "/images/logo.png",
+          badge: "/images/logo.png",
         });
       }
     },
