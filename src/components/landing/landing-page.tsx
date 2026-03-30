@@ -1,12 +1,11 @@
 "use client";
 
-import { Link, useRouter } from "@/i18n/routing";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useRef, useMemo } from "react";
 import type { ComponentType } from "react";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
@@ -24,11 +23,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
-import {
-  clearPendingRequestDescription,
-  CONTINUE_NEW_REQUEST_PATH,
-  setPendingRequestDescription,
-} from "@/lib/landing-request-draft";
+import { setPendingRequestDescription } from "@/lib/landing-request-draft";
 
 // Typography (Lovable-style: large hero, restrained body)
 const FONT_SIZES = {
@@ -144,14 +139,17 @@ export default function LandingPage() {
   const locale = useLocale();
   const t = useTranslations();
   const isRTL = locale === "ar";
-  const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
 
   const [packages, setPackages] = useState<Package[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
   const [heroPrompt, setHeroPrompt] = useState("");
+  const [heroReply, setHeroReply] = useState("");
+  const [heroLoadingReply, setHeroLoadingReply] = useState(false);
+  const [heroTypingReply, setHeroTypingReply] = useState(false);
   const [promptRotateIndex, setPromptRotateIndex] = useState(0);
   const videoGalleryRef = useRef<HTMLDivElement>(null);
+  const heroReplyScrollRef = useRef<HTMLDivElement>(null);
+  const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: packagesData } = trpc.admin.getPublicPackages.useQuery(undefined, {
     enabled: true,
@@ -231,19 +229,127 @@ export default function LandingPage() {
     return () => clearInterval(id);
   }, [heroPrompt, promptRotations.length]);
 
-  const handleHeroSubmit = () => {
-    const text = heroPrompt.trim();
-    setPendingRequestDescription(text);
-    if (sessionStatus === "authenticated" && session?.user) {
-      if (session.user.role === "CLIENT") {
-        router.push("/client/requests/new");
-        return;
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
       }
-      clearPendingRequestDescription();
-      toast.info(t("landing.hero.submitWrongRole"));
-      return;
+    };
+  }, []);
+
+  useEffect(() => {
+    const replyLength = heroReply.length;
+    if (replyLength === 0) return;
+    if (!heroReplyScrollRef.current) return;
+    heroReplyScrollRef.current.scrollTop = heroReplyScrollRef.current.scrollHeight;
+  }, [heroReply]);
+
+  const startTypingReply = (fullReply: string) => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
     }
-    router.push(`/auth/login?continue=${encodeURIComponent(CONTINUE_NEW_REQUEST_PATH)}`);
+
+    setHeroReply("");
+    setHeroTypingReply(true);
+
+    let i = 0;
+    typingIntervalRef.current = setInterval(() => {
+      i += 1;
+      setHeroReply(fullReply.slice(0, i));
+
+      if (i >= fullReply.length) {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setHeroTypingReply(false);
+      }
+    }, 16);
+  };
+
+  const renderReplyWithLinks = (text: string) => {
+    const nodes: React.ReactNode[] = [];
+    const regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    let lastIndex = 0;
+    for (;;) {
+      const match = regex.exec(text);
+      if (!match) break;
+
+      const [fullMatch, label, href] = match;
+      const start = match.index;
+
+      if (start > lastIndex) {
+        nodes.push(text.slice(lastIndex, start));
+      }
+
+      nodes.push(
+        <a
+          key={`hero-link-${start}-${href}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-zinc-500 underline-offset-4 transition-colors hover:text-white"
+        >
+          {label}
+        </a>
+      );
+
+      lastIndex = start + fullMatch.length;
+    }
+
+    if (lastIndex < text.length) {
+      nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes;
+  };
+
+  const handleHeroSubmit = async () => {
+    const text = heroPrompt.trim();
+    if (!text || heroLoadingReply) return;
+
+    setPendingRequestDescription(text);
+
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+
+    setHeroPrompt("");
+    setHeroReply("");
+    setHeroTypingReply(false);
+    setHeroLoadingReply(true);
+
+    try {
+      const response = await fetch("/api/landing/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: text,
+          locale,
+        }),
+      });
+
+      const data = (await response.json()) as { reply?: string; error?: string };
+
+      if (!response.ok || !data.reply) {
+        throw new Error(data.error || "Chat request failed");
+      }
+
+      startTypingReply(data.reply);
+    } catch (error) {
+      toast.error(
+        locale === "ar"
+          ? "تعذر توليد الرد الآن. حاول مرة أخرى."
+          : "Could not generate a reply right now. Please try again."
+      );
+      console.error("Landing chat error:", error);
+    } finally {
+      setHeroLoadingReply(false);
+    }
   };
 
   return (
@@ -324,8 +430,12 @@ export default function LandingPage() {
 
       <main className="relative z-10">
         {/* Hero — Lovable-style: headline + prompt shell */}
-        <section className="relative flex min-h-[100svh] flex-col justify-center px-4 pb-20 pt-28 sm:px-6 lg:px-10">
+        <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden px-4 pb-20 pt-28 sm:px-6 lg:px-10">
+          <div className="pointer-events-none absolute inset-x-0 top-[-24%] h-[58%] bg-[radial-gradient(ellipse_65%_58%_at_50%_0%,rgba(8,8,10,0.95),rgba(8,8,10,0.68)_50%,transparent)]" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.06),transparent)]" />
+          <div className="pointer-events-none absolute left-[-18%] top-[52%] h-[26rem] w-[26rem] rounded-full bg-[#824d7c]/35 blur-3xl sm:h-[34rem] sm:w-[34rem]" />
+          <div className="pointer-events-none absolute right-[-20%] top-[46%] h-[24rem] w-[24rem] rounded-full bg-[#5db9ba]/30 blur-3xl sm:h-[32rem] sm:w-[32rem]" />
+          <div className="pointer-events-none absolute inset-x-0 -bottom-40 h-[72%] bg-[radial-gradient(ellipse_75%_56%_at_50%_100%,rgba(130,77,124,0.28),rgba(93,185,186,0.19)_44%,transparent_76%)]" />
           <div className="relative mx-auto flex w-full max-w-3xl flex-col items-center text-center">
             <motion.p
               initial={{ opacity: 0, y: 12 }}
@@ -340,7 +450,19 @@ export default function LandingPage() {
               transition={{ delay: 0.05 }}
               className={`${FONT_SIZES.hero.title} text-white`}
             >
-              {t("landing.hero.title")}
+              <span className="inline-flex items-center justify-center gap-3 sm:gap-4">
+                <span className="relative h-14 w-14 sm:h-28 sm:w-28">
+                  <Image
+                    src="/images/logo.png"
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 3.5rem, 7rem"
+                    className="object-contain drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
+                    aria-hidden="true"
+                  />
+                </span>
+                <span>{t("landing.hero.title")}</span>
+              </span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
@@ -355,7 +477,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-10 w-full max-w-2xl rounded-2xl border border-white/10 bg-[#141414] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
+              className="mt-10 w-full max-w-5xl rounded-2xl border border-white/10 bg-[#141414]/95 p-3 shadow-[0_20px_80px_rgba(130,77,124,0.25),0_14px_56px_rgba(93,185,186,0.18),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-sm"
             >
               <div className="relative min-h-[5.5rem]">
                 <textarea
@@ -367,7 +489,7 @@ export default function LandingPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      handleHeroSubmit();
+                      void handleHeroSubmit();
                     }
                   }}
                   aria-label={t("landing.hero.promptPlaceholder")}
@@ -417,14 +539,42 @@ export default function LandingPage() {
                   </span>
                   <button
                     type="button"
-                    onClick={handleHeroSubmit}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-600 text-white transition-colors hover:bg-zinc-500"
+                    onClick={() => void handleHeroSubmit()}
+                    disabled={heroLoadingReply || !heroPrompt.trim()}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-600 text-white transition-colors hover:bg-zinc-500 disabled:cursor-not-allowed disabled:opacity-55"
                     aria-label={t("common.buttons.getStarted")}
                   >
-                    <ArrowUp className="h-4 w-4" />
+                    {heroLoadingReply ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ArrowUp className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
+
+              {(heroLoadingReply || heroReply || heroTypingReply) && (
+                <div className="mt-2 rounded-xl border border-white/[0.07] bg-black/20 px-4 py-3 text-left">
+                  <p className="mb-1 text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                    {locale === "ar" ? "رد نبراوي" : "Nabarawy reply"}
+                  </p>
+                  {heroLoadingReply ? (
+                    <div className="flex items-center gap-2 text-sm text-zinc-400">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{locale === "ar" ? "جاري التفكير..." : "Thinking..."}</span>
+                    </div>
+                  ) : (
+                    <div ref={heroReplyScrollRef} className="max-h-56 overflow-y-auto pr-1">
+                      <p className="whitespace-pre-wrap text-sm leading-7 text-zinc-200">
+                        {renderReplyWithLinks(heroReply)}
+                        {heroTypingReply ? (
+                          <span className="ml-0.5 inline-block animate-pulse text-zinc-400">|</span>
+                        ) : null}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
             <p className="mt-4 max-w-md text-xs text-zinc-600">{t("landing.hero.promptHint")}</p>
           </div>
@@ -908,7 +1058,7 @@ export default function LandingPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.45 }}
-        className="relative z-10 mt-12 border-t border-white/[0.06] bg-[#0a0a0a] py-10 sm:py-12"
+        className="relative z-10 border-t border-white/[0.06] bg-[#0a0a0a] py-10 sm:py-12"
       >
         <div className="container flex flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row">
           <div className="flex items-center gap-2">
