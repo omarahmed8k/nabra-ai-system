@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { NotificationPermissionBanner } from "@/components/ui/notification-permission-banner";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { ThemeSwitcher } from "@/components/ui/theme-switcher";
 import { NabarawyAssistant } from "@/components/ui/nabarawy-assistant";
 import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import {
@@ -114,6 +115,7 @@ export default function DashboardLayout({
           />
         </Link>
         <div className="flex items-center gap-2">
+          <ThemeSwitcher />
           <LanguageSwitcher />
           {unreadCount > 0 && (
             <Badge variant="destructive" className="h-5 min-w-5 px-1 text-xs">
@@ -203,6 +205,7 @@ export default function DashboardLayout({
               </div>
             </div>
             <div className="space-y-2">
+              <ThemeSwitcher />
               <LanguageSwitcher />
               <Button
                 variant="outline"

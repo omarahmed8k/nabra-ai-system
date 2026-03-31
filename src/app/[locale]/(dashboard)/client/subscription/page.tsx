@@ -116,7 +116,7 @@ export default function SubscriptionPage() {
             </div>
 
             {subscription.isExpiring && (
-              <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center gap-2 text-orange-800">
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
                 <AlertCircle className="h-4 w-4" />
                 <span>
                   {t("currentSubscription.expiringWarning", { days: subscription.daysRemaining })}
@@ -132,10 +132,10 @@ export default function SubscriptionPage() {
         </Card>
       )}
       {!isLoading && !subscription && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
-            <CardTitle className="text-orange-800">{t("noSubscription.title")}</CardTitle>
-            <CardDescription className="text-orange-700">
+            <CardTitle className="text-primary">{t("noSubscription.title")}</CardTitle>
+            <CardDescription className="text-muted-foreground">
               {t("noSubscription.description")}
             </CardDescription>
           </CardHeader>

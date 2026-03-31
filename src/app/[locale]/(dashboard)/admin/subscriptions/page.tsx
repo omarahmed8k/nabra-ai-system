@@ -103,28 +103,28 @@ export default function AdminSubscriptionsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("stats.active")}</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CheckCircle className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-primary">{stats.active}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("stats.expired")}</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-600" />
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.expired}</div>
+            <div className="text-2xl font-bold text-muted-foreground">{stats.expired}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("stats.cancelled")}</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
+            <XCircle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.cancelled}</div>
           </CardContent>
         </Card>
         <Card>
@@ -207,20 +207,10 @@ export default function AdminSubscriptionsPage() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium">{sub.user.name || sub.user.email}</h3>
-                          {isActive && (
-                            <Badge className="bg-green-100 text-green-800">
-                              {t("badges.active")}
-                            </Badge>
-                          )}
-                          {isExpired && (
-                            <Badge className="bg-yellow-100 text-yellow-800">
-                              {t("badges.expired")}
-                            </Badge>
-                          )}
+                          {isActive && <Badge variant="success">{t("badges.active")}</Badge>}
+                          {isExpired && <Badge variant="warning">{t("badges.expired")}</Badge>}
                           {isCancelled && (
-                            <Badge className="bg-red-100 text-red-800">
-                              {t("badges.cancelled")}
-                            </Badge>
+                            <Badge variant="destructive">{t("badges.cancelled")}</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{sub.user.email}</p>

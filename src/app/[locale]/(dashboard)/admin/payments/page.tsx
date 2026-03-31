@@ -240,9 +240,11 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{t("stats.pending")}</p>
-                    <p className="text-3xl font-bold text-orange-600">{stats?.pending || 0}</p>
+                    <p className="text-3xl font-bold text-muted-foreground">
+                      {stats?.pending || 0}
+                    </p>
                   </div>
-                  <Clock className="h-8 w-8 text-orange-600" />
+                  <Clock className="h-8 w-8 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
@@ -251,9 +253,9 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{t("stats.approved")}</p>
-                    <p className="text-3xl font-bold text-green-600">{stats?.approved || 0}</p>
+                    <p className="text-3xl font-bold text-primary">{stats?.approved || 0}</p>
                   </div>
-                  <CheckCircle2 className="h-8 w-8 text-green-600" />
+                  <CheckCircle2 className="h-8 w-8 text-primary" />
                 </div>
               </CardContent>
             </Card>
@@ -262,9 +264,9 @@ export default function AdminPaymentsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">{t("stats.rejected")}</p>
-                    <p className="text-3xl font-bold text-red-600">{stats?.rejected || 0}</p>
+                    <p className="text-3xl font-bold text-destructive">{stats?.rejected || 0}</p>
                   </div>
-                  <XCircle className="h-8 w-8 text-red-600" />
+                  <XCircle className="h-8 w-8 text-destructive" />
                 </div>
               </CardContent>
             </Card>
@@ -306,7 +308,7 @@ export default function AdminPaymentsPage() {
               {pendingLoading && <Skeleton className="h-48" />}
               {!pendingLoading && !pendingPayments?.length && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                  <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-primary" />
                   <p>{t("empty.noPending")}</p>
                 </div>
               )}
@@ -448,9 +450,11 @@ export default function AdminPaymentsPage() {
               )}
 
               {selectedPayment.status === "REJECTED" && selectedPayment.rejectionReason && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600 font-medium">{t("details.rejectionReason")}</p>
-                  <p className="text-red-800">{selectedPayment.rejectionReason}</p>
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive font-medium">
+                    {t("details.rejectionReason")}
+                  </p>
+                  <p className="text-foreground">{selectedPayment.rejectionReason}</p>
                 </div>
               )}
             </div>

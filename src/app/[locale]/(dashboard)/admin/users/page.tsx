@@ -162,7 +162,7 @@ function UserStatsProvider({
       </div>
       {averageRating !== null && averageRating !== undefined && (
         <div className="flex items-center gap-2 text-sm">
-          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+          <Star className="h-4 w-4 text-primary fill-primary" />
           <div>
             <p className="font-medium">{averageRating.toFixed(1)}</p>
             <p className="text-xs text-muted-foreground">
@@ -491,13 +491,13 @@ export default function AdminUsersPage() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "SUPER_ADMIN":
-        return "bg-red-100 text-red-800";
+        return "bg-destructive/15 text-destructive";
       case "PROVIDER":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/15 text-primary";
       case "CLIENT":
-        return "bg-green-100 text-green-800";
+        return "bg-[#5db9ba]/15 text-[#5db9ba]";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -690,28 +690,28 @@ export default function AdminUsersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("filters.client")}</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
+            <Users className="h-4 w-4 text-[#5db9ba]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.clients}</div>
+            <div className="text-2xl font-bold text-[#5db9ba]">{stats.clients}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("filters.provider")}</CardTitle>
-            <Star className="h-4 w-4 text-blue-600" />
+            <Star className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.providers}</div>
+            <div className="text-2xl font-bold text-primary">{stats.providers}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("filters.admin")}</CardTitle>
-            <CheckCircle className="h-4 w-4 text-red-600" />
+            <CheckCircle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.admins}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.admins}</div>
           </CardContent>
         </Card>
       </div>

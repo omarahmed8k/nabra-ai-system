@@ -50,14 +50,14 @@ export function truncate(str: string, length: number): string {
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    DELIVERED: "bg-purple-100 text-purple-800",
-    REVISION_REQUESTED: "bg-orange-100 text-orange-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    CANCELLED: "bg-red-100 text-red-800",
+    PENDING: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
+    IN_PROGRESS: "bg-primary/15 text-primary",
+    DELIVERED: "bg-[#5db9ba]/15 text-[#5db9ba]",
+    REVISION_REQUESTED: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    COMPLETED: "bg-green-500/15 text-green-600 dark:text-green-400",
+    CANCELLED: "bg-destructive/15 text-destructive",
   };
-  return colors[status] || "bg-gray-100 text-gray-800";
+  return colors[status] || "bg-muted text-muted-foreground";
 }
 
 export function getStatusLabel(status: string): string {

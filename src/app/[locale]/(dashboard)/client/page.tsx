@@ -131,10 +131,10 @@ export default function ClientDashboard() {
 
       {/* No subscription warning */}
       {!isLoading && !subscription && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
-            <CardTitle className="text-orange-800">{t("noSubscription.title")}</CardTitle>
-            <CardDescription className="text-orange-700">
+            <CardTitle className="text-primary">{t("noSubscription.title")}</CardTitle>
+            <CardDescription className="text-muted-foreground">
               {t("noSubscription.description")}
             </CardDescription>
           </CardHeader>

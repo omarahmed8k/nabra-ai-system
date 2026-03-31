@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/routing";
+import { usePathname } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 
 const locales = [
@@ -11,7 +11,6 @@ const locales = [
 
 export function LanguageSwitcher() {
   const locale = useLocale();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Toggle to the other language
@@ -29,7 +28,8 @@ export function LanguageSwitcher() {
       pathWithoutLocale = remaining ? `/${remaining}` : "/";
     }
 
-    router.replace(pathWithoutLocale, { locale: targetLocale });
+    const newPath = `/${targetLocale}${pathWithoutLocale === "/" ? "" : pathWithoutLocale}`;
+    globalThis.location.href = newPath;
   };
 
   return (

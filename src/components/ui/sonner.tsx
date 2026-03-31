@@ -2,17 +2,19 @@
 
 import { Toaster as Sonner } from "sonner";
 import { useLocale } from "next-intl";
+import { useTheme } from "@/components/providers/theme-provider";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const locale = useLocale();
+  const { theme } = useTheme();
   const isRtl = locale === "ar";
   const fontClass = isRtl ? "font-cairo" : "font-lato";
 
   return (
     <Sonner
-      theme="light"
+      theme={theme}
       className="toaster group"
       dir={isRtl ? "rtl" : "ltr"}
       toastOptions={{

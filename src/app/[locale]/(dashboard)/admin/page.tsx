@@ -34,15 +34,15 @@ import {
   Line,
 } from "recharts";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+const COLORS = ["#824d7c", "#5db9ba", "#d400ff", "#a06898", "#4aafb0", "#c060b0"];
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "#FFBB28",
-  IN_PROGRESS: "#8884d8",
-  DELIVERED: "#00C49F",
-  REVISION_REQUESTED: "#FF8042",
-  COMPLETED: "#0088FE",
-  CANCELLED: "#ff4444",
+  PENDING: "#c09040",
+  IN_PROGRESS: "#824d7c",
+  DELIVERED: "#5db9ba",
+  REVISION_REQUESTED: "#c07040",
+  COMPLETED: "#509060",
+  CANCELLED: "#c04040",
 };
 
 export default function AdminDashboard() {
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
                 <span className="font-medium">{provider.name}</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-primary" />
                 <span className="font-bold">{provider.completedRequests}</span>
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">{t("stats.averageRating")}</CardTitle>
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Star className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             {statsLoading ? (
@@ -252,9 +252,9 @@ export default function AdminDashboard() {
                   <Line
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#0088FE"
+                    stroke="#824d7c"
                     strokeWidth={2}
-                    dot={{ fill: "#0088FE" }}
+                    dot={{ fill: "#824d7c" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="#824d7c" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -387,7 +387,7 @@ export default function AdminDashboard() {
                     <XAxis type="number" />
                     <YAxis dataKey="service" type="category" width={100} />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#00C49F" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#5db9ba" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -442,9 +442,7 @@ export default function AdminDashboard() {
             {analyticsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold text-green-600">
-                +{analytics?.recentUsers || 0}
-              </div>
+              <div className="text-2xl font-bold text-primary">+{analytics?.recentUsers || 0}</div>
             )}
           </CardContent>
         </Card>
@@ -460,7 +458,7 @@ export default function AdminDashboard() {
             {analyticsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-primary">
                 +{analytics?.recentRequests || 0}
               </div>
             )}
@@ -478,7 +476,7 @@ export default function AdminDashboard() {
             {statsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-muted-foreground">
                 {stats?.pendingRequests || 0}
               </div>
             )}
@@ -496,9 +494,7 @@ export default function AdminDashboard() {
             {statsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold text-green-600">
-                {stats?.completedRequests || 0}
-              </div>
+              <div className="text-2xl font-bold text-primary">{stats?.completedRequests || 0}</div>
             )}
           </CardContent>
         </Card>

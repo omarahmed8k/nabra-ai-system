@@ -14,16 +14,16 @@
     --popover: 0 0% 5%;
     --popover-foreground: 0 0% 94%;
 
-    --primary: 299 100% 50%;
+    --primary: 307 26% 41%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 94%;
+    --secondary: 181 40% 55%;
+    --secondary-foreground: 0 0% 10%;
 
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 299 100% 50%;
+    --accent: 307 26% 41%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,7 +31,7 @@
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 299 100% 50%;
+    --ring: 307 26% 41%;
 
     --radius: 0.5rem;
   }
@@ -46,16 +46,16 @@
     --popover: 0 0% 5%;
     --popover-foreground: 0 0% 94%;
 
-    --primary: 299 100% 50%;
+    --primary: 307 26% 41%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 94%;
+    --secondary: 181 40% 55%;
+    --secondary-foreground: 0 0% 10%;
 
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 299 100% 50%;
+    --accent: 307 26% 41%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -63,7 +63,37 @@
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 299 100% 50%;
+    --ring: 307 26% 41%;
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 6%;
+
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 6%;
+
+    --popover: 0 0% 97%;
+    --popover-foreground: 0 0% 6%;
+
+    --primary: 307 26% 41%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 181 40% 55%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 307 26% 41%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 86%;
+    --input: 0 0% 86%;
+    --ring: 307 26% 41%;
   }
 }
 
@@ -76,7 +106,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  html.dark {
     color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
   }
 
   /* Ensure all controls inherit the active locale font */
@@ -109,18 +147,22 @@
   }
 
   /* Fix for native date/time/color picker icons in dark mode */
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator,
-  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-  input[type="week"]::-webkit-calendar-picker-indicator,
-  input[type="month"]::-webkit-calendar-picker-indicator {
+  html.dark input[type="date"]::-webkit-calendar-picker-indicator,
+  html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+  html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  html.dark input[type="week"]::-webkit-calendar-picker-indicator,
+  html.dark input[type="month"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
   }
 
   /* Fix for select dropdown in native dialog */
-  dialog {
+  html.dark dialog {
     color-scheme: dark;
+  }
+
+  html.light dialog {
+    color-scheme: light;
   }
 
   /* Ensure proper text color for all inputs */

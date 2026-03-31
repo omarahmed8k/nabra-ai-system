@@ -3,6 +3,7 @@ import { Lato, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { TRPCProvider } from "@/components/providers/trpc-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 // Initialize notification system on server
 import "@/lib/notifications/init";
@@ -52,14 +53,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${lato.variable} ${cairo.variable}`}>
+    <html lang="en" className={`${lato.variable} ${cairo.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="font-sans">
-        <AuthProvider>
-          <TRPCProvider>
-            {/* <ChunkReloadOnError /> */}
-            {children}
-          </TRPCProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <TRPCProvider>
+              {/* <ChunkReloadOnError /> */}
+              {children}
+            </TRPCProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
