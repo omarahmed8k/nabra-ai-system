@@ -221,4 +221,31 @@
   .delay-1000 {
     animation-delay: 1000ms;
   }
+
+  /* Landing gallery: infinite horizontal marquees (duplicate content + translate -50%) */
+  @keyframes landing-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .animate-landing-marquee {
+    animation: landing-marquee var(--landing-marquee-duration, 48s) linear infinite;
+    will-change: transform;
+  }
+
+  .animate-landing-marquee-reverse {
+    animation: landing-marquee var(--landing-marquee-duration, 52s) linear infinite reverse;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-landing-marquee,
+    .animate-landing-marquee-reverse {
+      animation: none;
+    }
+  }
 }

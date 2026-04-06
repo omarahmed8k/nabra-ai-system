@@ -10,28 +10,64 @@ const BodySchema = z.object({
   locale: z.enum(["en", "ar"]).optional().default("en"),
 });
 
-function resolveKnowledgeFilePath() {
-  const configuredPath = "docs/NABARAWY_KNOWLEDGE.md";
-  return path.isAbsolute(configuredPath)
-    ? configuredPath
-    : path.join(process.cwd(), configuredPath);
-}
+const KNOWLEDGE_FILES = [
+  "docs/NABARAWY_KNOWLEDGE.md",
+  "docs/NABARAWY_INTENT_PLAYBOOKS.md",
+] as const;
 
 async function loadKnowledgeBase() {
   try {
-    const filePath = resolveKnowledgeFilePath();
-    const content = await readFile(filePath, "utf8");
-    return content.trim();
+    const parts: string[] = [];
+    for (const rel of KNOWLEDGE_FILES) {
+      const filePath = path.isAbsolute(rel) ? rel : path.join(process.cwd(), rel);
+      try {
+        const content = await readFile(filePath, "utf8");
+        if (content.trim()) parts.push(content.trim());
+      } catch {
+        /* optional file */
+      }
+    }
+    return parts.join("\n\n---\n\n");
   } catch {
     return "";
   }
 }
 
+/** Infer reply language from the user's prompt; fall back to the page locale. */
+function detectPromptLocale(prompt: string, pageLocale: "en" | "ar"): "en" | "ar" {
+  const arabicRe = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+  const latinRe = /[a-zA-Z]/g;
+  const arabicCount = prompt.match(arabicRe)?.length ?? 0;
+  const latinCount = prompt.match(latinRe)?.length ?? 0;
+  if (arabicCount === 0 && latinCount === 0) return pageLocale;
+  if (arabicCount > 0 && latinCount === 0) return "ar";
+  if (latinCount > 0 && arabicCount === 0) return "en";
+  return arabicCount >= latinCount ? "ar" : "en";
+}
+
+function formPageUrl(origin: string, locale: "en" | "ar", kind: "client" | "provider") {
+  return `${origin}/${locale}/forms/${kind}`;
+}
+
 function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: string) {
+  const clientUrl = formPageUrl(origin, locale, "client");
+  const providerUrl = formPageUrl(origin, locale, "provider");
+
   const languageRule =
     locale === "ar"
-      ? "Always respond in Arabic unless the user asks for English."
-      : "Always respond in English unless the user asks for Arabic.";
+      ? "Write the entire response in Arabic (Egyptian casual marketing tone is fine when it fits the playbooks)."
+      : "Write the entire response in English.";
+
+  const playbookIntentRule = [
+    "Intent playbooks (in knowledge base, section 'Intent playbooks'): When the user's message clearly matches one of the listed intents—or a close paraphrase—follow that playbook's tone, pacing, questions, and line breaks.",
+    locale === "ar"
+      ? "For Arabic, mirror the Egyptian casual voice of the Arabic playbook (same energy; do not translate into formal Modern Standard Arabic unless the user writes formally)."
+      : "For English, mirror the English playbook voice (direct, warm, marketing-casual).",
+    "When a playbook applies: do NOT use the mandatory fixed opening line from the default format below. Still end with at least one markdown link to the client form.",
+    "Never output the literal placeholder [LINK]; replace it with a markdown link using an inviting label in the response language.",
+    `All form links MUST use this exact locale prefix in the path: /${locale}/forms/... — use markdown: [label](${clientUrl}) for the main CTA. Add [label](${providerUrl}) when the user is clearly asking about joining as a provider.`,
+    "If no playbook fits, use the default response format rules below.",
+  ].join(" ");
 
   const styleRule =
     locale === "ar"
@@ -42,8 +78,8 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
           "3) Then provide a practical direct answer to the user request.",
           "4) Never use refusal phrasing like 'لا أستطيع' or 'لا يمكنني المساعدة' for normal business/creative requests.",
           "5) If details are incomplete, ask the user to register/login and submit full request details so the team can serve accurately.",
-          `3) End with a registration CTA line that includes a markdown link to client form: [للتجربة والتسجيل](${origin}/forms/client).`,
-          `4) If the user asks about becoming a provider, also include a markdown link: [تسجيل مقدمي الخدمة](${origin}/forms/provider).`,
+          `3) End with a registration CTA line that includes a markdown link to client form: [للتجربة والتسجيل](${clientUrl}).`,
+          `4) If the user asks about becoming a provider, also include a markdown link: [تسجيل مقدمي الخدمة](${providerUrl}).`,
           "5) CTA tone should feel energetic and inviting (example: let's try me now).",
         ].join(" ")
       : [
@@ -53,13 +89,13 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
           "3) Then provide a practical direct answer to the user request.",
           "4) Never use refusal phrasing like 'I can't assist' for normal business/creative requests.",
           "5) If details are incomplete, ask the user to register/login and submit full request details so the team can serve accurately.",
-          `3) End with a registration CTA line that includes a markdown link to client form: [Let's register and try me](${origin}/forms/client).`,
-          `4) If the user asks about becoming a provider, also include a markdown link: [Provider registration](${origin}/forms/provider).`,
+          `3) End with a registration CTA line that includes a markdown link to client form: [Let's register and try me](${clientUrl}).`,
+          `4) If the user asks about becoming a provider, also include a markdown link: [Provider registration](${providerUrl}).`,
           "5) CTA tone should feel energetic and inviting (example: let's try me now).",
         ].join(" ");
 
   const knowledge = knowledgeBase
-    ? knowledgeBase.slice(0, 14000)
+    ? knowledgeBase.slice(0, 60000)
     : "No knowledge file was provided.";
 
   return [
@@ -67,6 +103,8 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
     "Keep answers concise, clear, and practical.",
     "Do not invent unavailable company details. If details are missing, ask for registration/login and full request details instead of refusal-style wording.",
     languageRule,
+    playbookIntentRule,
+    "Default format (only when no intent playbook applies):",
     styleRule,
     "Use the following knowledge base as the primary source of truth:",
     knowledge,
@@ -74,27 +112,62 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
 }
 
 function ensureFormLinks(reply: string, origin: string, locale: "en" | "ar") {
+  const clientUrl = formPageUrl(origin, locale, "client");
+  const providerUrl = formPageUrl(origin, locale, "provider");
   const clientText = locale === "ar" ? "للتجربة والتسجيل" : "Let's register and try me";
   const providerText = locale === "ar" ? "تسجيل مقدمي الخدمة" : "Provider registration";
 
-  const clientLink = `[${clientText}](${origin}/forms/client)`;
-  const providerLink = `[${providerText}](${origin}/forms/provider)`;
+  const clientMd = `[${clientText}](${clientUrl})`;
+  const providerMd = `[${providerText}](${providerUrl})`;
 
-  // Normalize existing markdown links to always use current origin.
-  const normalizedMarkdown = reply
-    .replaceAll(
-      /\[([^\]]+)\]\((?:https?:\/\/[^\s)]+)?\/forms\/client\)/g,
-      (_match, label: string) => `[${label}](${origin}/forms/client)`
-    )
-    .replaceAll(
-      /\[([^\]]+)\]\((?:https?:\/\/[^\s)]+)?\/forms\/provider\)/g,
-      (_match, label: string) => `[${label}](${origin}/forms/provider)`
-    );
+  function rewriteFormHref(hrefRaw: string): string | null {
+    const h = hrefRaw.trim();
+    let pathname: string;
+    try {
+      const u = h.startsWith("/") ? new URL(h, origin) : new URL(h);
+      pathname = u.pathname.replace(/\/+$/, "") || "/";
+    } catch {
+      return null;
+    }
+    if (
+      pathname === "/forms/client" ||
+      pathname === "/en/forms/client" ||
+      pathname === "/ar/forms/client"
+    ) {
+      return clientUrl;
+    }
+    if (
+      pathname === "/forms/provider" ||
+      pathname === "/en/forms/provider" ||
+      pathname === "/ar/forms/provider"
+    ) {
+      return providerUrl;
+    }
+    return null;
+  }
 
-  // Convert bare path mentions to clickable markdown links.
-  return normalizedMarkdown
-    .replaceAll(/(^|[\s(])\/forms\/client\b/g, `$1${clientLink}`)
-    .replaceAll(/(^|[\s(])\/forms\/provider\b/g, `$1${providerLink}`);
+  let out = reply.replaceAll(/\[([^\]]*)\]\(([^)]+)\)/g, (full, label: string, href: string) => {
+    const next = rewriteFormHref(href);
+    return next ? `[${label}](${next})` : full;
+  });
+
+  const originEsc = origin.replaceAll(".", String.raw`\.`);
+  const bareReplacements: Array<[RegExp, string]> = [
+    [/(^|[\s(])\/forms\/client\b/g, `$1${clientMd}`],
+    [/(^|[\s(])\/forms\/provider\b/g, `$1${providerMd}`],
+    [new RegExp(String.raw`(^|[\s(])${originEsc}/(?:en|ar)/forms/client\b`, "g"), `$1${clientMd}`],
+    [
+      new RegExp(String.raw`(^|[\s(])${originEsc}/(?:en|ar)/forms/provider\b`, "g"),
+      `$1${providerMd}`,
+    ],
+    [new RegExp(String.raw`(^|[\s(])${originEsc}/forms/client\b`, "g"), `$1${clientMd}`],
+    [new RegExp(String.raw`(^|[\s(])${originEsc}/forms/provider\b`, "g"), `$1${providerMd}`],
+  ];
+  for (const [re, replacement] of bareReplacements) {
+    out = out.replaceAll(re, replacement);
+  }
+
+  return out;
 }
 
 function parseTemperature(raw?: string) {
@@ -119,6 +192,7 @@ export async function POST(req: Request) {
     }
 
     const origin = new URL(req.url).origin;
+    const replyLocale = detectPromptLocale(body.prompt, body.locale);
     const knowledgeBase = await loadKnowledgeBase();
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const temperature = parseTemperature(process.env.OPENAI_TEMPERATURE);
@@ -137,7 +211,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "system",
-            content: buildSystemPrompt(body.locale, knowledgeBase, origin),
+            content: buildSystemPrompt(replyLocale, knowledgeBase, origin),
           },
           {
             role: "user",
@@ -163,9 +237,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Empty model response" }, { status: 502 });
     }
 
-    const reply = ensureFormLinks(rawReply, origin, body.locale);
+    const reply = ensureFormLinks(rawReply, origin, replyLocale);
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, replyLocale });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });

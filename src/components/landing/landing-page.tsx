@@ -5,7 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useRef, useMemo } from "react";
-import type { ComponentType } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
@@ -22,8 +22,6 @@ import {
   Plus,
   ArrowUp,
   LayoutGrid,
-  ChevronLeft,
-  ChevronRight,
   Play,
   Pause,
   Volume2,
@@ -35,8 +33,10 @@ import { setPendingRequestDescription } from "@/lib/landing-request-draft";
 // Typography (Lovable-style: large hero, restrained body)
 const FONT_SIZES = {
   hero: {
-    title: "text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl",
-    subtitle: "text-base sm:text-lg text-muted-foreground",
+    title:
+      "text-balance text-3xl font-semibold tracking-tight min-[380px]:text-4xl sm:text-5xl md:text-6xl lg:text-7xl",
+    subtitle:
+      "text-[0.9375rem] leading-relaxed text-muted-foreground min-[380px]:text-base sm:text-lg",
   },
   sectionTitle: {
     primary: "text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl",
@@ -133,21 +133,13 @@ const scaleIn = {
 
 const MEET_STEP_KEYS = ["start", "work", "ship"] as const;
 
+/** Single infinite marquee; indices reference `/images/landing/{n}.mp4` */
 const GALLERY_VIDEO_INDICES = [1, 2, 3, 4, 5, 6] as const;
+/** Featured Works — two rows; `/images/landing/{n}.jpg` */
+const GALLERY_IMAGE_ROW_A = [1, 2, 3, 4] as const;
+const GALLERY_IMAGE_ROW_B = [5, 6, 7, 8] as const;
 
-const GALLERY_IMAGE_INDICES = [1, 2, 3, 4, 5, 6, 7, 8] as const;
-
-function getVideoCardsPerView(width: number) {
-  if (width >= 1024) return 4;
-  if (width >= 640) return 2;
-  return 1;
-}
-
-function getVideoDragDelta(offsetX: number, threshold: number) {
-  if (offsetX <= -threshold) return 1;
-  if (offsetX >= threshold) return -1;
-  return 0;
-}
+type HeroChatPhase = "idle" | "awaitingReply" | "showingReply" | "error";
 
 function getVideoPlaybackLabel(locale: string, isPlaying: boolean) {
   if (isPlaying) {
@@ -169,26 +161,22 @@ export default function LandingPage() {
   const t = useTranslations();
   const isRTL = locale === "ar";
   const textDirectionClass = isRTL ? "text-right" : "text-left";
-  const replyScrollPaddingClass = isRTL ? "pl-1" : "pr-1";
   const typingCaretSpacingClass = isRTL ? "mr-0.5" : "ml-0.5";
 
   const [packages, setPackages] = useState<Package[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
   const [heroPrompt, setHeroPrompt] = useState("");
+  const [heroSubmittedPrompt, setHeroSubmittedPrompt] = useState("");
+  const [heroChatPhase, setHeroChatPhase] = useState<HeroChatPhase>("idle");
   const [heroReply, setHeroReply] = useState("");
   const [heroLoadingReply, setHeroLoadingReply] = useState(false);
   const [heroTypingReply, setHeroTypingReply] = useState(false);
   const [promptRotateIndex, setPromptRotateIndex] = useState(0);
-  const [videoCardsPerView, setVideoCardsPerView] = useState(1);
-  const [videoCardWidth, setVideoCardWidth] = useState(0);
-  const [videoSlideIndex, setVideoSlideIndex] = useState(0);
-  const [isVideoDragging, setIsVideoDragging] = useState(false);
   const [videoPlayingState, setVideoPlayingState] = useState<Record<number, boolean>>({});
   const [videoMutedState, setVideoMutedState] = useState<Record<number, boolean>>({});
   const [videoProgressState, setVideoProgressState] = useState<Record<number, number>>({});
-  const videoCarouselViewportRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
-  const videoDragReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Each gallery video may appear twice (marquee duplicate); key `${idx}-${strip}`. */
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const heroReplyScrollRef = useRef<HTMLDivElement>(null);
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -232,62 +220,31 @@ export default function LandingPage() {
   }, [t]);
 
   useEffect(() => {
-    if (heroPrompt.length > 0) return;
+    if (heroChatPhase !== "idle") return;
+    if (heroPrompt.trim().length > 0) return;
     const len = promptRotations.length;
     if (len === 0) return;
     const id = setInterval(() => {
       setPromptRotateIndex((i) => (i + 1) % len);
     }, 4200);
     return () => clearInterval(id);
-  }, [heroPrompt, promptRotations.length]);
-
-  useEffect(() => {
-    const viewport = videoCarouselViewportRef.current;
-    if (!viewport) return;
-
-    const updateVideoLayout = () => {
-      const width = viewport.clientWidth;
-      const cardsPerView = getVideoCardsPerView(width);
-
-      setVideoCardsPerView(cardsPerView);
-      setVideoCardWidth(width > 0 ? width / cardsPerView : 0);
-    };
-
-    updateVideoLayout();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateVideoLayout();
-    });
-
-    resizeObserver.observe(viewport);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const maxIndex = Math.max(0, GALLERY_VIDEO_INDICES.length - videoCardsPerView);
-    setVideoSlideIndex((prev) => Math.min(prev, maxIndex));
-  }, [videoCardsPerView]);
+  }, [heroChatPhase, heroPrompt, promptRotations.length]);
 
   useEffect(() => {
     return () => {
       if (typingIntervalRef.current) {
         clearInterval(typingIntervalRef.current);
       }
-      if (videoDragReleaseTimerRef.current) {
-        clearTimeout(videoDragReleaseTimerRef.current);
-      }
     };
   }, []);
 
   useEffect(() => {
+    if (heroChatPhase !== "showingReply") return;
     const replyLength = heroReply.length;
     if (replyLength === 0) return;
     if (!heroReplyScrollRef.current) return;
     heroReplyScrollRef.current.scrollTop = heroReplyScrollRef.current.scrollHeight;
-  }, [heroReply]);
+  }, [heroChatPhase, heroReply]);
 
   const startTypingReply = (fullReply: string) => {
     if (typingIntervalRef.current) {
@@ -351,17 +308,20 @@ export default function LandingPage() {
   };
 
   const handleHeroSubmit = async () => {
+    if (heroChatPhase !== "idle") return;
     const text = heroPrompt.trim();
     if (!text || heroLoadingReply) return;
 
+    setHeroSubmittedPrompt(text);
+    setHeroPrompt(text);
     setPendingRequestDescription(text);
+    setHeroChatPhase("awaitingReply");
 
     if (typingIntervalRef.current) {
       clearInterval(typingIntervalRef.current);
       typingIntervalRef.current = null;
     }
 
-    setHeroPrompt("");
     setHeroReply("");
     setHeroTypingReply(false);
     setHeroLoadingReply(true);
@@ -384,8 +344,10 @@ export default function LandingPage() {
         throw new Error(data.error || "Chat request failed");
       }
 
+      setHeroChatPhase("showingReply");
       startTypingReply(data.reply);
     } catch (error) {
+      setHeroChatPhase("error");
       toast.error(
         locale === "ar"
           ? "تعذر توليد الرد الآن. حاول مرة أخرى."
@@ -397,50 +359,55 @@ export default function LandingPage() {
     }
   };
 
-  const maxVideoSlideIndex = Math.max(0, GALLERY_VIDEO_INDICES.length - videoCardsPerView);
-
-  const shiftVideoSlides = (delta: number) => {
-    const span = maxVideoSlideIndex + 1;
-    if (span <= 1) {
-      setVideoSlideIndex(0);
-      return;
+  const setGalleryVideoRef = (idx: number, strip: 0 | 1) => (el: HTMLVideoElement | null) => {
+    const key = `${idx}-${strip}`;
+    if (el) {
+      videoRefs.current[key] = el;
+    } else {
+      delete videoRefs.current[key];
     }
+  };
 
-    setVideoSlideIndex((prev) => {
-      const next = prev + delta;
-      return ((next % span) + span) % span;
+  const getGalleryVideos = (idx: number): HTMLVideoElement[] =>
+    ([0, 1] as const)
+      .map((s) => videoRefs.current[`${idx}-${s}`])
+      .filter((x): x is HTMLVideoElement => x != null);
+
+  const toggleVideoPlayback = (idx: number) => {
+    const els = getGalleryVideos(idx);
+    if (els.length === 0) return;
+    const anyPlaying = els.some((v) => !v.paused);
+    els.forEach((el) => {
+      if (anyPlaying) el.pause();
+      else void el.play();
     });
   };
 
-  const toggleVideoPlayback = (idx: number) => {
-    if (isVideoDragging) return;
-
-    const target = videoRefs.current[idx];
-    if (!target) return;
-
-    if (target.paused) {
-      void target.play();
-      return;
-    }
-
-    target.pause();
-  };
-
   const toggleVideoMute = (idx: number) => {
-    const target = videoRefs.current[idx];
-    if (!target) return;
-
-    target.muted = !target.muted;
-    setVideoMutedState((prev) => ({ ...prev, [idx]: target.muted }));
+    const els = getGalleryVideos(idx);
+    const first = els[0];
+    if (!first) return;
+    const nextMuted = !first.muted;
+    els.forEach((el) => {
+      el.muted = nextMuted;
+    });
+    setVideoMutedState((prev) => ({ ...prev, [idx]: nextMuted }));
   };
 
   const seekVideo = (idx: number, progressValue: number) => {
-    const target = videoRefs.current[idx];
-    if (!target || !Number.isFinite(target.duration) || target.duration <= 0) return;
-
-    target.currentTime = (progressValue / 100) * target.duration;
+    const els = getGalleryVideos(idx);
+    if (els.length === 0) return;
+    const duration = els[0].duration;
+    if (!Number.isFinite(duration) || duration <= 0) return;
+    const t = (progressValue / 100) * duration;
+    els.forEach((el) => {
+      el.currentTime = t;
+    });
     setVideoProgressState((prev) => ({ ...prev, [idx]: progressValue }));
   };
+
+  const marqueeDuration = (seconds: number): CSSProperties =>
+    ({ "--landing-marquee-duration": `${seconds}s` }) as CSSProperties;
 
   return (
     <div
@@ -464,7 +431,7 @@ export default function LandingPage() {
         <div className="mx-auto flex h-30 max-w-[1400px] items-center justify-between px-4 sm:h-30 sm:px-6 lg:px-10">
           <Link href="/" className="relative z-10 flex items-center gap-2">
             <Image
-              src="/images/logo.png"
+              src="/images/nabarawy.svg"
               alt="Nabra Logo"
               width={120}
               height={120}
@@ -523,17 +490,47 @@ export default function LandingPage() {
 
       <main className="relative z-10">
         {/* Hero — Lovable-style: headline + prompt shell */}
-        <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden px-4 pb-20 pt-28 sm:px-6 lg:px-10">
-          <div className="pointer-events-none absolute inset-x-0 top-[-24%] h-[58%] bg-[radial-gradient(ellipse_65%_58%_at_50%_0%,rgba(8,8,10,0.95),rgba(8,8,10,0.68)_50%,transparent)]" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.06),transparent)]" />
-          <div className="pointer-events-none absolute left-[-18%] top-[52%] h-[26rem] w-[26rem] rounded-full bg-[#824d7c]/35 blur-3xl sm:h-[34rem] sm:w-[34rem]" />
-          <div className="pointer-events-none absolute right-[-20%] top-[46%] h-[24rem] w-[24rem] rounded-full bg-[#5db9ba]/30 blur-3xl sm:h-[32rem] sm:w-[32rem]" />
-          <div className="pointer-events-none absolute inset-x-0 -bottom-40 h-[72%] bg-[radial-gradient(ellipse_75%_56%_at_50%_100%,rgba(130,77,124,0.28),rgba(93,185,186,0.19)_44%,transparent_76%)]" />
-          <div className="relative mx-auto flex w-full max-w-3xl flex-col items-center text-center">
+        <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden pb-14 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-28 md:pb-24">
+          {/* Full section height + full width — video fills frame; overlays blend top→bottom (no half-screen “strip”) */}
+          <div className="pointer-events-none absolute inset-0 left-1/2 z-0 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden">
+            <video
+              className="absolute inset-0 h-full min-h-full w-full min-w-full object-cover object-bottom"
+              src="/images/hero.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              tabIndex={-1}
+              aria-hidden
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.82) 16%, hsl(var(--background) / 0.42) 36%, hsl(var(--background) / 0.1) 56%, transparent 82%)",
+              }}
+              aria-hidden
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to top, hsl(var(--background) / 0.45) 0%, transparent 48%)",
+              }}
+              aria-hidden
+            />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-[-24%] z-[1] h-[58%] bg-[radial-gradient(ellipse_65%_58%_at_50%_0%,rgba(8,8,10,0.95),rgba(8,8,10,0.68)_50%,transparent)]" />
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.06),transparent)]" />
+          <div className="pointer-events-none absolute left-[-18%] top-[52%] z-[1] h-[26rem] w-[26rem] rounded-full bg-[#824d7c]/35 blur-3xl sm:h-[34rem] sm:w-[34rem]" />
+          <div className="pointer-events-none absolute right-[-20%] top-[46%] z-[1] h-[24rem] w-[24rem] rounded-full bg-[#5db9ba]/30 blur-3xl sm:h-[32rem] sm:w-[34rem]" />
+          <div className="pointer-events-none absolute inset-x-0 -bottom-40 z-[1] h-[72%] bg-[radial-gradient(ellipse_75%_56%_at_50%_100%,rgba(130,77,124,0.28),rgba(93,185,186,0.19)_44%,transparent_76%)]" />
+          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 text-center sm:px-6 md:px-8 lg:px-10 xl:max-w-[90rem] xl:px-12">
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 max-w-md text-sm text-muted-foreground"
+              className="mb-4 max-w-md px-1 text-sm text-muted-foreground sm:mb-6 sm:px-0"
             >
               {t("landing.hero.socialProof")}
             </motion.p>
@@ -541,27 +538,30 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className={`${FONT_SIZES.hero.title} text-foreground`}
+              className={`w-full max-w-4xl px-1 sm:px-0 ${FONT_SIZES.hero.title} text-foreground`}
             >
-              <span className="inline-flex items-center justify-center gap-3 sm:gap-4">
-                <span className="relative h-14 w-14 sm:h-28 sm:w-28">
+              <span className="inline-flex w-full max-w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 md:gap-5 lg:gap-6">
+                <span className="relative h-12 w-12 shrink-0 sm:h-[4.25rem] sm:w-[4.25rem] md:h-20 md:w-20 lg:h-24 lg:w-24 xl:h-[7rem] xl:w-[7rem]">
                   <Image
-                    src="/images/logo.png"
-                    alt=""
+                    src="/images/nabarawy-animated.gif"
+                    alt="Nabarawy animated"
                     fill
-                    sizes="(max-width: 640px) 3.5rem, 7rem"
-                    className="object-contain drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
+                    sizes="(max-width: 380px) 3rem, (max-width: 640px) 3.5rem, (max-width: 768px) 4.25rem, (max-width: 1024px) 5rem, (max-width: 1280px) 6rem, 7rem"
+                    className="object-contain object-center drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
                     aria-hidden="true"
+                    unoptimized
                   />
                 </span>
-                <span>{t("landing.hero.title")}</span>
+                <span className="min-w-0 w-full max-w-full px-1 leading-[1.12] sm:w-auto sm:max-w-none sm:px-0 sm:leading-[1.15] md:leading-tight">
+                  {t("landing.hero.title")}
+                </span>
               </span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className={`mt-5 max-w-xl whitespace-pre-line ${FONT_SIZES.hero.subtitle}`}
+              className={`mt-4 max-w-xl whitespace-pre-line px-1 sm:mt-5 sm:max-w-2xl sm:px-0 md:mt-6 ${FONT_SIZES.hero.subtitle}`}
             >
               {t("landing.hero.subtitle")}
             </motion.p>
@@ -570,43 +570,94 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-10 w-full max-w-5xl rounded-2xl border border-border bg-card/95 p-3 shadow-[0_20px_80px_rgba(130,77,124,0.25),0_14px_56px_rgba(93,185,186,0.18),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-sm"
+              className="mt-8 w-full max-w-md rounded-2xl border border-border bg-card/95 p-2.5 shadow-[0_20px_80px_rgba(130,77,124,0.25),0_14px_56px_rgba(93,185,186,0.18),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-sm sm:mt-10 sm:max-w-lg sm:p-3 md:max-w-4xl md:p-4"
             >
               <div className="relative min-h-[5.5rem]">
-                <textarea
-                  value={heroPrompt}
-                  onChange={(e) => setHeroPrompt(e.target.value)}
-                  placeholder=" "
-                  rows={3}
-                  className={`relative z-[1] w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-transparent focus:outline-none focus:ring-0 ${textDirectionClass}`}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void handleHeroSubmit();
-                    }
-                  }}
-                  aria-label={t("landing.hero.promptPlaceholder")}
-                />
-                {!heroPrompt && promptRotations.length > 0 && (
+                {heroChatPhase === "showingReply" ? (
                   <div
-                    className={`pointer-events-none absolute inset-0 z-0 flex items-start px-3 py-2 ${textDirectionClass}`}
+                    ref={heroReplyScrollRef}
+                    className={`relative z-[1] max-h-56 overflow-y-auto px-3 py-2 ${textDirectionClass}`}
                   >
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={promptRotateIndex}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.35 }}
-                        className="line-clamp-3 text-sm text-muted-foreground"
-                      >
-                        {promptRotations[promptRotateIndex % promptRotations.length]}
-                      </motion.span>
-                    </AnimatePresence>
+                    <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      {locale === "ar" ? "رد نبراوي" : "Nabarawy reply"}
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">
+                      {renderReplyWithLinks(heroReply)}
+                      {heroTypingReply ? (
+                        <span
+                          className={`${typingCaretSpacingClass} inline-block animate-pulse text-muted-foreground`}
+                        >
+                          |
+                        </span>
+                      ) : null}
+                    </p>
                   </div>
+                ) : (
+                  <>
+                    <textarea
+                      value={heroChatPhase === "idle" ? heroPrompt : heroSubmittedPrompt}
+                      onChange={(e) => {
+                        if (heroChatPhase !== "idle") return;
+                        setHeroPrompt(e.target.value);
+                      }}
+                      readOnly={heroChatPhase !== "idle"}
+                      placeholder=" "
+                      rows={3}
+                      className={`relative z-[1] w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-transparent focus:outline-none focus:ring-0 read-only:cursor-default ${textDirectionClass}`}
+                      onKeyDown={(e) => {
+                        if (heroChatPhase !== "idle") return;
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void handleHeroSubmit();
+                        }
+                      }}
+                      aria-label={t("landing.hero.promptPlaceholder")}
+                    />
+                    {heroChatPhase === "idle" && !heroPrompt && promptRotations.length > 0 && (
+                      <div
+                        className={`pointer-events-none absolute inset-0 z-0 flex items-start px-3 py-2 ${textDirectionClass}`}
+                      >
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={promptRotateIndex}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.35 }}
+                            className="line-clamp-3 text-sm text-muted-foreground"
+                          >
+                            {promptRotations[promptRotateIndex % promptRotations.length]}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    )}
+                    {heroChatPhase === "awaitingReply" && heroLoadingReply && (
+                      <div
+                        className={`pointer-events-none absolute inset-0 z-[2] flex items-center justify-center gap-2 bg-background/40 px-3 backdrop-blur-[2px] ${textDirectionClass}`}
+                      >
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {locale === "ar" ? "جاري التفكير..." : "Thinking..."}
+                        </span>
+                      </div>
+                    )}
+                    {heroChatPhase === "error" && (
+                      <p
+                        className={`relative z-[1] px-3 pb-2 text-sm text-destructive ${textDirectionClass}`}
+                      >
+                        {locale === "ar"
+                          ? "تعذر توليد الرد. حدّث الصفحة للمحاولة مرة أخرى."
+                          : "Could not generate a reply. Refresh the page to try again."}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
-              <div className="flex items-center justify-between border-t border-border px-2 pb-1 pt-2">
+              <div
+                className={`flex items-center justify-between border-t border-border px-2 pb-1 pt-2 ${
+                  heroChatPhase === "idle" ? "" : "opacity-60"
+                }`}
+              >
                 <div className="group relative">
                   <button
                     type="button"
@@ -617,12 +668,14 @@ export default function LandingPage() {
                   >
                     <Plus className="h-5 w-5" />
                   </button>
-                  <span
-                    role="tooltip"
-                    className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-center text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-                  >
-                    {t("landing.hero.uploadTooltip")}
-                  </span>
+                  {heroChatPhase === "idle" ? (
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-center text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+                    >
+                      {t("landing.hero.uploadTooltip")}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-1">
                   <span
@@ -634,7 +687,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => void handleHeroSubmit()}
-                    disabled={heroLoadingReply || !heroPrompt.trim()}
+                    disabled={heroChatPhase !== "idle" || heroLoadingReply || !heroPrompt.trim()}
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#824d7c] to-[#5db9ba] text-white shadow-[0_8px_24px_rgba(130,77,124,0.35)] transition-all hover:scale-[1.03] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-55"
                     aria-label={t("common.buttons.getStarted")}
                   >
@@ -646,41 +699,11 @@ export default function LandingPage() {
                   </button>
                 </div>
               </div>
-
-              {(heroLoadingReply || heroReply || heroTypingReply) && (
-                <div
-                  className={`mt-2 rounded-xl border border-border bg-muted/30 px-4 py-3 ${textDirectionClass}`}
-                >
-                  <p className="mb-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                    {locale === "ar" ? "رد نبراوي" : "Nabarawy reply"}
-                  </p>
-                  {heroLoadingReply ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{locale === "ar" ? "جاري التفكير..." : "Thinking..."}</span>
-                    </div>
-                  ) : (
-                    <div
-                      ref={heroReplyScrollRef}
-                      className={`max-h-56 overflow-y-auto ${replyScrollPaddingClass}`}
-                    >
-                      <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">
-                        {renderReplyWithLinks(heroReply)}
-                        {heroTypingReply ? (
-                          <span
-                            className={`${typingCaretSpacingClass} inline-block animate-pulse text-muted-foreground`}
-                          >
-                            |
-                          </span>
-                        ) : null}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
             </motion.div>
-            <p className="mt-4 max-w-md text-xs text-muted-foreground">
-              {t("landing.hero.promptHint")}
+            <p className="mt-3 max-w-md px-1 text-center text-xs leading-relaxed text-muted-foreground sm:mt-4 sm:px-0">
+              {heroChatPhase === "idle"
+                ? t("landing.hero.promptHint")
+                : t("landing.hero.chatRefreshHint")}
             </p>
           </div>
         </section>
@@ -856,7 +879,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Gallery: looping draggable videos + 8 images */}
+        {/* Gallery: infinite video marquee + dual-row image marquees */}
         <section
           id="gallery"
           className="relative w-full overflow-hidden border-t border-border bg-background py-16 sm:py-24 md:py-32"
@@ -874,173 +897,159 @@ export default function LandingPage() {
               </h2>
               <p className={FONT_SIZES.body.normal}>{t("landing.gallery.videos.subheading")}</p>
             </motion.div>
+          </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUp}
-              className="mx-auto w-full"
-            >
-              <div className="mb-4 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => shiftVideoSlides(-1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/20 text-foreground transition hover:bg-muted/60"
-                  aria-label={locale === "ar" ? "السابق" : "Previous"}
-                >
-                  {isRTL ? (
-                    <ChevronRight className="h-4 w-4" />
-                  ) : (
-                    <ChevronLeft className="h-4 w-4" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => shiftVideoSlides(1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/20 text-foreground transition hover:bg-muted/60"
-                  aria-label={locale === "ar" ? "التالي" : "Next"}
-                >
-                  {isRTL ? (
-                    <ChevronLeft className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            className="mt-8 w-full"
+          >
+            <div className="relative w-full overflow-hidden py-1" dir="ltr">
+              <div
+                className="flex w-max gap-3 sm:gap-4 md:gap-5 animate-landing-marquee"
+                style={marqueeDuration(70)}
+              >
+                {[0, 1].map((strip) => (
+                  <div key={`vstrip-${strip}`} className="flex shrink-0 gap-3 sm:gap-4 md:gap-5">
+                    {GALLERY_VIDEO_INDICES.map((idx) => (
+                      <div
+                        key={`landing-video-${idx}-${strip}`}
+                        className="w-[42vw] max-w-[12rem] shrink-0 sm:w-48 sm:max-w-none md:w-52"
+                      >
+                        <div className="group relative overflow-hidden rounded-2xl border border-border bg-card sm:rounded-3xl">
+                          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(93,185,186,0.16),transparent_55%),radial-gradient(circle_at_70%_80%,rgba(130,77,124,0.14),transparent_55%)]" />
+                          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                          <video
+                            className="aspect-[9/16] w-full object-cover"
+                            ref={setGalleryVideoRef(idx, strip as 0 | 1)}
+                            playsInline
+                            muted={videoMutedState[idx] ?? true}
+                            preload="metadata"
+                            tabIndex={-1}
+                            onClick={() => {
+                              toggleVideoPlayback(idx);
+                            }}
+                            onLoadedMetadata={
+                              strip === 0
+                                ? (event) => {
+                                    const target = event.currentTarget;
+                                    setVideoMutedState((prev) => ({
+                                      ...prev,
+                                      [idx]: target.muted,
+                                    }));
+                                    setVideoProgressState((prev) => ({
+                                      ...prev,
+                                      [idx]: 0,
+                                    }));
+                                  }
+                                : undefined
+                            }
+                            onPlay={
+                              strip === 0
+                                ? () => {
+                                    setVideoPlayingState((prev) => ({
+                                      ...prev,
+                                      [idx]: true,
+                                    }));
+                                  }
+                                : undefined
+                            }
+                            onPause={
+                              strip === 0
+                                ? () => {
+                                    setVideoPlayingState((prev) => ({
+                                      ...prev,
+                                      [idx]: false,
+                                    }));
+                                  }
+                                : undefined
+                            }
+                            onTimeUpdate={
+                              strip === 0
+                                ? (event) => {
+                                    const target = event.currentTarget;
+                                    if (!Number.isFinite(target.duration) || target.duration <= 0)
+                                      return;
+                                    const nextProgress =
+                                      (target.currentTime / target.duration) * 100;
+                                    setVideoProgressState((prev) => ({
+                                      ...prev,
+                                      [idx]: nextProgress,
+                                    }));
+                                  }
+                                : undefined
+                            }
+                          >
+                            <source src={`/images/landing/${idx}.mp4`} type="video/mp4" />
+                          </video>
 
-              <div ref={videoCarouselViewportRef} className="overflow-hidden" dir="ltr">
-                <motion.div
-                  className="flex -mx-2 cursor-grab active:cursor-grabbing"
-                  drag="x"
-                  dragElastic={0.04}
-                  animate={{ x: -(videoSlideIndex * videoCardWidth) }}
-                  transition={{ type: "spring", stiffness: 300, damping: 34 }}
-                  onDragStart={() => {
-                    setIsVideoDragging(true);
-                  }}
-                  onDragEnd={(_event, info) => {
-                    const threshold = Math.max(40, videoCardWidth * 0.12);
+                          <div
+                            className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 pb-3 pt-12"
+                            onPointerDown={(event) => {
+                              event.stopPropagation();
+                            }}
+                          >
+                            <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-white/20">
+                              <input
+                                type="range"
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                value={videoProgressState[idx] ?? 0}
+                                onChange={(event) => {
+                                  seekVideo(idx, Number(event.target.value));
+                                }}
+                                className="h-1 w-full cursor-pointer appearance-none bg-transparent accent-[#5db9ba]"
+                                aria-label={locale === "ar" ? "تقدم الفيديو" : "Video progress"}
+                              />
+                            </div>
 
-                    const dragDelta = getVideoDragDelta(info.offset.x, threshold);
-                    if (dragDelta !== 0) {
-                      shiftVideoSlides(dragDelta);
-                    }
+                            <div className="flex items-center justify-between">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  toggleVideoPlayback(idx);
+                                }}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+                                aria-label={getVideoPlaybackLabel(
+                                  locale,
+                                  videoPlayingState[idx] ?? false
+                                )}
+                              >
+                                {videoPlayingState[idx] ? (
+                                  <Pause className="h-4 w-4" />
+                                ) : (
+                                  <Play className="h-4 w-4" />
+                                )}
+                              </button>
 
-                    if (videoDragReleaseTimerRef.current) {
-                      clearTimeout(videoDragReleaseTimerRef.current);
-                    }
-                    videoDragReleaseTimerRef.current = setTimeout(() => {
-                      setIsVideoDragging(false);
-                      videoDragReleaseTimerRef.current = null;
-                    }, 140);
-                  }}
-                >
-                  {GALLERY_VIDEO_INDICES.map((idx) => (
-                    <div
-                      key={`landing-video-${idx}`}
-                      className="shrink-0 px-2"
-                      style={{ width: videoCardWidth > 0 ? `${videoCardWidth}px` : undefined }}
-                    >
-                      <div className="group relative overflow-hidden rounded-2xl border border-border bg-card sm:rounded-3xl">
-                        <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                        <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(93,185,186,0.16),transparent_55%),radial-gradient(circle_at_70%_80%,rgba(130,77,124,0.14),transparent_55%)]" />
-                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                        <video
-                          className="aspect-[9/16] w-full object-cover"
-                          ref={(el) => {
-                            videoRefs.current[idx] = el;
-                          }}
-                          playsInline
-                          muted={videoMutedState[idx] ?? true}
-                          preload="metadata"
-                          onClick={() => {
-                            toggleVideoPlayback(idx);
-                          }}
-                          onLoadedMetadata={(event) => {
-                            const target = event.currentTarget;
-                            setVideoMutedState((prev) => ({ ...prev, [idx]: target.muted }));
-                            setVideoProgressState((prev) => ({ ...prev, [idx]: 0 }));
-                          }}
-                          onPlay={() => {
-                            setVideoPlayingState((prev) => ({ ...prev, [idx]: true }));
-                          }}
-                          onPause={() => {
-                            setVideoPlayingState((prev) => ({ ...prev, [idx]: false }));
-                          }}
-                          onTimeUpdate={(event) => {
-                            const target = event.currentTarget;
-                            if (!Number.isFinite(target.duration) || target.duration <= 0) return;
-                            const nextProgress = (target.currentTime / target.duration) * 100;
-                            setVideoProgressState((prev) => ({ ...prev, [idx]: nextProgress }));
-                          }}
-                        >
-                          <source src={`/images/landing/${idx}.mp4`} type="video/mp4" />
-                        </video>
-
-                        <div
-                          className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 pb-3 pt-12"
-                          onPointerDown={(event) => {
-                            event.stopPropagation();
-                          }}
-                        >
-                          <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-white/20">
-                            <input
-                              type="range"
-                              min={0}
-                              max={100}
-                              step={0.1}
-                              value={videoProgressState[idx] ?? 0}
-                              onChange={(event) => {
-                                seekVideo(idx, Number(event.target.value));
-                              }}
-                              className="h-1 w-full cursor-pointer appearance-none bg-transparent accent-[#5db9ba]"
-                              aria-label={locale === "ar" ? "تقدم الفيديو" : "Video progress"}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                toggleVideoPlayback(idx);
-                              }}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-                              aria-label={getVideoPlaybackLabel(
-                                locale,
-                                videoPlayingState[idx] ?? false
-                              )}
-                            >
-                              {videoPlayingState[idx] ? (
-                                <Pause className="h-4 w-4" />
-                              ) : (
-                                <Play className="h-4 w-4" />
-                              )}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                toggleVideoMute(idx);
-                              }}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
-                              aria-label={getVideoMuteLabel(locale, videoMutedState[idx] ?? true)}
-                            >
-                              {(videoMutedState[idx] ?? true) ? (
-                                <VolumeX className="h-4 w-4" />
-                              ) : (
-                                <Volume2 className="h-4 w-4" />
-                              )}
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  toggleVideoMute(idx);
+                                }}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
+                                aria-label={getVideoMuteLabel(locale, videoMutedState[idx] ?? true)}
+                              >
+                                {(videoMutedState[idx] ?? true) ? (
+                                  <VolumeX className="h-4 w-4" />
+                                ) : (
+                                  <Volume2 className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </motion.div>
+                    ))}
+                  </div>
+                ))}
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
 
           <div className="container relative z-10 mt-16 px-4 sm:mt-20 sm:px-6 md:mt-24">
             <motion.div
@@ -1061,23 +1070,51 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUp}
-              className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4"
+              className="flex flex-col gap-8 sm:gap-10"
             >
-              {GALLERY_IMAGE_INDICES.map((n) => (
-                <div
-                  key={n}
-                  className="group relative aspect-[4/5] overflow-hidden rounded-lg border border-border transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-[0_18px_70px_rgba(0,0,0,0.55)] sm:rounded-xl"
-                >
-                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[linear-gradient(135deg,rgba(130,77,124,0.18),transparent_45%),linear-gradient(315deg,rgba(93,185,186,0.16),transparent_45%)]" />
-                  <Image
-                    src={`/images/landing/${n}.jpg`}
-                    alt={`Portfolio ${n}`}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                </div>
-              ))}
+              {[GALLERY_IMAGE_ROW_A, GALLERY_IMAGE_ROW_B].map((rowIndices) => {
+                const imgRowKey = rowIndices.join("-");
+                const isFirstImgRow = rowIndices === GALLERY_IMAGE_ROW_A;
+                return (
+                  <div
+                    key={`image-marquee-${imgRowKey}`}
+                    className="relative w-full overflow-hidden py-1"
+                    dir="ltr"
+                  >
+                    <div
+                      className={
+                        isFirstImgRow
+                          ? "flex w-max gap-3 sm:gap-4 md:gap-5 animate-landing-marquee"
+                          : "flex w-max gap-3 sm:gap-4 md:gap-5 animate-landing-marquee-reverse"
+                      }
+                      style={marqueeDuration(isFirstImgRow ? 58 : 64)}
+                    >
+                      {[0, 1].map((strip) => (
+                        <div
+                          key={`imgstrip-${imgRowKey}-${strip}`}
+                          className="flex shrink-0 gap-3 sm:gap-4 md:gap-5"
+                        >
+                          {rowIndices.map((n) => (
+                            <div
+                              key={`landing-img-${imgRowKey}-${n}-${strip}`}
+                              className="group relative aspect-[4/5] w-[38vw] max-w-[11rem] shrink-0 overflow-hidden rounded-lg border border-border transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-[0_18px_70px_rgba(0,0,0,0.55)] sm:w-44 sm:max-w-none md:w-48 sm:rounded-xl"
+                            >
+                              <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[linear-gradient(135deg,rgba(130,77,124,0.18),transparent_45%),linear-gradient(315deg,rgba(93,185,186,0.16),transparent_45%)]" />
+                              <Image
+                                src={`/images/landing/${n}.jpg`}
+                                alt={`Portfolio ${n}`}
+                                fill
+                                sizes="(max-width: 640px) 40vw, 12rem"
+                                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </motion.div>
           </div>
         </section>
@@ -1312,7 +1349,7 @@ export default function LandingPage() {
       >
         <div className="container flex flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row">
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="Nabra Logo" width={120} height={24} />
+            <Image src="/images/nabarawy.svg" alt="Nabra Logo" width={120} height={24} />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
