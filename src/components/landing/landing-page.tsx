@@ -34,7 +34,7 @@ import { setPendingRequestDescription } from "@/lib/landing-request-draft";
 const FONT_SIZES = {
   hero: {
     title:
-      "text-balance text-3xl font-semibold tracking-tight min-[380px]:text-4xl sm:text-5xl md:text-6xl lg:text-7xl",
+      "text-balance text-lg font-semibold tracking-tight min-[380px]:text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-widest",
     subtitle:
       "text-[0.9375rem] leading-relaxed text-muted-foreground min-[380px]:text-base sm:text-lg",
   },
@@ -428,14 +428,21 @@ export default function LandingPage() {
         className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl"
       >
         <div className="h-px w-full bg-gradient-to-r from-transparent via-[#5db9ba]/45 to-transparent" />
-        <div className="mx-auto flex h-30 max-w-[1400px] items-center justify-between px-4 sm:h-30 sm:px-6 lg:px-10">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
           <Link href="/" className="relative z-10 flex items-center gap-2">
             <Image
-              src="/images/nabarawy.svg"
+              src="/images/nabarawy-dark.svg"
               alt="Nabra Logo"
               width={120}
               height={120}
-              className="h-20 w-auto sm:h-24"
+              className="h-8 w-auto dark:hidden sm:h-10 lg:h-11"
+            />
+            <Image
+              src="/images/nabarawy-light.svg"
+              alt="Nabra Logo"
+              width={120}
+              height={120}
+              className="hidden h-8 w-auto dark:block sm:h-10 lg:h-11"
             />
           </Link>
 
@@ -527,44 +534,33 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute right-[-20%] top-[46%] z-[1] h-[24rem] w-[24rem] rounded-full bg-[#5db9ba]/30 blur-3xl sm:h-[32rem] sm:w-[34rem]" />
           <div className="pointer-events-none absolute inset-x-0 -bottom-40 z-[1] h-[72%] bg-[radial-gradient(ellipse_75%_56%_at_50%_100%,rgba(130,77,124,0.28),rgba(93,185,186,0.19)_44%,transparent_76%)]" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 text-center sm:px-6 md:px-8 lg:px-10 xl:max-w-[90rem] xl:px-12">
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 max-w-md px-1 text-sm text-muted-foreground sm:mb-6 sm:px-0"
+              className="mb-4 sm:mb-6"
             >
-              {t("landing.hero.socialProof")}
-            </motion.p>
+              <span className="relative mx-auto block h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-40 lg:w-40">
+                <Image
+                  src="/images/nabarawy-animated.gif"
+                  alt="Nabarawy animated"
+                  fill
+                  sizes="(max-width: 640px) 4rem, (max-width: 768px) 5rem, (max-width: 1024px) 6rem, (max-width: 1280px) 7rem, 7rem"
+                  className="object-contain object-center drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
+                  aria-hidden="true"
+                  unoptimized
+                />
+              </span>
+            </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
               className={`w-full max-w-4xl px-1 sm:px-0 ${FONT_SIZES.hero.title} text-foreground`}
             >
-              <span className="inline-flex w-full max-w-full flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 md:gap-5 lg:gap-6">
-                <span className="relative h-12 w-12 shrink-0 sm:h-[4.25rem] sm:w-[4.25rem] md:h-20 md:w-20 lg:h-24 lg:w-24 xl:h-[7rem] xl:w-[7rem]">
-                  <Image
-                    src="/images/nabarawy-animated.gif"
-                    alt="Nabarawy animated"
-                    fill
-                    sizes="(max-width: 380px) 3rem, (max-width: 640px) 3.5rem, (max-width: 768px) 4.25rem, (max-width: 1024px) 5rem, (max-width: 1280px) 6rem, 7rem"
-                    className="object-contain object-center drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
-                    aria-hidden="true"
-                    unoptimized
-                  />
-                </span>
-                <span className="min-w-0 w-full max-w-full px-1 leading-[1.12] sm:w-auto sm:max-w-none sm:px-0 sm:leading-[1.15] md:leading-tight">
-                  {t("landing.hero.title")}
-                </span>
+              <span className="min-w-0 w-full max-w-full px-1 leading-[1.12] sm:px-0 sm:leading-[1.15] md:leading-tight">
+                {t("landing.hero.title")}
               </span>
             </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className={`mt-4 max-w-xl whitespace-pre-line px-1 sm:mt-5 sm:max-w-2xl sm:px-0 md:mt-6 ${FONT_SIZES.hero.subtitle}`}
-            >
-              {t("landing.hero.subtitle")}
-            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -700,11 +696,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </motion.div>
-            <p className="mt-3 max-w-md px-1 text-center text-xs leading-relaxed text-muted-foreground sm:mt-4 sm:px-0">
-              {heroChatPhase === "idle"
-                ? t("landing.hero.promptHint")
-                : t("landing.hero.chatRefreshHint")}
-            </p>
           </div>
         </section>
 
@@ -1349,7 +1340,20 @@ export default function LandingPage() {
       >
         <div className="container flex flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row">
           <div className="flex items-center gap-2">
-            <Image src="/images/nabarawy.svg" alt="Nabra Logo" width={120} height={24} />
+            <Image
+              src="/images/nabarawy-dark.svg"
+              alt="Nabra Logo"
+              width={120}
+              height={24}
+              className="h-6 w-auto dark:hidden sm:h-7 md:h-8"
+            />
+            <Image
+              src="/images/nabarawy-light.svg"
+              alt="Nabra Logo"
+              width={120}
+              height={24}
+              className="hidden h-6 w-auto dark:block sm:h-7 md:h-8"
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
