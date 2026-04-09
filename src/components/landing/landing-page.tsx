@@ -464,16 +464,16 @@ export default function LandingPage() {
               <Image
                 src="/images/nabarawy-dark.svg"
                 alt="Nabra Logo"
-                width={120}
-                height={120}
-                className="h-8 w-auto dark:hidden sm:h-10 lg:h-11"
+                width={200}
+                height={40}
+                className="h-4 w-auto dark:hidden sm:h-6 lg:h-8"
               />
               <Image
                 src="/images/nabarawy-light.svg"
                 alt="Nabra Logo"
-                width={120}
-                height={120}
-                className="hidden h-8 w-auto dark:block sm:h-10 lg:h-11"
+                width={200}
+                height={40}
+                className="hidden h-4 w-auto dark:block sm:h-6 lg:h-8"
               />
             </Link>
 
