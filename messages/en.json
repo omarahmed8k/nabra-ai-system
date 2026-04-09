@@ -14,7 +14,7 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "contact": "Contact",
-      "copyright": "© 2026 Nabra. All rights reserved."
+      "copyright": "© 2026 Nabarawy. All rights reserved."
     },
     "requestStatus": {
       "PENDING": "Pending",
@@ -45,7 +45,7 @@
     "pricing": "See Pricing",
     "getStarted": "Get Started",
     "contact": "Contact Us",
-    "footer": "Powered by Nabra AI • Always here to help"
+    "footer": "Powered by Nabarawy AI • Always here to help"
   },
   "landing": {
     "nav": {
@@ -75,7 +75,7 @@
       "learnMore": "Learn More"
     },
     "meet": {
-      "heading": "Meet Nabrawy",
+      "heading": "Meet Nabarawy",
       "steps": {
         "start": {
           "title": "Start with a brief",
@@ -140,7 +140,7 @@
       }
     },
     "stats": {
-      "heading": "Nabrawy in numbers",
+      "heading": "Nabarawy in numbers",
       "subheading": "Creators and clients turning ideas into shipped work",
       "happyClients": "Happy Clients",
       "expertCreators": "Expert Creators",
@@ -154,7 +154,7 @@
     },
     "cta": {
       "heading": "Ready to get started?",
-      "subheading": "Join thousands of creators using Nabrawy to bring their ideas to life",
+      "subheading": "Join thousands of creators using Nabarawy to bring their ideas to life",
       "startTrial": "Start Free Trial",
       "viewPlans": "View Plans"
     },
@@ -1651,14 +1651,14 @@
       }
     },
     "welcome": {
-      "title": "Welcome to Nabra AI System! 🎉",
+      "title": "Welcome to Nabarawy! 🎉",
       "message": "Hi {userName}! Your account has been created successfully. Start exploring the platform now.",
-      "emailSubject": "Welcome to Nabra AI System! 🎉",
+      "emailSubject": "Welcome to Nabarawy! 🎉",
       "emailBody": {
-        "heading": "Welcome to Nabra AI System!",
+        "heading": "Welcome to Nabarawy!",
         "subheading": "We're excited to have you on board",
         "greeting": "Hi {userName}! 👋",
-        "intro": "Thank you for joining Nabra AI System. Your account has been created successfully!",
+        "intro": "Thank you for joining Nabarawy. Your account has been created successfully!",
         "quickStartTitle": "🚀 Quick Start Guide",
         "client": {
           "step1Title": "1. Choose a Package",
@@ -1690,8 +1690,8 @@
         "needHelp": "Need help getting started?",
         "emailUs": "📧 Email us at:",
         "contactSupport": "💬 Visit our help center or contact support",
-        "copyright": "© {year} Nabra AI System. All rights reserved.",
-        "disclaimer": "You received this email because you signed up for Nabra AI System."
+        "copyright": "© {year} Nabarawy. All rights reserved.",
+        "disclaimer": "You received this email because you signed up for Nabarawy."
       }
     },
     "paymentVerification": {
@@ -1701,12 +1701,12 @@
   },
   "pwa": {
     "install": {
-      "title": "Install Nabra AI App",
+      "title": "Install Nabarawy App",
       "description": "Add to your home screen for quick access and offline support",
       "installButton": "Install",
       "dismissButton": "Not now",
       "ios": {
-        "title": "Install Nabra AI App",
+        "title": "Install Nabarawy App",
         "intro": "To install this app on iPhone/iPad:",
         "step1": "Tap the Share button or the Options button",
         "step2": "Scroll and tap \"Add to Home Screen\"",

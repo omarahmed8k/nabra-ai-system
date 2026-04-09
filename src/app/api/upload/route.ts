@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -13,7 +13,7 @@ const s3Client = new S3Client({
   forcePathStyle: true,
 });
 
-const BUCKET_NAME = process.env.B2_BUCKET_NAME || "Nabra-AI-System";
+const BUCKET_NAME = process.env.B2_BUCKET_NAME || "Nabarawy";
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -40,7 +40,7 @@ const ALLOWED_TYPES = new Set([
   "video/mpeg",
 ]);
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {

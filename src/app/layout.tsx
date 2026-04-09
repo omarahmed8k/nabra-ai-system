@@ -8,6 +8,10 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 // Initialize notification system on server
 import "@/lib/notifications/init";
 
+const metadataBase = process.env.NEXT_PUBLIC_APP_URL?.startsWith("http")
+  ? new URL(process.env.NEXT_PUBLIC_APP_URL)
+  : new URL("https://nabarawy.tech");
+
 const lato = Lato({
   weight: ["300", "400", "700", "900"],
   subsets: ["latin"],
@@ -21,14 +25,44 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Nabra AI System - Service Marketplace",
+  metadataBase,
+  title: {
+    default: "Nabarawy | Digital Services Marketplace",
+    template: "%s | Nabarawy",
+  },
   description:
-    "Connect with service providers through a credit-based subscription model. Web development, design, video production, and more.",
+    "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
+  applicationName: "Nabarawy",
+  keywords: [
+    "Nabarawy",
+    "digital services",
+    "service marketplace",
+    "creative services",
+    "subscription",
+  ],
+  openGraph: {
+    title: "Nabarawy | Digital Services Marketplace",
+    description:
+      "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
+    siteName: "Nabarawy",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nabarawy | Digital Services Marketplace",
+    description:
+      "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Nabra AI System",
+    title: "Nabarawy",
   },
   formatDetection: {
     telephone: false,
@@ -55,11 +89,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${lato.variable} ${cairo.variable}`} suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){}`,
-          }}
-        />
+        <script>{`try{var t=localStorage.getItem('theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){}`}</script>
       </head>
       <body className="font-sans">
         <ThemeProvider>

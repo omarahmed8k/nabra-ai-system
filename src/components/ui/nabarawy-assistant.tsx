@@ -244,7 +244,7 @@ export function NabarawyAssistant({
               <div className="px-4 py-3 bg-muted/30 border-t">
                 <p className="text-xs text-center text-muted-foreground">
                   {t("footer", {
-                    defaultValue: "Powered by Nabra AI • Always here to help",
+                    defaultValue: "Powered by Nabarawy AI • Always here to help",
                   })}
                 </p>
               </div>

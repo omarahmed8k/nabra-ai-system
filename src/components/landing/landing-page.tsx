@@ -463,14 +463,14 @@ export default function LandingPage() {
             <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2">
               <Image
                 src="/images/nabarawy-dark.svg"
-                alt="Nabra Logo"
+                alt="Nabarawy Logo"
                 width={200}
                 height={40}
                 className="h-4 w-auto dark:hidden sm:h-6 lg:h-8"
               />
               <Image
                 src="/images/nabarawy-light.svg"
-                alt="Nabra Logo"
+                alt="Nabarawy Logo"
                 width={200}
                 height={40}
                 className="hidden h-4 w-auto dark:block sm:h-6 lg:h-8"
@@ -1406,14 +1406,14 @@ export default function LandingPage() {
           <div className="flex shrink-0 items-center gap-2">
             <Image
               src="/images/nabarawy-dark.svg"
-              alt="Nabra Logo"
+              alt="Nabarawy Logo"
               width={120}
               height={24}
               className="h-6 w-auto dark:hidden sm:h-7 md:h-8"
             />
             <Image
               src="/images/nabarawy-light.svg"
-              alt="Nabra Logo"
+              alt="Nabarawy Logo"
               width={120}
               height={24}
               className="hidden h-6 w-auto dark:block sm:h-7 md:h-8"

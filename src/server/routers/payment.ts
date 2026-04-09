@@ -29,10 +29,10 @@ export const paymentRouter = router({
       // Return payment info object that can be localized on the client
       // The client will display these bank details
       return {
-        bankName: "International Bank",
-        accountName: "Nabra AI System",
-        iban: "DE89 3704 0044 0532 0130 00",
-        swiftCode: "COBADEFFXXX",
+        bankName: "National Bank of Kuwait",
+        accountName: "NABRA E BUSINESS SOLUTIONS",
+        iban: "EG490023002302302617611610010",
+        swiftCode: "WABAEGCXXXX",
         currency: "USD",
         note: "Please include your email address in the transfer reference for faster verification.",
       };

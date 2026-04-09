@@ -119,7 +119,7 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
         body: JSON.stringify({
           access_key: web3AccessKey,
           subject: web3Subject,
-          from_name: "Nabra Website Forms",
+          from_name: "Nabarawy Website Forms",
           name: payload.fullName,
           email: payload.email,
           replyto: payload.email,
@@ -174,14 +174,14 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
           <Link href="/" className="flex min-w-0 items-center gap-2">
             <Image
               src="/images/nabarawy-dark.svg"
-              alt="Nabra Logo"
+              alt="Nabarawy Logo"
               width={120}
               height={24}
               className="h-7 w-auto shrink-0 dark:hidden sm:h-8"
             />
             <Image
               src="/images/nabarawy-light.svg"
-              alt="Nabra Logo"
+              alt="Nabarawy Logo"
               width={120}
               height={24}
               className="hidden h-7 w-auto shrink-0 dark:block sm:h-8"

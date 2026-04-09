@@ -125,14 +125,14 @@ export default function LoginPage() {
               <motion.div whileHover={{ scale: 1.1 }}>
                 <Image
                   src="/images/nabarawy-dark.svg"
-                  alt="Nabra Logo"
+                  alt="Nabarawy Logo"
                   width={200}
                   height={40}
                   className="h-10 w-auto dark:hidden"
                 />
                 <Image
                   src="/images/nabarawy-light.svg"
-                  alt="Nabra Logo"
+                  alt="Nabarawy Logo"
                   width={200}
                   height={40}
                   className="hidden h-10 w-auto dark:block"

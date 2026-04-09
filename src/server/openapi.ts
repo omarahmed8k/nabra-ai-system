@@ -9,8 +9,8 @@ extendZodWithOpenApi(z);
 export function buildOpenApiDocument(baseUrl: string) {
   try {
     return generateOpenApiDocument(appRouter, {
-      title: "Nabra AI System API",
-      description: "REST API for Nabra AI System - A credit-based digital services marketplace",
+      title: "Nabarawy API",
+      description: "REST API for Nabarawy - A credit-based digital services marketplace",
       version: "1.0.0",
       baseUrl,
       tags: [
@@ -31,7 +31,7 @@ export function buildOpenApiDocument(baseUrl: string) {
     return {
       openapi: "3.0.3",
       info: {
-        title: "Nabra AI System API",
+        title: "Nabarawy API",
         description: "Fallback OpenAPI spec. Generated without trpc-openapi due to compatibility.",
         version: "1.0.0",
       },

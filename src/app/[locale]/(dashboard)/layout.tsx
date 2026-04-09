@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationPermissionBanner } from "@/components/ui/notification-permission-banner";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
-import { NabarawyAssistant } from "@/components/ui/nabarawy-assistant";
 import { useRealtimeNotifications } from "@/components/providers/notification-provider";
 import {
   LayoutDashboard,
@@ -108,14 +107,14 @@ export default function DashboardLayout({
         <Link href={basePath} className="flex items-center gap-2 flex-1">
           <Image
             src="/images/nabarawy-dark.svg"
-            alt="Nabra Logo"
+            alt="Nabarawy Logo"
             width={200}
             height={40}
             className="h-6 w-auto dark:hidden sm:h-7"
           />
           <Image
             src="/images/nabarawy-light.svg"
-            alt="Nabra Logo"
+            alt="Nabarawy Logo"
             width={200}
             height={40}
             className="hidden h-6 w-auto dark:block sm:h-7"
@@ -144,14 +143,14 @@ export default function DashboardLayout({
             <Link href={basePath} className="flex items-center gap-2">
               <Image
                 src="/images/nabarawy-dark.svg"
-                alt="Nabra Logo"
+                alt="Nabarawy Logo"
                 width={200}
                 height={40}
                 className="h-6 w-auto dark:hidden sm:h-7"
               />
               <Image
                 src="/images/nabarawy-light.svg"
-                alt="Nabra Logo"
+                alt="Nabarawy Logo"
                 width={200}
                 height={40}
                 className="hidden h-6 w-auto dark:block sm:h-7"
@@ -252,9 +251,6 @@ export default function DashboardLayout({
           {children}
         </div>
       </main>
-
-      {/* Nabarawy AI Assistant */}
-      <NabarawyAssistant />
     </div>
   );
 }

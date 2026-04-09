@@ -56,7 +56,7 @@ async function sendViaWeb3Forms(payload: {
     body: JSON.stringify({
       access_key: normalizedAccessKey,
       subject: payload.subject,
-      from_name: "Nabra Website Forms",
+      from_name: "Nabarawy Website Forms",
       name: payload.fullName,
       email: payload.email,
       replyto: payload.email,
