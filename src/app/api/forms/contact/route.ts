@@ -11,7 +11,7 @@ const BodySchema = z.object({
   whatsapp: z.string().min(3).max(50),
   company: z.string().max(120).optional().default(""),
   website: z.string().max(300).optional().default(""),
-  message: z.string().min(10).max(4000),
+  message: z.string().max(4000).optional().default(""),
 });
 
 function escapeHtml(input: string) {
@@ -23,9 +23,60 @@ function escapeHtml(input: string) {
     .replaceAll("'", "&#039;");
 }
 
+async function sendViaWeb3Forms(payload: {
+  subject: string;
+  type: "client" | "provider";
+  fullName: string;
+  email: string;
+  whatsapp: string;
+  company: string;
+  website: string;
+  message: string;
+}) {
+  const accessKey =
+    (payload.type === "client"
+      ? process.env.WEB3FORMS_CLIENT_ACCESS_KEY
+      : process.env.WEB3FORMS_PROVIDER_ACCESS_KEY) || process.env.WEB3FORMS_ACCESS_KEY;
+  const normalizedAccessKey = accessKey?.trim();
+  if (!normalizedAccessKey) return { attempted: false, ok: false as const };
+
+  const details = [
+    `Type: ${payload.type}`,
+    `Name: ${payload.fullName}`,
+    `Email: ${payload.email}`,
+    `WhatsApp: ${payload.whatsapp}`,
+    `Company: ${payload.company || "-"}`,
+    `Website: ${payload.website || "-"}`,
+    `Message: ${payload.message || "-"}`,
+  ].join("\n");
+
+  const res = await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      access_key: normalizedAccessKey,
+      subject: payload.subject,
+      from_name: "Nabra Website Forms",
+      name: payload.fullName,
+      email: payload.email,
+      replyto: payload.email,
+      message: details,
+    }),
+  });
+
+  if (!res.ok) return { attempted: true, ok: false as const };
+  const data = (await res.json()) as { success?: boolean };
+  return { attempted: true, ok: Boolean(data.success) };
+}
+
 export async function POST(req: Request) {
   try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    if (
+      !process.env.WEB3FORMS_CLIENT_ACCESS_KEY &&
+      !process.env.WEB3FORMS_PROVIDER_ACCESS_KEY &&
+      !process.env.WEB3FORMS_ACCESS_KEY &&
+      (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD)
+    ) {
       return NextResponse.json({ ok: false, error: "Email not configured" }, { status: 500 });
     }
 
@@ -36,6 +87,8 @@ export async function POST(req: Request) {
       body.type === "provider"
         ? `Provider form submission — ${body.fullName}`
         : `Client form submission — ${body.fullName}`;
+
+    const hasMessage = body.message.trim().length > 0;
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto; line-height: 1.5;">
@@ -49,18 +102,32 @@ export async function POST(req: Request) {
         </table>
         <h3 style="margin: 18px 0 8px;">Message</h3>
         <div style="white-space: pre-wrap; background: #f7f7f7; border: 1px solid #eee; border-radius: 8px; padding: 12px;">
-          ${escapeHtml(body.message)}
+          ${hasMessage ? escapeHtml(body.message) : "-"}
         </div>
       </div>
     `;
 
-    const recipient = process.env.EMAIL_FROM || process.env.EMAIL_USER;
-    const ok = await sendEmail({
-      to: recipient,
+    const recipient = process.env.CONTACT_FORMS_RECIPIENT || "info@nabarawy.tech";
+    const web3formsResult = await sendViaWeb3Forms({
       subject,
-      html,
-      replyTo: body.email,
+      type: body.type,
+      fullName: body.fullName,
+      email: body.email,
+      whatsapp: body.whatsapp,
+      company: body.company,
+      website: body.website,
+      message: body.message,
     });
+
+    // Keep old SMTP logic as fallback if Web3Forms is unavailable/fails.
+    const ok =
+      web3formsResult.ok ||
+      (await sendEmail({
+        to: recipient,
+        subject,
+        html,
+        replyTo: body.email,
+      }));
 
     if (!ok) {
       return NextResponse.json({ ok: false, error: "Failed to send email" }, { status: 500 });

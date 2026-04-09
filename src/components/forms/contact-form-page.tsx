@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -25,17 +25,53 @@ interface ContactFormPageProps {
   readonly variant: ContactFormVariant;
 }
 
+interface SubmitDebugInfo {
+  source: "web3forms";
+  status: number;
+  ok: boolean;
+  contentType: string | null;
+  requestId: string | null;
+  bodySnippet: string;
+}
+
+async function inspectSubmissionResponse(
+  source: SubmitDebugInfo["source"],
+  response: Response
+): Promise<SubmitDebugInfo> {
+  const contentType = response.headers.get("content-type");
+  const requestId =
+    response.headers.get("x-request-id") ||
+    response.headers.get("x-amzn-requestid") ||
+    response.headers.get("cf-ray");
+  const rawBody = await response
+    .clone()
+    .text()
+    .catch(() => "");
+
+  return {
+    source,
+    status: response.status,
+    ok: response.ok,
+    contentType,
+    requestId,
+    bodySnippet: rawBody.slice(0, 600),
+  };
+}
+
 export function ContactFormPage({ variant }: ContactFormPageProps) {
   const t = useTranslations();
   const [loading, setLoading] = useState(false);
+  const submitLockRef = useRef(false);
   const prefix = variant === "client" ? "forms.client" : "forms.provider";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (loading) return;
+    if (loading || submitLockRef.current) return;
+    submitLockRef.current = true;
     setLoading(true);
+    const formEl = e.currentTarget;
 
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(formEl);
     const getText = (key: string) => {
       const v = formData.get(key);
       return typeof v === "string" ? v.trim() : "";
@@ -51,24 +87,62 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
     };
 
     try {
-      const res = await fetch("/api/forms/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const web3ClientKey =
+        variant === "client"
+          ? process.env.NEXT_PUBLIC_WEB3FORMS_CLIENT_ACCESS_KEY
+          : process.env.NEXT_PUBLIC_WEB3FORMS_PROVIDER_ACCESS_KEY;
+      const web3FallbackKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+      const web3AccessKey = (web3ClientKey || web3FallbackKey || "").trim();
 
-      if (!res.ok) {
-        toast.error(t("forms.toast.errorTitle"), { description: t("forms.toast.errorDesc") });
-        setLoading(false);
+      if (!web3AccessKey) {
+        console.error("[ContactForm] Missing Web3Forms key for variant:", variant);
         return;
       }
 
-      (e.currentTarget as HTMLFormElement).reset();
-      toast.success(t("forms.toast.sentTitle"), { description: t("forms.toast.sentDesc") });
-    } catch {
+      const web3Subject =
+        variant === "provider"
+          ? `Provider form submission — ${payload.fullName}`
+          : `Client form submission — ${payload.fullName}`;
+      const web3Message = [
+        `Type: ${payload.type}`,
+        `Name: ${payload.fullName}`,
+        `Email: ${payload.email}`,
+        `WhatsApp: ${payload.whatsapp}`,
+        `Company: ${payload.company || "-"}`,
+        `Website: ${payload.website || "-"}`,
+        `Message: ${payload.message || "-"}`,
+      ].join("\n");
+
+      const web3Res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: web3AccessKey,
+          subject: web3Subject,
+          from_name: "Nabra Website Forms",
+          name: payload.fullName,
+          email: payload.email,
+          replyto: payload.email,
+          message: web3Message,
+        }),
+      });
+
+      const web3Debug = await inspectSubmissionResponse("web3forms", web3Res);
+      console.info("[ContactForm] submit response", web3Debug);
+
+      if (web3Debug.ok) {
+        formEl.reset();
+        toast.success(t("forms.toast.sentTitle"), { description: t("forms.toast.sentDesc") });
+        return;
+      }
+
+      console.error("[ContactForm] Web3Forms failed", web3Debug);
+    } catch (error) {
+      console.error("[ContactForm] submit exception", error);
       toast.error(t("forms.toast.errorTitle"), { description: t("forms.toast.errorDesc") });
     } finally {
       setLoading(false);
+      submitLockRef.current = false;
     }
   }
 
