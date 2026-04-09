@@ -101,12 +101,19 @@
   * {
     @apply border-border;
   }
+  /*
+   * Horizontal overflow must NOT be set on `body` alone: per CSS overflow rules,
+   * overflow-x other than visible forces overflow-y to compute to `auto`, which
+   * can create a second scroll container (double vertical scrollbars) with `html`.
+   * Clip horizontal overflow on `html` only; keep `body` overflow-y visible so
+   * the document uses a single scroll root.
+   */
   html {
+    overflow-x: hidden;
     scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
   }
 
   html.dark {
@@ -246,6 +253,41 @@
     .animate-landing-marquee,
     .animate-landing-marquee-reverse {
       animation: none;
+    }
+  }
+
+  /*
+   * Hero / first-screen height: prefer dvh over svh.
+   * 100svh can be slightly taller than the visible viewport on some browsers,
+   * which produces a few pixels of unwanted vertical scroll above the fold.
+   */
+  .min-h-landing-screen {
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  /* Full-page hero loader: staggered pulsing circles */
+  @keyframes landing-loader-dot {
+    0%,
+    100% {
+      transform: scale(0.55);
+      opacity: 0.25;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .landing-loader-dot {
+    animation: landing-loader-dot 1.1s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-loader-dot {
+      animation: none;
+      transform: scale(1);
+      opacity: 0.85;
     }
   }
 }

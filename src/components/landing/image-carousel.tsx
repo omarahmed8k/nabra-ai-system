@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles, Zap } from "lucide-react";
 
-const CAROUSEL_IMAGES = Array.from({ length: 31 }, (_, i) => ({
+const CAROUSEL_IMAGES = Array.from({ length: 21 }, (_, i) => ({
   id: i + 1,
   src: `/images/landing/${i + 1}.jpg`,
   alt: `Portfolio image ${i + 1}`,

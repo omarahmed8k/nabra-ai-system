@@ -79,7 +79,7 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
           "4) Never use refusal phrasing like 'لا أستطيع' or 'لا يمكنني المساعدة' for normal business/creative requests.",
           "5) If details are incomplete, ask the user to register/login and submit full request details so the team can serve accurately.",
           `3) End with a registration CTA line that includes a markdown link to client form: [للتجربة والتسجيل](${clientUrl}).`,
-          `4) If the user asks about becoming a provider, also include a markdown link: [تسجيل مقدمي الخدمة](${providerUrl}).`,
+          `4) If the user asks about becoming a provider, also include a markdown link: [تسجيل المبدعين](${providerUrl}).`,
           "5) CTA tone should feel energetic and inviting (example: let's try me now).",
         ].join(" ")
       : [
@@ -115,7 +115,7 @@ function ensureFormLinks(reply: string, origin: string, locale: "en" | "ar") {
   const clientUrl = formPageUrl(origin, locale, "client");
   const providerUrl = formPageUrl(origin, locale, "provider");
   const clientText = locale === "ar" ? "للتجربة والتسجيل" : "Let's register and try me";
-  const providerText = locale === "ar" ? "تسجيل مقدمي الخدمة" : "Provider registration";
+  const providerText = locale === "ar" ? "تسجيل المبدعين" : "Provider registration";
 
   const clientMd = `[${clientText}](${clientUrl})`;
   const providerMd = `[${providerText}](${providerUrl})`;

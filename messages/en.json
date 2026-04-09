@@ -179,25 +179,26 @@
       "fullName": "Full name",
       "email": "Email",
       "phone": "Phone (optional)",
+      "whatsapp": "WhatsApp number",
       "company": "Company (optional)",
       "website": "Website / links (optional)",
       "message": "Message"
     },
     "client": {
       "title": "Client form",
-      "subtitle": "Tell us what you need and we’ll reply by email.",
-      "pitchTitle": "The fastest way to get started",
-      "pitchBullet0": "Share your goal and what “done” looks like",
-      "pitchBullet1": "Add links or references (optional)",
-      "pitchBullet2": "We’ll reply with next steps and a clear plan"
+      "subtitle": "Share your project details and we’ll get back to you with a clear plan for the best start.",
+      "pitchTitle": "What we need to get started",
+      "pitchBullet0": "Define your goal and what you want to achieve",
+      "pitchBullet1": "Add any links or examples (optional)",
+      "pitchBullet2": "We’ll review your request and respond with a clear plan"
     },
     "provider": {
-      "title": "Provider form",
-      "subtitle": "Share your details and portfolio — we’ll review and reply by email.",
-      "pitchTitle": "Join our creator network",
-      "pitchBullet0": "Tell us what you’re great at and your experience",
-      "pitchBullet1": "Drop your portfolio / LinkedIn",
-      "pitchBullet2": "We’ll contact you if you’re a good fit"
+      "title": "Creators form",
+      "subtitle": "Share your details and work so we can review them and get in touch.",
+      "pitchTitle": "Join the creators community",
+      "pitchBullet0": "Tell us your field and professional experience",
+      "pitchBullet1": "Share your portfolio / LinkedIn",
+      "pitchBullet2": "Our team will review your application and contact you when a suitable opportunity comes up"
     }
   },
   "notFound": {

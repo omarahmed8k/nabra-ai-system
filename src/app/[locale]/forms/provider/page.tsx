@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +29,7 @@ export default function ProviderFormPage() {
       type: "provider",
       fullName: getText("fullName"),
       email: getText("email"),
-      phone: getText("phone"),
+      whatsapp: getText("whatsapp"),
       company: getText("company"),
       website: getText("website"),
       message: getText("message"),
@@ -57,6 +59,30 @@ export default function ProviderFormPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
+      <div className="mb-6 flex items-center justify-between rounded-xl border border-border bg-background/70 px-4 py-3 backdrop-blur-sm">
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/images/nabarawy-dark.svg"
+            alt="Nabra Logo"
+            width={120}
+            height={24}
+            className="h-7 w-auto dark:hidden"
+          />
+          <Image
+            src="/images/nabarawy-light.svg"
+            alt="Nabra Logo"
+            width={120}
+            height={24}
+            className="hidden h-7 w-auto dark:block"
+          />
+        </Link>
+        <Link
+          href="/"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {t("notFound.backHome")}
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>{t("forms.provider.title")}</CardTitle>
@@ -82,12 +108,12 @@ export default function ProviderFormPage() {
                 <Input id="email" name="email" type="email" required maxLength={254} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">{t("forms.fields.phone")}</Label>
-                <Input id="phone" name="phone" maxLength={50} />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="company">{t("forms.fields.company")}</Label>
                 <Input id="company" name="company" maxLength={120} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="whatsapp">{t("forms.fields.whatsapp")}</Label>
+                <Input id="whatsapp" name="whatsapp" required maxLength={50} />
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="website">{t("forms.fields.website")}</Label>

@@ -26,7 +26,7 @@
     },
     "roles": {
       "SUPER_ADMIN": "مدير النظام",
-      "PROVIDER": "مزود الخدمة",
+      "PROVIDER": "مبدع",
       "CLIENT": "عميل"
     },
     "priority": {
@@ -53,10 +53,10 @@
       "gallery": "المعرض",
       "pricing": "الأسعار",
       "clientForm": "نموذج العملاء",
-      "providerForm": "نموذج المزوّدين"
+      "providerForm": "نموذج المبدعين"
     },
     "hero": {
-      "title": "ابنِ مع نبراوي",
+      "title": "حوّل فكرتك إلى واقع مع نبراوي",
       "subtitle": "صف ما تحتاجه. ونحن نتكفّل بالباقي.",
       "socialProof": "موثوق لدى فرق تُنجز وتطلق",
       "promptPlaceholder": "اسأل نبراوي ما تحتاجه",
@@ -93,20 +93,20 @@
     },
     "forms": {
       "heading": "اختر مسارك",
-      "subheading": "سواء كنت عميلًا أو مزوّدًا، سنوجّهك للنموذج المناسب.",
+      "subheading": "عميل أو مبدع ؟ طريقك يبدأ من هنا.",
       "client": {
         "title": "أنا عميل",
         "description": "اكتب ما تحتاجه وسنعود إليك بالخطوات التالية.",
         "cta": "فتح نموذج العملاء"
       },
       "provider": {
-        "title": "أنا مزوّد",
-        "description": "أرسل بياناتك وروابط أعمالك — سنراجع ونتواصل معك.",
-        "cta": "فتح نموذج المزوّدين"
+        "title": "أنا مبدع",
+        "description": "شاركنا بياناتك وأعمالك لنتمكن من مراجعتها والتواصل معك",
+        "cta": "فتح نموذج المبدعين"
       }
     },
     "features": {
-      "heading": "كل ما تحتاج لإنجاز العمل",
+      "heading": "كل ما تحتاجه لإنجاز عملك",
       "subheading": "منصة واحدة لكل احتياجاتك الرقمية",
       "credit": {
         "title": "نظام قائم على الكريدت",
@@ -114,7 +114,7 @@
       },
       "quality": {
         "title": "جودة مضمونة",
-        "description": "جميع المقدمين محترفون موثوقون. رضاك مضمون في كل طلب."
+        "description": "نختار شركاءنا بعناية لضمان أعلى مستوى من الجودة."
       },
       "speed": {
         "title": "تنفيذ سريع",
@@ -126,17 +126,17 @@
       },
       "experts": {
         "title": "فريق خبراء",
-        "description": "وصول إلى مصممين ومطورين وصناع محتوى في منصة واحدة."
+        "description": "كل ما تحتاجه من مصممين ومطورين وصنّاع محتوى في مكان واحد."
       }
     },
     "gallery": {
       "videos": {
-        "heading": "إبداعات رائعة",
-        "subheading": "استكشف مشاريع استثنائية من شبكتنا الموهوبة من صناع المحتوى"
+        "heading": "نماذج من نجاحاتنا",
+        "subheading": "مشاريع تحوّلت إلى نتائج حقيقية"
       },
       "images": {
-        "heading": "الأعمال المميزة",
-        "subheading": "استكشف محفظتنا الرائعة من الأعمال الإبداعية"
+        "heading": "مختارات من أعمالنا",
+        "subheading": "نماذج من مشاريع تم تنفيذها باحتراف"
       }
     },
     "stats": {
@@ -148,7 +148,7 @@
       "portfolioItems": "عنصر محفظة"
     },
     "pricing": {
-      "heading": "أسعار بسيطة وشفافة",
+      "heading": "تعرف على أسعارنا",
       "subheading": "اختر الخطة المناسبة لك",
       "perMonth": "/شهرياً"
     },
@@ -179,6 +179,7 @@
       "fullName": "الاسم الكامل",
       "email": "البريد الإلكتروني",
       "phone": "رقم الهاتف (اختياري)",
+      "whatsapp": "رقم واتساب",
       "company": "الشركة (اختياري)",
       "website": "الموقع / الروابط (اختياري)",
       "message": "الرسالة"
@@ -192,7 +193,7 @@
       "pitchBullet2": "سنرد عليك بالخطوات التالية وخطة واضحة"
     },
     "provider": {
-      "title": "نموذج المزوّدين",
+      "title": "نموذج المبدعين",
       "subtitle": "أرسل بياناتك وروابط أعمالك — سنراجع ونرد عبر البريد.",
       "pitchTitle": "انضم لشبكة صُنّاعنا",
       "pitchBullet0": "عرّفنا بتخصصك وخبرتك",
@@ -310,7 +311,7 @@
         "totalRevenue": "إجمالي الإيرادات",
         "averageRating": "متوسط التقييم",
         "clients": "عملاء",
-        "providers": "مقدمو خدمات",
+        "providers": "مبدعون",
         "active": "نشط",
         "completed": "مكتمل",
         "activeSubscriptions": "اشتراكات نشطة",
@@ -326,7 +327,7 @@
         "requestsByServiceDesc": "شعبية أنواع الخدمات",
         "subscriptionsByPackage": "الاشتراكات حسب الباقة",
         "subscriptionsByPackageDesc": "توزيع الاشتراكات النشطة",
-        "topProviders": "أفضل مقدمي الخدمات",
+        "topProviders": "أفضل المبدعين",
         "topProvidersDesc": "حسب الطلبات المكتملة",
         "recentSubscriptions": "الاشتراكات الأخيرة",
         "recentSubscriptionsDesc": "آخر نشاط للاشتراكات",
@@ -365,13 +366,13 @@
         "role": "تصفية حسب الدور",
         "allRoles": "جميع الأدوار",
         "client": "العملاء",
-        "provider": "مقدمو الخدمات",
+        "provider": "المبدعون",
         "admin": "المديرون"
       },
       "tabs": {
         "allUsers": "جميع المستخدمين",
         "clients": "العملاء",
-        "providers": "مقدمو الخدمات"
+        "providers": "المبدعون"
       },
       "createUser": "إنشاء مستخدم",
       "table": {
@@ -409,7 +410,7 @@
           "password": "كلمة المرور",
           "role": "دور المستخدم",
           "services": "الخدمات المدعومة",
-          "selectServices": "حدد الخدمات التي يمكن لمقدم الخدمة التعامل معها"
+          "selectServices": "حدد الخدمات التي يمكن للمبدع التعامل معها"
         },
         "buttons": {
           "creating": "جاري الإنشاء...",
@@ -467,26 +468,26 @@
       },
       "actions": {
         "view": "عرض التفاصيل",
-        "assignProvider": "تعيين مقدم خدمة",
+        "assignProvider": "تعيين مبدع",
         "delete": "حذف الطلب"
       },
       "assignDialog": {
-        "title": "تعيين مقدم خدمة",
-        "description": "حدد مقدم خدمة لتعيينه لهذا الطلب",
-        "search": "ابحث عن مقدمي الخدمات...",
+        "title": "تعيين مبدع",
+        "description": "حدد مبدعاً لتعيينه لهذا الطلب",
+        "search": "ابحث عن المبدعين...",
         "rating": "التقييم",
         "completed": "مكتمل",
         "active": "نشط",
-        "noProviders": "لا يوجد مقدمو خدمات متاحون لهذا النوع من الخدمة",
+        "noProviders": "لا يوجد مبدعون متاحون لهذا النوع من الخدمة",
         "moreSkills": "مهارات أخرى",
         "buttons": {
           "assigning": "جاري التعيين...",
-          "assign": "تعيين مقدم الخدمة",
+          "assign": "تعيين المبدع",
           "cancel": "إلغاء"
         },
         "toast": {
-          "assigned": "تم تعيين مقدم الخدمة بنجاح",
-          "error": "فشل تعيين مقدم الخدمة"
+          "assigned": "تم تعيين المبدع بنجاح",
+          "error": "فشل تعيين المبدع"
         }
       },
       "detail": {
@@ -494,7 +495,7 @@
         "notFoundDesc": "الطلب الذي تبحث عنه غير موجود أو تم حذفه.",
         "backToRequests": "العودة إلى جميع الطلبات",
         "messagesTitle": "الرسائل",
-        "messagesDesc": "تواصل مع العميل ومقدم الخدمة",
+        "messagesDesc": "تواصل مع العميل والمبدع",
         "messagesPlaceholder": "اكتب رسالتك..."
       }
     },
@@ -852,10 +853,10 @@
     },
     "sidebar": {
       "client": "العميل",
-      "provider": "مقدم الخدمة",
+      "provider": "المبدع",
       "brandProviderName": "نبراوي",
       "brandClientName": "العميل",
-      "waitingForProvider": "في انتظار مقدم الخدمة",
+      "waitingForProvider": "في انتظار المبدع",
       "details": "التفاصيل",
       "serviceType": "نوع الخدمة",
       "created": "تم الإنشاء",
@@ -903,7 +904,7 @@
       "paidRevision": "مدفوع",
       "unassigned": "غير معيّن",
       "client": "عميل",
-      "provider": "مزود",
+      "provider": "مبدع",
       "messages": "{count, plural, zero {لا توجد رسائل} one {رسالة واحدة} two {رسالتان} few {# رسائل} many {# رسالة} other {# رسالة}}"
     },
     "empty": {
@@ -1180,7 +1181,7 @@
       },
       "rateService": {
         "title": "قيّم هذه الخدمة",
-        "description": "شارك تجربتك مع هذا المزود",
+        "description": "شارك تجربتك مع هذا المبدع",
         "reviewPlaceholder": "اكتب مراجعة (اختياري)...",
         "charactersCount": "{count} حرف",
         "submit": "تقديم التقييم",
@@ -1193,19 +1194,19 @@
         "approved": "تمت الموافقة على الطلب!",
         "approvedDesc": "تمت الموافقة على التسليم. عمل رائع!",
         "revisionRequested": "تم طلب المراجعة",
-        "revisionRequestedDesc": "تم إخطار المزود بشأن طلب المراجعة الخاص بك.",
+        "revisionRequestedDesc": "تم إخطار المبدع بشأن طلب المراجعة الخاص بك.",
         "ratingSubmitted": "تم تقديم التقييم",
         "ratingSubmittedDesc": "شكراً لملاحظاتك!",
         "invalidFeedback": "ملاحظات غير صالحة",
         "invalidFeedbackDesc": "يرجى تقديم {min} حرفاً على الأقل لوصف التغييرات المطلوبة."
       },
       "messagesTitle": "الرسائل",
-      "messagesDescription": "تواصل مع مقدم الخدمة",
+      "messagesDescription": "تواصل مع المبدع",
       "messagesPlaceholder": "اكتب رسالتك..."
     },
     "newRequest": {
       "title": "إنشاء طلب جديد",
-      "subtitle": "صف ما تحتاجه وسنوصلك بمزود",
+      "subtitle": "صف ما تحتاجه وسنوصلك بمبدع",
       "draftRestored": "أضفنا رسالتك من الصفحة الرئيسية إلى هذا الطلب.",
       "draftTitleFallback": "طلب جديد",
       "requestDetails": "تفاصيل الطلب",
@@ -1328,7 +1329,7 @@
       }
     },
     "deliverables": {
-      "title": "تسليمات المزود",
+      "title": "تسليمات المبدع",
       "badge": "تسليم",
       "filesLabel": "{count, plural, zero {لا توجد ملفات} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفاً} other {# ملف}}"
     },
@@ -1376,7 +1377,7 @@
   "provider": {
     "dashboard": {
       "welcome": "مرحباً بعودتك، {name}!",
-      "overview": "إليك نظرة عامة على لوحة تحكم المزود",
+      "overview": "إليك نظرة عامة على لوحة تحكم المبدع",
       "stats": {
         "activeJobs": "الوظائف النشطة",
         "inProgress": "قيد التنفيذ",
@@ -1385,7 +1386,7 @@
         "averageRating": "متوسط التقييم",
         "reviews": "{count} مراجعة",
         "availableJobs": "الوظائف المتاحة",
-        "waitingForProvider": "في انتظار المزود"
+        "waitingForProvider": "في انتظار المبدع"
       },
       "myActiveJobs": {
         "title": "وظائفي النشطة",
@@ -1448,14 +1449,14 @@
     },
     "profile": {
       "title": "إعدادات الملف الشخصي",
-      "subtitle": "إدارة حسابك وإعدادات ملف المزود",
+      "subtitle": "إدارة حسابك وإعدادات ملف المبدع",
       "tabs": {
         "profile": "الملف الشخصي",
-        "provider": "المزود",
+        "provider": "المبدع",
         "security": "الأمان"
       },
       "providerInfo": {
-        "title": "معلومات المزود",
+        "title": "معلومات المبدع",
         "description": "حدّث تفاصيلك المهنية المرئية للعملاء",
         "bio": "السيرة الذاتية المهنية",
         "bioPlaceholder": "أخبر العملاء عن نفسك وخبرتك...",
@@ -1469,7 +1470,7 @@
         "reset": "إعادة تعيين",
         "saveChanges": "حفظ التغييرات",
         "saving": "جاري الحفظ...",
-        "notAvailable": "ملف المزود غير متاح"
+        "notAvailable": "ملف المبدع غير متاح"
       }
     },
     "requestDetail": {
@@ -1663,9 +1664,9 @@
           "step1Title": "1. اختر باقة",
           "step1Desc": "اختر باقة اشتراك تناسب احتياجاتك",
           "step2Title": "2. أنشئ طلبك الأول",
-          "step2Desc": "قدم طلب خدمة ودع مزودي الخدمة يساعدونك",
+          "step2Desc": "قدّم طلب خدمة وليُساعدك المبدعون",
           "step3Title": "3. تتبع التقدم",
-          "step3Desc": "راقب طلباتك وتواصل مع مزودي الخدمة في الوقت الفعلي"
+          "step3Desc": "راقب طلباتك وتواصل مع المبدعين في الوقت الفعلي"
         },
         "provider": {
           "step1Title": "1. أكمل ملفك الشخصي",

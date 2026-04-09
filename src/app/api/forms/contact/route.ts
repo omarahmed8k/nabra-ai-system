@@ -8,7 +8,7 @@ const BodySchema = z.object({
   type: z.enum(["client", "provider"]),
   fullName: z.string().min(2).max(100),
   email: z.string().email().max(254),
-  phone: z.string().max(50).optional().default(""),
+  whatsapp: z.string().min(3).max(50),
   company: z.string().max(120).optional().default(""),
   website: z.string().max(300).optional().default(""),
   message: z.string().min(10).max(4000),
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         <table style="width: 100%; border-collapse: collapse; margin: 14px 0;">
           <tr><td style="padding: 6px 0; color: #555; width: 160px;">Name</td><td style="padding: 6px 0;"><strong>${escapeHtml(body.fullName)}</strong></td></tr>
           <tr><td style="padding: 6px 0; color: #555;">Email</td><td style="padding: 6px 0;">${escapeHtml(body.email)}</td></tr>
-          <tr><td style="padding: 6px 0; color: #555;">Phone</td><td style="padding: 6px 0;">${escapeHtml(body.phone || "-")}</td></tr>
+          <tr><td style="padding: 6px 0; color: #555;">WhatsApp</td><td style="padding: 6px 0;">${escapeHtml(body.whatsapp)}</td></tr>
           <tr><td style="padding: 6px 0; color: #555;">Company</td><td style="padding: 6px 0;">${escapeHtml(body.company || "-")}</td></tr>
           <tr><td style="padding: 6px 0; color: #555;">Website</td><td style="padding: 6px 0;">${escapeHtml(body.website || "-")}</td></tr>
         </table>

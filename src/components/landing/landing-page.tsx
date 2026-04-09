@@ -133,11 +133,11 @@ const scaleIn = {
 
 const MEET_STEP_KEYS = ["start", "work", "ship"] as const;
 
-/** Single infinite marquee; indices reference `/images/landing/{n}.mp4` */
-const GALLERY_VIDEO_INDICES = [1, 2, 3, 4, 5, 6] as const;
-/** Featured Works — two rows; `/images/landing/{n}.jpg` */
-const GALLERY_IMAGE_ROW_A = [1, 2, 3, 4] as const;
-const GALLERY_IMAGE_ROW_B = [5, 6, 7, 8] as const;
+/** Single infinite marquee; `/images/landing/{n}.mp4` for n = 1..14 */
+const GALLERY_VIDEO_INDICES = Array.from({ length: 14 }, (_, i) => i + 1);
+/** Featured Works — two rows; `/images/landing/{n}.jpg` for n = 1..21 */
+const GALLERY_IMAGE_ROW_A = Array.from({ length: 11 }, (_, i) => i + 1);
+const GALLERY_IMAGE_ROW_B = Array.from({ length: 10 }, (_, i) => i + 12);
 
 type HeroChatPhase = "idle" | "awaitingReply" | "showingReply" | "error";
 
@@ -171,6 +171,7 @@ export default function LandingPage() {
   const [heroReply, setHeroReply] = useState("");
   const [heroLoadingReply, setHeroLoadingReply] = useState(false);
   const [heroTypingReply, setHeroTypingReply] = useState(false);
+  const [isHeroVideoReady, setIsHeroVideoReady] = useState(false);
   const [promptRotateIndex, setPromptRotateIndex] = useState(0);
   const [videoPlayingState, setVideoPlayingState] = useState<Record<number, boolean>>({});
   const [videoMutedState, setVideoMutedState] = useState<Record<number, boolean>>({});
@@ -190,6 +191,21 @@ export default function LandingPage() {
       setLoadingPackages(false);
     }
   }, [packagesData]);
+
+  useEffect(() => {
+    // Fallback: never block hero content forever on slow networks/dev hiccups.
+    const id = setTimeout(() => setIsHeroVideoReady(true), 3500);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    if (isHeroVideoReady) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isHeroVideoReady]);
 
   const getLocalizedText = (
     text: string | undefined,
@@ -411,11 +427,11 @@ export default function LandingPage() {
 
   return (
     <div
-      className={`flex min-h-screen flex-col overflow-hidden bg-background ${isRTL ? "rtl" : "ltr"}`}
+      className={`relative flex min-h-screen flex-col bg-background ${isRTL ? "rtl" : "ltr"}`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Brand color ambience across landing */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Brand color ambience — overflow-hidden stops off-canvas blurs from extending document scroll height */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-48 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-[#824d7c]/20 blur-3xl" />
         <div className="absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full bg-[#5db9ba]/18 blur-3xl" />
         <div className="absolute bottom-[-220px] left-[-160px] h-[640px] w-[640px] rounded-full bg-[#5db9ba]/10 blur-3xl" />
@@ -495,14 +511,48 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
+      {isHeroVideoReady ? null : (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div className="flex flex-col items-center gap-8 sm:gap-10">
+            <span className="sr-only">{locale === "ar" ? "جاري التحميل" : "Loading"}</span>
+            <span className="relative block h-40 w-40 sm:h-52 sm:w-52 md:h-64 md:w-64 lg:h-72 lg:w-72 xl:h-80 xl:w-80">
+              <Image
+                src="/images/nabarawy.gif"
+                alt=""
+                fill
+                sizes="(max-width: 640px) 10rem, (max-width: 768px) 13rem, (max-width: 1024px) 16rem, (max-width: 1280px) 18rem, 20rem"
+                className="object-contain"
+                unoptimized
+                aria-hidden
+              />
+            </span>
+            <div className="flex items-center gap-3 sm:gap-4" aria-hidden>
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="landing-loader-dot h-4 w-4 rounded-full bg-gradient-to-br from-[#5db9ba] to-[#824d7c] shadow-[0_0_14px_rgba(93,185,186,0.4)] sm:h-5 sm:w-5"
+                  style={{ animationDelay: `${i * 180}ms` }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="relative z-10">
         {/* Hero — Lovable-style: headline + prompt shell */}
-        <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden pb-14 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-28 md:pb-24">
-          {/* Full section height + full width — video fills frame; overlays blend top→bottom (no half-screen “strip”) */}
-          <div className="pointer-events-none absolute inset-0 left-1/2 z-0 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden">
+        <section className="relative isolate flex min-h-landing-screen flex-col justify-center pb-14 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-28 md:pb-24">
+          <div className="pointer-events-none absolute inset-0 z-0 min-h-0 overflow-hidden">
             <video
-              className="absolute inset-0 h-full min-h-full w-full min-w-full object-cover object-bottom"
+              className="absolute inset-0 h-full w-full min-h-0 object-cover object-left-bottom"
               src="/images/hero.mp4"
+              onLoadedData={() => setIsHeroVideoReady(true)}
+              onCanPlay={() => setIsHeroVideoReady(true)}
+              onError={() => setIsHeroVideoReady(true)}
               autoPlay
               muted
               loop
@@ -511,28 +561,8 @@ export default function LandingPage() {
               tabIndex={-1}
               aria-hidden
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0.82) 16%, hsl(var(--background) / 0.42) 36%, hsl(var(--background) / 0.1) 56%, transparent 82%)",
-              }}
-              aria-hidden
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, hsl(var(--background) / 0.45) 0%, transparent 48%)",
-              }}
-              aria-hidden
-            />
+            <div className="absolute inset-0 bg-black/45" aria-hidden />
           </div>
-          <div className="pointer-events-none absolute inset-x-0 top-[-24%] z-[1] h-[58%] bg-[radial-gradient(ellipse_65%_58%_at_50%_0%,rgba(8,8,10,0.95),rgba(8,8,10,0.68)_50%,transparent)]" />
-          <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(255,255,255,0.06),transparent)]" />
-          <div className="pointer-events-none absolute left-[-18%] top-[52%] z-[1] h-[26rem] w-[26rem] rounded-full bg-[#824d7c]/35 blur-3xl sm:h-[34rem] sm:w-[34rem]" />
-          <div className="pointer-events-none absolute right-[-20%] top-[46%] z-[1] h-[24rem] w-[24rem] rounded-full bg-[#5db9ba]/30 blur-3xl sm:h-[32rem] sm:w-[34rem]" />
-          <div className="pointer-events-none absolute inset-x-0 -bottom-40 z-[1] h-[72%] bg-[radial-gradient(ellipse_75%_56%_at_50%_100%,rgba(130,77,124,0.28),rgba(93,185,186,0.19)_44%,transparent_76%)]" />
           <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 text-center sm:px-6 md:px-8 lg:px-10 xl:max-w-[90rem] xl:px-12">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -545,7 +575,7 @@ export default function LandingPage() {
                   alt="Nabarawy animated"
                   fill
                   sizes="(max-width: 640px) 4rem, (max-width: 768px) 5rem, (max-width: 1024px) 6rem, (max-width: 1280px) 7rem, 7rem"
-                  className="object-contain object-center drop-shadow-[0_10px_30px_rgba(130,77,124,0.35)]"
+                  className="object-contain object-center"
                   aria-hidden="true"
                   unoptimized
                 />
@@ -566,7 +596,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-8 w-full max-w-md rounded-2xl border border-border bg-card/95 p-2.5 shadow-[0_20px_80px_rgba(130,77,124,0.25),0_14px_56px_rgba(93,185,186,0.18),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-sm sm:mt-10 sm:max-w-lg sm:p-3 md:max-w-4xl md:p-4"
+              className="mt-8 w-full max-w-md rounded-2xl border border-border bg-card/95 p-2.5 backdrop-blur-sm sm:mt-10 sm:max-w-lg sm:p-3 md:max-w-4xl md:p-4"
             >
               <div className="relative min-h-[5.5rem]">
                 {heroChatPhase === "showingReply" ? (
@@ -899,7 +929,7 @@ export default function LandingPage() {
           >
             <div className="relative w-full overflow-hidden py-1" dir="ltr">
               <div
-                className="flex w-max gap-3 sm:gap-4 md:gap-5 animate-landing-marquee"
+                className="flex w-max gap-3 sm:gap-4 md:gap-5 animate-landing-marquee hover:[animation-play-state:paused]"
                 style={marqueeDuration(70)}
               >
                 {[0, 1].map((strip) => (
