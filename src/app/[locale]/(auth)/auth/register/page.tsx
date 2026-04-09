@@ -160,16 +160,25 @@ export default function RegisterPage() {
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
                 <Image
-                  src="/images/logo.png"
-                  alt="Nabra"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12"
+                  src="/images/nabarawy-dark.svg"
+                  alt="Nabra Logo"
+                  width={200}
+                  height={40}
+                  className="h-10 w-auto dark:hidden"
+                />
+                <Image
+                  src="/images/nabarawy-light.svg"
+                  alt="Nabra Logo"
+                  width={200}
+                  height={40}
+                  className="hidden h-10 w-auto dark:block"
                 />
               </motion.div>
             </Link>
           </div>
-          <CardTitle className="text-2xl text-center">{t("title")}</CardTitle>
+          <CardTitle className="text-2xl text-center font-semibold uppercase tracking-wide">
+            {t("title")}
+          </CardTitle>
           <CardDescription className="text-center">{t("description")}</CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit}>
