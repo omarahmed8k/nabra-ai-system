@@ -168,11 +168,18 @@ export default function SubscriptionPage() {
                   className={`flex flex-col ${isCurrentPlan ? "border-primary" : ""}`}
                 >
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>
-                        {pkgData.nameI18n ? pkgData.nameI18n[locale] || pkg.name : pkg.name}
-                      </CardTitle>
-                      {isCurrentPlan && <Badge variant="secondary">{t("plans.current")}</Badge>}
+                    <div className="space-y-2">
+                      {pkgData.isFeatured && (
+                        <Badge className="border-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] text-white hover:opacity-95">
+                          {t("plans.featuredBadge")}
+                        </Badge>
+                      )}
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle>
+                          {pkgData.nameI18n ? pkgData.nameI18n[locale] || pkg.name : pkg.name}
+                        </CardTitle>
+                        {isCurrentPlan && <Badge variant="secondary">{t("plans.current")}</Badge>}
+                      </div>
                     </div>
                     <CardDescription>
                       <span className="text-3xl font-bold text-foreground">

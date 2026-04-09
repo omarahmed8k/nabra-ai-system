@@ -154,7 +154,8 @@
     "pricing": {
       "heading": "Simple, transparent pricing",
       "subheading": "Choose the perfect plan for your needs",
-      "perMonth": "/month"
+      "perMonth": "/month",
+      "featuredBadge": "Featured"
     },
     "cta": {
       "heading": "Ready to get started?",
@@ -238,6 +239,7 @@
         "notifications": "Notifications",
         "packages": "Packages",
         "services": "Services",
+        "settings": "Settings",
         "profile": "Profile"
       },
       "signOut": "Sign Out"
@@ -298,6 +300,10 @@
     }
   },
   "admin": {
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Configure platform-wide options"
+    },
     "notificationsPage": {
       "title": "Notifications",
       "subtitle": "Stay updated on your admin activity",
@@ -513,7 +519,8 @@
         "backToRequests": "Back to All Requests",
         "messagesTitle": "Messages",
         "messagesDesc": "Communicate with the client and provider",
-        "messagesPlaceholder": "Type your message..."
+        "messagesPlaceholder": "Type your message...",
+        "messagingAfterClaim": "Messaging is available after a provider claims or is assigned to this request."
       }
     },
     "profile": {
@@ -556,8 +563,12 @@
         "localizedDescription": "Localized Description",
         "localizedFeatures": "Localized Features",
         "supportAllServices": "Support All Services",
+        "isFeatured": "Featured on landing (only one package)",
         "includedServices": "Included Services",
         "noServicesConfigured": "No services configured"
+      },
+      "badges": {
+        "featured": "Featured"
       },
       "info": {
         "credits": "credits",
@@ -1220,7 +1231,8 @@
       },
       "messagesTitle": "Messages",
       "messagesDescription": "Communicate with your provider",
-      "messagesPlaceholder": "Type your message..."
+      "messagesPlaceholder": "Type your message...",
+      "messagingAfterClaim": "Messaging opens once a creator claims your request. You’ll see the full thread here."
     },
     "newRequest": {
       "title": "Create New Request",
@@ -1328,7 +1340,8 @@
         "currentPlan": "Current Plan",
         "cancelFirstToSwitch": "Cancel first to switch",
         "noPlans": "No plans available",
-        "noPlansDesc": "Please check back soon or contact support"
+        "noPlansDesc": "Please check back soon or contact support",
+        "featuredBadge": "Featured"
       },
       "info": {
         "dayDuration": "days",
@@ -1438,10 +1451,7 @@
       },
       "claimJob": "Claim This Job",
       "claiming": "Claiming...",
-      "confirmClaim": "Are you sure you want to claim this request?",
-      "messagesTitle": "Messages",
-      "messagesDescription": "Ask questions about this job before claiming",
-      "messagesPlaceholder": "Ask the client a question..."
+      "confirmClaim": "Are you sure you want to claim this request?"
     },
     "myRequests": {
       "title": "My Requests",
@@ -1530,6 +1540,7 @@
         "title": "Completed",
         "description": "Great work! The client has approved your deliverable."
       },
+      "messagingAfterClaim": "Messaging is available after you claim this job (or it is assigned to you).",
       "messages": {
         "title": "Messages",
         "description": "Communicate with the client",

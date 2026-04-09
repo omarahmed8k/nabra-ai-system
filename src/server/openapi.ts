@@ -1201,6 +1201,7 @@ export function buildOpenApiDocument(baseUrl: string) {
               durationDays: { type: "integer" },
               features: { type: "array", items: { type: "string" } },
               isActive: { type: "boolean" },
+              isFeatured: { type: "boolean" },
             },
           },
           CreatePackage: {
@@ -1213,6 +1214,7 @@ export function buildOpenApiDocument(baseUrl: string) {
               durationDays: { type: "integer" },
               features: { type: "array", items: { type: "string" } },
               sortOrder: { type: "integer" },
+              isFeatured: { type: "boolean" },
             },
             required: ["name", "credits", "price", "durationDays"],
           },
@@ -1228,6 +1230,7 @@ export function buildOpenApiDocument(baseUrl: string) {
               features: { type: "array", items: { type: "string" } },
               sortOrder: { type: "integer" },
               isActive: { type: "boolean" },
+              isFeatured: { type: "boolean" },
             },
             required: ["id"],
           },

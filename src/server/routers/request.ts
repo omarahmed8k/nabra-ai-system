@@ -777,17 +777,19 @@ export const requestRouter = router({
         });
       }
 
+      if (!request.providerId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Messaging is available after a provider claims this request",
+        });
+      }
+
       // Check access
       const isClient = request.clientId === userId;
       const isProvider = request.providerId === userId;
       const isAdmin = ctx.session.user.role === "SUPER_ADMIN";
-      const isProviderRole = ctx.session.user.role === "PROVIDER";
 
-      // Allow providers to comment on unassigned requests (for asking questions before claiming)
-      const canProviderComment =
-        isProviderRole && request.providerId === null && request.status === "PENDING";
-
-      if (!isClient && !isProvider && !isAdmin && !canProviderComment) {
+      if (!isClient && !isProvider && !isAdmin) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You don't have access to this request",
@@ -809,49 +811,18 @@ export const requestRouter = router({
         },
       });
 
-      // Manage watchers: if provider comments on unassigned pending request, start watching
-      if (isProviderRole && request.providerId === null && request.status === "PENDING") {
-        await ctx.db.requestWatcher.upsert({
-          where: { requestId_userId: { requestId: input.requestId, userId } },
-          update: {},
-          create: { requestId: input.requestId, userId },
-        });
-      }
-
       // Determine recipients for notifications
       const senderName = comment.user.name || comment.user.email || "Someone";
+      const isProviderRole = ctx.session.user.role === "PROVIDER";
       if (isClient) {
-        if (request.providerId) {
-          // Notify assigned provider
-          await notifyNewMessage({
-            requestId: input.requestId,
-            senderName,
-            senderRole: "CLIENT",
-            recipientId: request.providerId,
-            messagePreview: input.content.slice(0, 100),
-            locale: ctx.locale,
-          });
-        } else {
-          // Notify all watchers (providers who previously commented)
-          const watchers = await ctx.db.requestWatcher.findMany({
-            where: { requestId: input.requestId },
-            select: { userId: true },
-          });
-          await Promise.all(
-            watchers
-              .filter((w: any) => w.userId !== userId)
-              .map((w: any) =>
-                notifyNewMessage({
-                  requestId: input.requestId,
-                  senderName,
-                  senderRole: "CLIENT",
-                  recipientId: w.userId,
-                  messagePreview: input.content.slice(0, 100),
-                  locale: ctx.locale,
-                })
-              )
-          );
-        }
+        await notifyNewMessage({
+          requestId: input.requestId,
+          senderName,
+          senderRole: "CLIENT",
+          recipientId: request.providerId,
+          messagePreview: input.content.slice(0, 100),
+          locale: ctx.locale,
+        });
       } else {
         // Non-client commented (provider/admin) - notify client
         // Mask provider identity for client-facing notifications

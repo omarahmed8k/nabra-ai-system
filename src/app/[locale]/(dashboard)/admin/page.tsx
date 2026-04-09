@@ -2,8 +2,6 @@
 
 import { Link } from "@/i18n/routing";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc/client";
 import { useTranslations, useLocale } from "next-intl";
@@ -52,17 +50,8 @@ export default function AdminDashboard() {
   const { data: analytics, isLoading: analyticsLoading } = trpc.admin.getAnalytics.useQuery();
   const { data: subscriptionsData, isLoading: subsLoading } =
     trpc.admin.getAllSubscriptions.useQuery({ limit: 5 });
-  const { data: maintenance, isLoading: maintenanceLoading } =
-    trpc.admin.getMaintenanceMode.useQuery();
-  const utils = trpc.useUtils();
   const t = useTranslations("admin.dashboard");
   const locale = useLocale();
-  const setMaintenanceModeMutation = trpc.admin.setMaintenanceMode.useMutation({
-    onSuccess: () => {
-      utils.admin.getMaintenanceMode.invalidate();
-      utils.admin.getPublicAppState.invalidate();
-    },
-  });
 
   const renderTopProviders = () => {
     if (analyticsLoading) {
@@ -148,48 +137,12 @@ export default function AdminDashboard() {
     );
   };
 
-  const maintenanceEnabled = maintenance?.enabled ?? false;
-  let maintenanceBadgeLabel = t("maintenance.disabled");
-  if (maintenanceLoading) {
-    maintenanceBadgeLabel = t("maintenance.loading");
-  } else if (maintenanceEnabled) {
-    maintenanceBadgeLabel = t("maintenance.enabled");
-  }
-
-  let maintenanceActionLabel = t("maintenance.turnOn");
-  if (setMaintenanceModeMutation.isPending) {
-    maintenanceActionLabel = t("maintenance.updating");
-  } else if (maintenanceEnabled) {
-    maintenanceActionLabel = t("maintenance.turnOff");
-  }
-
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("maintenance.title")}</CardTitle>
-          <CardDescription>{t("maintenance.description")}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Badge variant={maintenanceEnabled ? "destructive" : "secondary"}>
-              {maintenanceBadgeLabel}
-            </Badge>
-          </div>
-          <Button
-            variant={maintenanceEnabled ? "destructive" : "default"}
-            onClick={() => setMaintenanceModeMutation.mutate({ enabled: !maintenanceEnabled })}
-            disabled={maintenanceLoading || setMaintenanceModeMutation.isPending}
-          >
-            {maintenanceActionLabel}
-          </Button>
-        </CardContent>
-      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -32,6 +32,7 @@ export const packageRouter = router({
           durationDays: true,
           features: true,
           sortOrder: true,
+          isFeatured: true,
           services: {
             select: {
               serviceType: {

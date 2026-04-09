@@ -154,7 +154,8 @@
     "pricing": {
       "heading": "تعرف على أسعارنا",
       "subheading": "اختر الخطة المناسبة لك",
-      "perMonth": "/شهرياً"
+      "perMonth": "/شهرياً",
+      "featuredBadge": "مميزة"
     },
     "cta": {
       "heading": "جاهز للبدء؟",
@@ -238,6 +239,7 @@
         "notifications": "الإشعارات",
         "packages": "الباقات",
         "services": "الخدمات",
+        "settings": "الإعدادات",
         "profile": "الملف الشخصي"
       },
       "signOut": "تسجيل الخروج"
@@ -298,6 +300,10 @@
     }
   },
   "admin": {
+    "settings": {
+      "title": "الإعدادات",
+      "subtitle": "تكوين خيارات المنصة على مستوى النظام"
+    },
     "notificationsPage": {
       "title": "الإشعارات",
       "subtitle": "ابقَ على اطلاع على نشاط الإدارة",
@@ -513,7 +519,8 @@
         "backToRequests": "العودة إلى جميع الطلبات",
         "messagesTitle": "الرسائل",
         "messagesDesc": "تواصل مع العميل والمبدع",
-        "messagesPlaceholder": "اكتب رسالتك..."
+        "messagesPlaceholder": "اكتب رسالتك...",
+        "messagingAfterClaim": "الرسائل متاحة بعد أن يستلم مبدع الطلب أو يُعيَّن له."
       }
     },
     "profile": {
@@ -556,8 +563,12 @@
         "localizedDescription": "الوصف المترجم",
         "localizedFeatures": "المزايا المترجمة",
         "supportAllServices": "يشمل جميع الخدمات",
+        "isFeatured": "مميزة في الصفحة الرئيسية (باقة واحدة فقط)",
         "includedServices": "الخدمات المتضمنة",
         "noServicesConfigured": "لم يتم تكوين خدمات"
+      },
+      "badges": {
+        "featured": "مميزة"
       },
       "info": {
         "credits": "كريدت",
@@ -1220,7 +1231,8 @@
       },
       "messagesTitle": "الرسائل",
       "messagesDescription": "تواصل مع المبدع",
-      "messagesPlaceholder": "اكتب رسالتك..."
+      "messagesPlaceholder": "اكتب رسالتك...",
+      "messagingAfterClaim": "تُفعَّل الرسائل بعد أن يستلم مبدع طلبك. سيظهر هنا السجل الكامل للمحادثة."
     },
     "newRequest": {
       "title": "إنشاء طلب جديد",
@@ -1323,7 +1335,8 @@
         "currentPlan": "الباقة الحالية",
         "cancelFirstToSwitch": "ألغِ أولاً للتبديل",
         "noPlans": "لا توجد باقات متاحة",
-        "noPlansDesc": "يرجى المحاولة لاحقاً أو الاتصال بالدعم"
+        "noPlansDesc": "يرجى المحاولة لاحقاً أو الاتصال بالدعم",
+        "featuredBadge": "مميزة"
       },
       "info": {
         "dayDuration": "أيام",
@@ -1438,10 +1451,7 @@
       },
       "claimJob": "استلم هذه الوظيفة",
       "claiming": "جاري الاستلام...",
-      "confirmClaim": "هل أنت متأكد أنك تريد استلام هذا الطلب؟",
-      "messagesTitle": "الرسائل",
-      "messagesDescription": "اسأل أسئلة حول هذه الوظيفة قبل استلامها",
-      "messagesPlaceholder": "اسأل العميل سؤالاً..."
+      "confirmClaim": "هل أنت متأكد أنك تريد استلام هذا الطلب؟"
     },
     "myRequests": {
       "title": "طلباتي",
@@ -1530,6 +1540,7 @@
         "title": "مكتمل",
         "description": "عمل رائع! وافق العميل على تسليمك."
       },
+      "messagingAfterClaim": "الرسائل متاحة بعد استلامك لهذه الوظيفة (أو تعيينها لك).",
       "messages": {
         "title": "الرسائل",
         "description": "تواصل مع العميل",

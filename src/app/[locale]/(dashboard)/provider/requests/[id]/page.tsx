@@ -400,201 +400,216 @@ export default function ProviderRequestDetailPage() {
             </Card>
           )}
 
-          {/* Chat */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("messages.title")}</CardTitle>
-              <CardDescription>{t("messages.description")}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {request.comments.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">{t("messages.noMessages")}</p>
-              ) : (
-                <div ref={messagesContainerRef} className="space-y-4 max-h-96 overflow-y-auto">
-                  {request.comments.map(
-                    (comment: {
-                      id: string;
-                      content: string;
-                      type: string;
-                      createdAt: Date;
-                      files?: string[];
-                      user: { name: string | null; image: string | null };
-                    }) => (
-                      <div
-                        key={comment.id}
-                        className={`flex gap-3 ${
-                          comment.type === "SYSTEM" ? "bg-muted/50 p-3 rounded-lg" : ""
-                        }`}
-                      >
-                        {comment.type !== "SYSTEM" && (
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={comment.user.image || ""} />
-                            <AvatarFallback>{getInitials(comment.user.name || "")}</AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">
-                              {comment.type === "SYSTEM"
-                                ? t("messages.system")
-                                : (comment.user as any).role === "CLIENT"
-                                  ? tSidebar("brandClientName")
-                                  : comment.user.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDateTime(comment.createdAt, locale)}
-                            </span>
-                            {comment.type === "DELIVERABLE" && (
-                              <Badge variant="secondary">{t("messages.deliverable")}</Badge>
-                            )}
-                          </div>
-                          <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
-                          {comment.files && comment.files.length > 0 && (
-                            <div className="mt-2 space-y-1">
-                              {comment.files.map((file: string, i: number) => {
-                                // Helper functions (inline for provider page)
-                                const getExtension = (url: string) => {
-                                  try {
+          {/* Chat (only after this request is claimed / assigned) */}
+          {request.provider ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("messages.title")}</CardTitle>
+                <CardDescription>{t("messages.description")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {request.comments.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    {t("messages.noMessages")}
+                  </p>
+                ) : (
+                  <div ref={messagesContainerRef} className="space-y-4 max-h-96 overflow-y-auto">
+                    {request.comments.map(
+                      (comment: {
+                        id: string;
+                        content: string;
+                        type: string;
+                        createdAt: Date;
+                        files?: string[];
+                        user: { name: string | null; image: string | null };
+                      }) => (
+                        <div
+                          key={comment.id}
+                          className={`flex gap-3 ${
+                            comment.type === "SYSTEM" ? "bg-muted/50 p-3 rounded-lg" : ""
+                          }`}
+                        >
+                          {comment.type !== "SYSTEM" && (
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={comment.user.image || ""} />
+                              <AvatarFallback>
+                                {getInitials(comment.user.name || "")}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">
+                                {comment.type === "SYSTEM"
+                                  ? t("messages.system")
+                                  : (comment.user as any).role === "CLIENT"
+                                    ? tSidebar("brandClientName")
+                                    : comment.user.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDateTime(comment.createdAt, locale)}
+                              </span>
+                              {comment.type === "DELIVERABLE" && (
+                                <Badge variant="secondary">{t("messages.deliverable")}</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
+                            {comment.files && comment.files.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {comment.files.map((file: string, i: number) => {
+                                  // Helper functions (inline for provider page)
+                                  const getExtension = (url: string) => {
+                                    try {
+                                      const clean = url.split("?")[0];
+                                      const parts = clean.split(".");
+                                      return parts.length > 1 ? parts.pop()!.toLowerCase() : "";
+                                    } catch {
+                                      return "";
+                                    }
+                                  };
+
+                                  const isAudioUrl = (url: string) => {
+                                    const ext = getExtension(url);
+                                    return ["webm", "mp3", "ogg", "wav", "m4a", "aac"].includes(
+                                      ext
+                                    );
+                                  };
+
+                                  const isImageUrl = (url: string) => {
+                                    const ext = getExtension(url);
+                                    return ["png", "jpg", "jpeg", "gif", "webp", "avif"].includes(
+                                      ext
+                                    );
+                                  };
+
+                                  const getFileNameFromUrl = (url: string) => {
                                     const clean = url.split("?")[0];
-                                    const parts = clean.split(".");
-                                    return parts.length > 1 ? parts.pop()!.toLowerCase() : "";
-                                  } catch {
-                                    return "";
-                                  }
-                                };
+                                    const parts = clean.split("/");
+                                    return parts.length > 0 ? parts.pop() || url : url;
+                                  };
 
-                                const isAudioUrl = (url: string) => {
-                                  const ext = getExtension(url);
-                                  return ["webm", "mp3", "ogg", "wav", "m4a", "aac"].includes(ext);
-                                };
+                                  const prettyFilename = (name: string = "") => {
+                                    let result = name;
+                                    result = result.replaceAll(/^\d{8,}-/g, "");
+                                    if (result.length > 60 && result.includes("-")) {
+                                      const parts = result.split("-");
+                                      result = parts.slice(1).join("-");
+                                    }
+                                    return result;
+                                  };
 
-                                const isImageUrl = (url: string) => {
-                                  const ext = getExtension(url);
-                                  return ["png", "jpg", "jpeg", "gif", "webp", "avif"].includes(
-                                    ext
-                                  );
-                                };
+                                  const audio = isAudioUrl(file);
+                                  const image = isImageUrl(file);
+                                  const rawFilename = getFileNameFromUrl(file);
+                                  const displayName = prettyFilename(rawFilename);
+                                  const audioKey = `${comment.id}-audio-${i}`;
+                                  const imageKey = `${comment.id}-image-${i}`;
+                                  const fileKey = `${comment.id}-file-${i}`;
 
-                                const getFileNameFromUrl = (url: string) => {
-                                  const clean = url.split("?")[0];
-                                  const parts = clean.split("/");
-                                  return parts.length > 0 ? parts.pop() || url : url;
-                                };
-
-                                const prettyFilename = (name: string = "") => {
-                                  let result = name;
-                                  result = result.replaceAll(/^\d{8,}-/g, "");
-                                  if (result.length > 60 && result.includes("-")) {
-                                    const parts = result.split("-");
-                                    result = parts.slice(1).join("-");
-                                  }
-                                  return result;
-                                };
-
-                                const audio = isAudioUrl(file);
-                                const image = isImageUrl(file);
-                                const rawFilename = getFileNameFromUrl(file);
-                                const displayName = prettyFilename(rawFilename);
-                                const audioKey = `${comment.id}-audio-${i}`;
-                                const imageKey = `${comment.id}-image-${i}`;
-                                const fileKey = `${comment.id}-file-${i}`;
-
-                                if (audio) {
-                                  return (
-                                    <div key={audioKey} className="space-y-1">
-                                      <audio controls src={file} className="w-full">
-                                        <track kind="captions" />
-                                      </audio>
-                                      <div className="text-xs text-muted-foreground">
-                                        {tMessages("voiceNote")}
+                                  if (audio) {
+                                    return (
+                                      <div key={audioKey} className="space-y-1">
+                                        <audio controls src={file} className="w-full">
+                                          <track kind="captions" />
+                                        </audio>
+                                        <div className="text-xs text-muted-foreground">
+                                          {tMessages("voiceNote")}
+                                        </div>
                                       </div>
+                                    );
+                                  }
+
+                                  if (image) {
+                                    return (
+                                      <a
+                                        key={imageKey}
+                                        href={file}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block"
+                                      >
+                                        <img
+                                          src={file}
+                                          alt={displayName}
+                                          className="max-h-48 rounded border object-contain"
+                                        />
+                                        <span className="text-xs text-muted-foreground block mt-1">
+                                          {tMessages("image")} • {displayName}
+                                        </span>
+                                      </a>
+                                    );
+                                  }
+
+                                  return (
+                                    <div key={fileKey} className="space-y-1">
+                                      <a
+                                        href={file}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-600 hover:underline block"
+                                      >
+                                        {tMessages("file")}
+                                      </a>
+                                      <span className="text-xs text-muted-foreground block">
+                                        {displayName}
+                                      </span>
                                     </div>
                                   );
-                                }
-
-                                if (image) {
-                                  return (
-                                    <a
-                                      key={imageKey}
-                                      href={file}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block"
-                                    >
-                                      <img
-                                        src={file}
-                                        alt={displayName}
-                                        className="max-h-48 rounded border object-contain"
-                                      />
-                                      <span className="text-xs text-muted-foreground block mt-1">
-                                        {tMessages("image")} • {displayName}
-                                      </span>
-                                    </a>
-                                  );
-                                }
-
-                                return (
-                                  <div key={fileKey} className="space-y-1">
-                                    <a
-                                      href={file}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-sm text-blue-600 hover:underline block"
-                                    >
-                                      {tMessages("file")}
-                                    </a>
-                                    <span className="text-xs text-muted-foreground block">
-                                      {displayName}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-
-              <Separator />
-
-              {request.status !== "COMPLETED" && (
-                <div className="space-y-3">
-                  <InlineFileUpload
-                    onFilesChange={setCommentFiles}
-                    maxFiles={3}
-                    disabled={addComment.isPending}
-                    files={commentFiles}
-                  />
-                  <div className="flex gap-2">
-                    <Textarea
-                      placeholder={t("messages.placeholder")}
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      rows={2}
-                    />
-                    <Button
-                      size="icon"
-                      onClick={handleSendComment}
-                      disabled={
-                        (!comment.trim() && commentFiles.length === 0) || addComment.isPending
-                      }
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                      )
+                    )}
                   </div>
-                </div>
-              )}
+                )}
 
-              {request.status === "COMPLETED" && (
-                <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm">{t("messages.requestCompleted")}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                <Separator />
+
+                {request.status !== "COMPLETED" && (
+                  <div className="space-y-3">
+                    <InlineFileUpload
+                      onFilesChange={setCommentFiles}
+                      maxFiles={3}
+                      disabled={addComment.isPending}
+                      files={commentFiles}
+                    />
+                    <div className="flex gap-2">
+                      <Textarea
+                        placeholder={t("messages.placeholder")}
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        rows={2}
+                      />
+                      <Button
+                        size="icon"
+                        onClick={handleSendComment}
+                        disabled={
+                          (!comment.trim() && commentFiles.length === 0) || addComment.isPending
+                        }
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {request.status === "COMPLETED" && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p className="text-sm">{t("messages.requestCompleted")}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle>{t("messages.title")}</CardTitle>
+                <CardDescription>{t("messagingAfterClaim")}</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

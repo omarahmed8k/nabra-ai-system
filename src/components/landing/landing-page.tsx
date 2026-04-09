@@ -8,6 +8,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import type { ComponentType, CSSProperties } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { WhatsAppSupport } from "@/components/ui/whatsapp-support";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { ThemeSwitcher } from "@/components/ui/theme-switcher";
@@ -36,7 +37,7 @@ import { setPendingRequestDescription } from "@/lib/landing-request-draft";
 const FONT_SIZES = {
   hero: {
     title:
-      "text-balance text-lg font-semibold tracking-tight min-[380px]:text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-widest",
+      "text-balance text-lg font-semibold tracking-tight min-[380px]:text-xl sm:text-2xl md:text-3xl lg:text-4xl",
     subtitle:
       "text-[0.9375rem] leading-relaxed text-muted-foreground min-[380px]:text-base sm:text-lg",
   },
@@ -69,6 +70,7 @@ interface Package {
   features: string[];
   featuresI18n?: Record<string, string[]>;
   sortOrder: number;
+  isFeatured?: boolean;
   services: Array<{
     serviceType: {
       id: string;
@@ -524,21 +526,6 @@ export default function LandingPage() {
             */}
             </div>
           </div>
-
-          <nav
-            className="mt-2 flex touch-pan-x gap-1 overflow-x-auto overflow-y-hidden border-t border-border/50 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
-            aria-label={locale === "ar" ? "التنقل في الصفحة" : "In-page navigation"}
-          >
-            {landingNavItems.map((item) => (
-              <Link
-                key={`m-${item.href}`}
-                href={item.href}
-                className="shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground active:bg-muted"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </div>
       </motion.header>
 
@@ -600,7 +587,7 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-4 sm:mb-6"
             >
-              <span className="relative mx-auto block h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-40 lg:w-40">
+              <span className="relative mx-auto block h-40 w-40">
                 <Image
                   src="/images/nabarawy-animated.gif"
                   alt="Nabarawy animated"
@@ -1280,7 +1267,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
+              className="mx-auto grid max-w-7xl grid-cols-1 gap-6 pt-2 sm:gap-8 sm:pt-3 md:grid-cols-2 lg:grid-cols-4"
             >
               {loadingPackages && (
                 <div className="col-span-full flex justify-center py-12">
@@ -1297,14 +1284,27 @@ export default function LandingPage() {
                       whileHover={{ y: -4, transition: { duration: 0.25 } }}
                       className="group relative"
                     >
-                      <div className="relative flex h-full flex-col rounded-2xl border border-border bg-background p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-[0_22px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8">
+                      <div
+                        className={`relative flex h-full flex-col overflow-visible rounded-2xl border bg-background p-6 transition-all duration-300 hover:shadow-[0_22px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8 ${
+                          pkg.isFeatured
+                            ? "border-[#5db9ba]/40 shadow-[0_0_0_1px_rgba(93,185,186,0.12)] hover:border-[#5db9ba]/55"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        {pkg.isFeatured ? (
+                          <div className="pointer-events-none absolute -top-3 left-1/2 z-20 -translate-x-1/2 sm:-top-3.5">
+                            <Badge className="relative border border-white/25 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] px-4 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-white shadow-[0_10px_28px_rgba(130,77,124,0.45),0_2px_8px_rgba(93,185,186,0.35)] ring-2 ring-background">
+                              {t("landing.pricing.featuredBadge")}
+                            </Badge>
+                          </div>
+                        ) : null}
                         <h3
-                          className={`${FONT_SIZES.cardTitle.main} mb-2 font-semibold text-foreground`}
+                          className={`${FONT_SIZES.cardTitle.main} mb-2 font-semibold text-foreground text-center`}
                         >
                           {getLocalizedText(pkg.name, pkg.nameI18n)}
                         </h3>
                         <p
-                          className={`${FONT_SIZES.body.small} mb-6 flex-grow text-muted-foreground`}
+                          className={`${FONT_SIZES.body.small} mb-6 flex-grow text-muted-foreground text-center`}
                         >
                           {pkg.credits} {t("common.credits")}
                         </p>
@@ -1312,10 +1312,12 @@ export default function LandingPage() {
                         <div className="mb-6 h-px w-full bg-gradient-to-r from-[#824d7c]/35 via-white/10 to-[#5db9ba]/35" />
 
                         <div className="mb-6">
-                          <div className="mb-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                          <div className="mb-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl text-center">
                             ${pkg.price}
                           </div>
-                          <p className={`${FONT_SIZES.body.small} text-muted-foreground`}>
+                          <p
+                            className={`${FONT_SIZES.body.small} text-muted-foreground text-center`}
+                          >
                             {t("landing.pricing.perMonth")}
                           </p>
                         </div>

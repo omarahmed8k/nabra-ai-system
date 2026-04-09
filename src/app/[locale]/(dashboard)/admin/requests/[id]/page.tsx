@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ArrowLeft, FileText } from "lucide-react";
 import { AttributeResponsesDisplay } from "@/components/client/attribute-responses-display";
 import { RequestHeader } from "@/components/requests/request-header";
@@ -105,15 +106,24 @@ export default function AdminRequestDetailPage() {
               />
             )}
 
-          {/* Messages */}
-          <MessagesCard
-            requestId={requestId}
-            comments={request.comments as any}
-            title={t("detail.messagesTitle")}
-            description={t("detail.messagesDesc")}
-            placeholder={t("detail.messagesPlaceholder")}
-            canSendMessages={request.status !== "COMPLETED"}
-          />
+          {/* Messages (only after a provider is assigned / has claimed) */}
+          {request.provider ? (
+            <MessagesCard
+              requestId={requestId}
+              comments={request.comments as any}
+              title={t("detail.messagesTitle")}
+              description={t("detail.messagesDesc")}
+              placeholder={t("detail.messagesPlaceholder")}
+              canSendMessages={request.status !== "COMPLETED"}
+            />
+          ) : (
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle>{t("detail.messagesTitle")}</CardTitle>
+                <CardDescription>{t("detail.messagingAfterClaim")}</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

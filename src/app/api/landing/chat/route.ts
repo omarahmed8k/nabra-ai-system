@@ -98,10 +98,17 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
     ? knowledgeBase.slice(0, 60000)
     : "No knowledge file was provided.";
 
+  const servicesFaqRule = [
+    "Services scope (canonical): Nabarawy is not 'just an AI tool' — it combines smart tooling with human expertise; you work together to deliver what the client needs.",
+    "When the user asks what services you offer or what Nabarawy does, reflect: professional design, social media content, video and ads, account management, paid campaigns, and digital solutions for business growth.",
+    "For Arabic users asking this, you may align closely with the Egyptian Arabic phrasing in the knowledge base section 'Canonical Q&A — What services does Nabarawy offer?'.",
+  ].join(" ");
+
   return [
     "You are Nabarawy an AI assistant.",
     "Keep answers concise, clear, and practical.",
     "Do not invent unavailable company details. If details are missing, ask for registration/login and full request details instead of refusal-style wording.",
+    servicesFaqRule,
     languageRule,
     playbookIntentRule,
     "Default format (only when no intent playbook applies):",

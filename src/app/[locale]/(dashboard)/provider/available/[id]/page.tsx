@@ -9,7 +9,6 @@ import { AttributeResponsesDisplay } from "@/components/client/attribute-respons
 import { RequestHeader } from "@/components/requests/request-header";
 import { RequestDescription } from "@/components/requests/request-description";
 import { RequestSidebar } from "@/components/requests/request-sidebar";
-import { MessagesCard } from "@/components/requests/messages-card";
 import { trpc } from "@/lib/trpc/client";
 import { resolveLocalizedText } from "@/lib/i18n";
 
@@ -110,16 +109,6 @@ export default function AvailableJobDetailPage() {
                 serviceAttributes={(request.serviceType as any).attributes}
               />
             )}
-
-          {/* Messages */}
-          <MessagesCard
-            requestId={requestId}
-            comments={request.comments as any}
-            title={t("messagesTitle")}
-            description={t("messagesDescription")}
-            placeholder={t("messagesPlaceholder")}
-            maskClientNames
-          />
         </div>
 
         {/* Sidebar */}

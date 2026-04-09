@@ -26,6 +26,7 @@ import {
   X,
   Wallet,
   CheckCircle,
+  Settings2,
 } from "lucide-react";
 import { useState } from "react";
 import { getInitials } from "@/lib/utils";
@@ -55,6 +56,7 @@ const adminNavConfig = [
   { href: "/admin/notifications", labelKey: "admin.notifications", icon: Bell },
   { href: "/admin/packages", labelKey: "admin.packages", icon: CreditCard },
   { href: "/admin/services", labelKey: "admin.services", icon: Settings },
+  { href: "/admin/settings", labelKey: "admin.settings", icon: Settings2 },
   { href: "/admin/profile", labelKey: "admin.profile", icon: User },
 ];
 

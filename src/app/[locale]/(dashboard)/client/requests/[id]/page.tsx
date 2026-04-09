@@ -407,16 +407,25 @@ export default function RequestDetailPage() {
             </Card>
           )}
 
-          {/* Chat */}
-          <MessagesCard
-            requestId={requestId}
-            comments={request.comments as any}
-            title={t("messagesTitle")}
-            description={t("messagesDescription")}
-            placeholder={t("messagesPlaceholder")}
-            canSendMessages={request.status !== "COMPLETED"}
-            maskProviderNames
-          />
+          {/* Chat (only after a provider has claimed the job) */}
+          {request.provider ? (
+            <MessagesCard
+              requestId={requestId}
+              comments={request.comments as any}
+              title={t("messagesTitle")}
+              description={t("messagesDescription")}
+              placeholder={t("messagesPlaceholder")}
+              canSendMessages={request.status !== "COMPLETED"}
+              maskProviderNames
+            />
+          ) : (
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle>{t("messagesTitle")}</CardTitle>
+                <CardDescription>{t("messagingAfterClaim")}</CardDescription>
+              </CardHeader>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

@@ -31,7 +31,9 @@ export default function AdminPackagesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [createSupportAllServices, setCreateSupportAllServices] = useState(false);
+  const [createIsFeatured, setCreateIsFeatured] = useState(false);
   const [editSupportAllServices, setEditSupportAllServices] = useState(false);
+  const [editIsFeatured, setEditIsFeatured] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   // Localized inputs state
   const [createNameI18n, setCreateNameI18n] = useState<{ en: string; ar: string }>({
@@ -65,6 +67,7 @@ export default function AdminPackagesPage() {
       setShowCreate(false);
       setSelectedServiceIds([]);
       setCreateSupportAllServices(false);
+      setCreateIsFeatured(false);
       setCreateNameI18n({ en: "", ar: "" });
       setCreateDescI18n({ en: "", ar: "" });
       setCreateFeaturesI18n({ en: "", ar: "" });
@@ -81,6 +84,7 @@ export default function AdminPackagesPage() {
       setEditingId(null);
       setSelectedServiceIds([]);
       setEditSupportAllServices(false);
+      setEditIsFeatured(false);
       toast.success(t("toast.updated"));
     },
     onError: (error) => {
@@ -143,6 +147,7 @@ export default function AdminPackagesPage() {
       features: featuresEn,
       featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
       supportAllServices: createSupportAllServices,
+      isFeatured: createIsFeatured,
       serviceIds: selectedServiceIds,
     });
   };
@@ -182,6 +187,7 @@ export default function AdminPackagesPage() {
       features: featuresEn,
       featuresI18n: Object.keys(featuresI18n).length ? featuresI18n : undefined,
       supportAllServices: editSupportAllServices,
+      isFeatured: editIsFeatured,
       serviceIds: selectedServiceIds,
     });
   };
@@ -196,6 +202,7 @@ export default function AdminPackagesPage() {
     setShowCreate(false);
     setSelectedServiceIds([]);
     setCreateSupportAllServices(false);
+    setCreateIsFeatured(false);
     setCreateNameI18n({ en: "", ar: "" });
     setCreateDescI18n({ en: "", ar: "" });
     setCreateFeaturesI18n({ en: "", ar: "" });
@@ -205,12 +212,14 @@ export default function AdminPackagesPage() {
     setEditingId(null);
     setSelectedServiceIds([]);
     setEditSupportAllServices(false);
+    setEditIsFeatured(false);
   }, []);
 
   const handleEditPackage = useCallback((pkg: any) => {
     setEditingId(pkg.id);
     setSelectedServiceIds(pkg.services?.map((s: any) => s.serviceType.id) || []);
     setEditSupportAllServices(pkg.supportAllServices || false);
+    setEditIsFeatured(!!pkg.isFeatured);
     setEditNameI18n({
       en: (pkg as any).nameI18n?.en || pkg.name || "",
       ar: (pkg as any).nameI18n?.ar || "",
@@ -314,6 +323,17 @@ export default function AdminPackagesPage() {
                 />
                 <Label htmlFor="support-all-services" className="cursor-pointer font-medium flex-1">
                   {t("fields.supportAllServices") || "Support All Services"}
+                </Label>
+              </div>
+
+              <div className="flex items-center gap-3 border rounded-lg p-4 bg-muted/50">
+                <Checkbox
+                  id="create-is-featured"
+                  checked={createIsFeatured}
+                  onCheckedChange={(checked) => setCreateIsFeatured(checked as boolean)}
+                />
+                <Label htmlFor="create-is-featured" className="cursor-pointer font-medium flex-1">
+                  {t("fields.isFeatured")}
                 </Label>
               </div>
 
@@ -465,6 +485,20 @@ export default function AdminPackagesPage() {
                               </Label>
                             </div>
 
+                            <div className="flex items-center gap-3 border rounded-lg p-4 bg-muted/50">
+                              <Checkbox
+                                id="edit-is-featured"
+                                checked={editIsFeatured}
+                                onCheckedChange={(checked) => setEditIsFeatured(checked as boolean)}
+                              />
+                              <Label
+                                htmlFor="edit-is-featured"
+                                className="cursor-pointer font-medium flex-1"
+                              >
+                                {t("fields.isFeatured")}
+                              </Label>
+                            </div>
+
                             <div className="space-y-2">
                               <Label>{t("fields.includedServices")}</Label>
                               <div
@@ -508,9 +542,16 @@ export default function AdminPackagesPage() {
                     ) : (
                       <Card key={pkg.id}>
                         <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle>{pkg.nameI18n?.[locale] || pkg.name}</CardTitle>
-                            <Package className="h-5 w-5 text-muted-foreground" />
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1 space-y-2">
+                              {pkg.isFeatured && (
+                                <Badge className="border-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] text-white hover:opacity-95">
+                                  {t("badges.featured")}
+                                </Badge>
+                              )}
+                              <CardTitle>{pkg.nameI18n?.[locale] || pkg.name}</CardTitle>
+                            </div>
+                            <Package className="h-5 w-5 shrink-0 text-muted-foreground" />
                           </div>
                           <CardDescription>
                             <span className="text-2xl font-bold text-foreground">

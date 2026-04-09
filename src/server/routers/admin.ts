@@ -1,9 +1,18 @@
 import { z } from "zod";
+import type { PrismaClient } from "@prisma/client";
 import { router, adminProcedure, publicProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { notifyProviderAssignment } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
+
+/** Only one package may be featured; clears `isFeatured` on all other rows. */
+async function clearFeaturedExcept(db: PrismaClient, keepId: string) {
+  await db.package.updateMany({
+    where: { id: { not: keepId } },
+    data: { isFeatured: false },
+  });
+}
 
 export const adminRouter = router({
   // Public app state for landing/auth UI
@@ -161,6 +170,7 @@ export const adminRouter = router({
           features: true,
           featuresI18n: true,
           sortOrder: true,
+          isFeatured: true,
           services: {
             select: {
               serviceType: {
@@ -863,6 +873,7 @@ export const adminRouter = router({
         features: z.array(z.string()).default([]),
         featuresI18n: z.record(z.array(z.string())).optional(),
         supportAllServices: z.boolean().default(false),
+        isFeatured: z.boolean().default(false),
         serviceIds: z.array(z.string()).default([]),
       })
     )
@@ -896,6 +907,7 @@ export const adminRouter = router({
           features: packageData.features,
           featuresI18n: packageData.featuresI18n || null,
           supportAllServices: packageData.supportAllServices,
+          isFeatured: packageData.isFeatured,
           services: {
             create: serviceIds.map((serviceId: string) => ({
               serviceId,
@@ -910,6 +922,10 @@ export const adminRouter = router({
           },
         },
       });
+
+      if (packageData.isFeatured) {
+        await clearFeaturedExcept(ctx.db, pkg.id);
+      }
 
       return { success: true, package: pkg };
     }),
@@ -929,6 +945,7 @@ export const adminRouter = router({
         featuresI18n: z.record(z.array(z.string())).optional(),
         isActive: z.boolean().optional(),
         supportAllServices: z.boolean().optional(),
+        isFeatured: z.boolean().optional(),
         serviceIds: z.array(z.string()).optional(),
       })
     )
@@ -948,6 +965,10 @@ export const adminRouter = router({
             message: "One or more service IDs are invalid",
           });
         }
+      }
+
+      if (input.isFeatured === true) {
+        await clearFeaturedExcept(ctx.db, id);
       }
 
       // Update package and handle services if provided
@@ -1079,6 +1100,7 @@ export const adminRouter = router({
           durationDays: true,
           sortOrder: true,
           isActive: true,
+          isFeatured: true,
           supportAllServices: true,
           services: {
             select: {
