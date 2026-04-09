@@ -548,7 +548,7 @@ export default function LandingPage() {
         <section className="relative isolate flex min-h-landing-screen flex-col justify-center pb-14 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-28 md:pb-24">
           <div className="pointer-events-none absolute inset-0 z-0 min-h-0 overflow-hidden">
             <video
-              className="absolute inset-0 h-full w-full min-h-0 object-cover object-left-bottom"
+              className="absolute inset-0 h-[115vh] w-full min-h-0 scale-110 object-cover blur-md"
               src="/images/hero.mp4"
               onLoadedData={() => setIsHeroVideoReady(true)}
               onCanPlay={() => setIsHeroVideoReady(true)}
