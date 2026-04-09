@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,8 @@ export function MessagesCard({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const previousLastCommentIdRef = useRef<string | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -207,6 +209,18 @@ export function MessagesCard({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  useEffect(() => {
+    const lastCommentId = comments.at(-1)?.id ?? null;
+    const hasNewLastComment = lastCommentId !== previousLastCommentIdRef.current;
+    if (!hasNewLastComment) return;
+
+    previousLastCommentIdRef.current = lastCommentId;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [comments]);
+
   return (
     <Card>
       <CardHeader>
@@ -217,7 +231,7 @@ export function MessagesCard({
         {comments.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">{t("noMessages")}</p>
         ) : (
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div ref={messagesContainerRef} className="space-y-4 max-h-96 overflow-y-auto">
             {comments.map((comment) => {
               const isSystem = comment.type === "SYSTEM";
               let displayName: string;

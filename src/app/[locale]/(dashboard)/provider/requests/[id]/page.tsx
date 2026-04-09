@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
@@ -36,6 +36,8 @@ export default function ProviderRequestDetailPage() {
   const [deliverable, setDeliverable] = useState("");
   const [deliverableFiles, setDeliverableFiles] = useState<UploadedFile[]>([]);
   const [estimatedHours, setEstimatedHours] = useState<string>("24");
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const previousLastCommentIdRef = useRef<string | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -46,7 +48,8 @@ export default function ProviderRequestDetailPage() {
         getRequestThreadPollingInterval(
           (query.state.data as { status?: string } | undefined)?.status
         ),
-      refetchIntervalInBackground: false,
+      refetchIntervalInBackground: true,
+      refetchOnWindowFocus: true,
     }
   );
 
@@ -121,6 +124,18 @@ export default function ProviderRequestDetailPage() {
     });
     setDeliverableFiles([]);
   };
+
+  useEffect(() => {
+    const lastCommentId = request?.comments?.at(-1)?.id ?? null;
+    const hasNewLastComment = lastCommentId !== previousLastCommentIdRef.current;
+    if (!hasNewLastComment) return;
+
+    previousLastCommentIdRef.current = lastCommentId;
+
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [request?.comments]);
 
   if (isLoading) {
     return (
@@ -395,7 +410,7 @@ export default function ProviderRequestDetailPage() {
               {request.comments.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">{t("messages.noMessages")}</p>
               ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div ref={messagesContainerRef} className="space-y-4 max-h-96 overflow-y-auto">
                   {request.comments.map(
                     (comment: {
                       id: string;
