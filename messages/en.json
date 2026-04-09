@@ -203,7 +203,20 @@
       "pitchTitle": "Join the creators community",
       "pitchBullet0": "Tell us your field and professional experience",
       "pitchBullet1": "Share your portfolio / LinkedIn",
-      "pitchBullet2": "Our team will review your application and contact you when a suitable opportunity comes up"
+      "pitchBullet2": "Our team will review your application and contact you when a suitable opportunity comes up",
+      "servicesLabel": "Services you provide",
+      "servicesOptional": "optional",
+      "servicesHint": "Select all areas you work in — we’ll include them in your application.",
+      "serviceOptions": {
+        "design": "Design & branding (graphics, UI, identity)",
+        "social": "Social media content",
+        "video": "Video & motion",
+        "ads": "Ads & creative copy",
+        "accounts": "Account & community management",
+        "paid_campaigns": "Paid campaigns & media buying",
+        "digital": "Digital strategy & growth",
+        "other": "Other"
+      }
     }
   },
   "notFound": {

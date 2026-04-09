@@ -21,6 +21,20 @@ const textareaClass =
 
 export type ContactFormVariant = "client" | "provider";
 
+/** Stable ids for provider form — labels come from `forms.provider.serviceOptions.*` */
+export const PROVIDER_FORM_SERVICE_IDS = [
+  "design",
+  "social",
+  "video",
+  "ads",
+  "accounts",
+  "paid_campaigns",
+  "digital",
+  "other",
+] as const;
+
+export type ProviderFormServiceId = (typeof PROVIDER_FORM_SERVICE_IDS)[number];
+
 interface ContactFormPageProps {
   readonly variant: ContactFormVariant;
 }
@@ -60,6 +74,7 @@ async function inspectSubmissionResponse(
 
 export function ContactFormPage({ variant }: ContactFormPageProps) {
   const t = useTranslations();
+  const tSvc = useTranslations("forms.provider.serviceOptions");
   const [loading, setLoading] = useState(false);
   const submitLockRef = useRef(false);
   const prefix = variant === "client" ? "forms.client" : "forms.provider";
@@ -76,6 +91,11 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
       const v = formData.get(key);
       return typeof v === "string" ? v.trim() : "";
     };
+    const servicesRaw = formData.getAll("services");
+    const knownIds = new Set<string>(PROVIDER_FORM_SERVICE_IDS);
+    const serviceIds = servicesRaw.filter(
+      (v): v is string => typeof v === "string" && knownIds.has(v)
+    );
     const payload = {
       type: variant,
       fullName: getText("fullName"),
@@ -84,6 +104,7 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
       company: getText("company"),
       website: getText("website"),
       message: getText("message"),
+      services: variant === "provider" ? serviceIds : [],
     };
 
     try {
@@ -103,13 +124,22 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
         variant === "provider"
           ? `Provider form submission — ${payload.fullName}`
           : `Client form submission — ${payload.fullName}`;
+      let serviceLabelsForEmail = "";
+      if (variant === "provider") {
+        serviceLabelsForEmail =
+          payload.services.length > 0
+            ? payload.services.map((id) => tSvc(id as ProviderFormServiceId)).join(", ")
+            : "—";
+      }
+
       const web3Message = [
         `Type: ${payload.type}`,
         `Name: ${payload.fullName}`,
         `Email: ${payload.email}`,
         `WhatsApp: ${payload.whatsapp}`,
         `Company: ${payload.company || "-"}`,
-        `Website: ${payload.website || "-"}`,
+        `Website / portfolio / social: ${payload.website || "-"}`,
+        ...(variant === "provider" ? [`Services offered: ${serviceLabelsForEmail}`] : []),
         `Message: ${payload.message || "-"}`,
       ].join("\n");
 
@@ -326,11 +356,43 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
                     maxLength={300}
                     className={fieldClass}
                     placeholder={
-                      variant === "client" ? "https://…" : "Portfolio / LinkedIn / Website"
+                      variant === "client" ? "https://…" : "Portfolio / LinkedIn / social links"
                     }
                   />
                 </div>
               </div>
+
+              {variant === "provider" && (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {t("forms.provider.servicesLabel")}
+                      <span className="ms-1 text-muted-foreground font-normal">
+                        ({t("forms.provider.servicesOptional")})
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("forms.provider.servicesHint")}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    {PROVIDER_FORM_SERVICE_IDS.map((id) => (
+                      <label
+                        key={id}
+                        className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/50 px-3 py-2.5 text-sm shadow-sm transition-colors hover:bg-muted/50"
+                      >
+                        <input
+                          type="checkbox"
+                          name="services"
+                          value={id}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-primary text-primary accent-primary"
+                        />
+                        <span className="leading-snug text-foreground">{tSvc(id)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-sm font-medium">
