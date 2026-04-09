@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AdminSettingsPage() {
-  const tPage = useTranslations("admin.settings");
+  const tAdmin = useTranslations("admin");
   const t = useTranslations("admin.dashboard.maintenance");
   const { data: maintenance, isLoading: maintenanceLoading } =
     trpc.admin.getMaintenanceMode.useQuery();
@@ -37,8 +37,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">{tPage("title")}</h1>
-        <p className="text-muted-foreground">{tPage("subtitle")}</p>
+        <h1 className="text-3xl font-bold">{tAdmin("settings.title")}</h1>
+        <p className="text-muted-foreground">{tAdmin("settings.subtitle")}</p>
       </div>
 
       <Card>
