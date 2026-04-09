@@ -457,6 +457,9 @@ export default function LandingPage() {
         transition={{ duration: 0.35 }}
         className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl"
       >
+        <div className="border-b border-border/60 bg-primary/10 px-3 py-1 text-center text-xs text-foreground">
+          {t("landing.notices.beta")}
+        </div>
         <div className="h-px w-full bg-gradient-to-r from-transparent via-[#5db9ba]/45 to-transparent" />
         <div className="mx-auto max-w-[1400px] px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
           <div className="flex min-h-[2.75rem] items-center justify-between gap-2 sm:gap-4">

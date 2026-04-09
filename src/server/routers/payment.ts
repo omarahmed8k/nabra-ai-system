@@ -19,6 +19,7 @@ export const paymentRouter = router({
       z.object({
         bankName: z.string(),
         accountName: z.string(),
+        instapayLink: z.string().optional(),
         iban: z.string(),
         swiftCode: z.string(),
         currency: z.string(),
@@ -31,6 +32,7 @@ export const paymentRouter = router({
       return {
         bankName: "National Bank of Kuwait",
         accountName: "NABRA E BUSINESS SOLUTIONS",
+        instapayLink: process.env.INSTAPAY_LINK || process.env.NEXT_PUBLIC_INSTAPAY_LINK || "",
         iban: "EG490023002302302617611610010",
         swiftCode: "WABAEGCXXXX",
         currency: "USD",

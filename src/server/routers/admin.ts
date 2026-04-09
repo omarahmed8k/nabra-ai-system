@@ -6,6 +6,104 @@ import { notifyProviderAssignment } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
 export const adminRouter = router({
+  // Public app state for landing/auth UI
+  getPublicAppState: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/app-state/public",
+        tags: ["admin"],
+        summary: "Get public app state",
+      },
+    })
+    .output(
+      z.object({
+        maintenanceMode: z.boolean(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const setting = await ctx.db.systemSettings.findUnique({
+        where: { key: "maintenance_mode" },
+        select: { value: true },
+      });
+
+      const value = setting?.value as { enabled?: boolean } | null | undefined;
+      return {
+        maintenanceMode: Boolean(value?.enabled),
+      };
+    }),
+
+  // Admin maintenance mode controls
+  getMaintenanceMode: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/settings/maintenance",
+        tags: ["admin"],
+        summary: "Get maintenance mode status",
+      },
+    })
+    .output(
+      z.object({
+        enabled: z.boolean(),
+        updatedAt: z.date().nullable(),
+      })
+    )
+    .query(async ({ ctx }) => {
+      const setting = await ctx.db.systemSettings.findUnique({
+        where: { key: "maintenance_mode" },
+        select: { value: true, updatedAt: true },
+      });
+
+      const value = setting?.value as { enabled?: boolean } | null | undefined;
+      return {
+        enabled: Boolean(value?.enabled),
+        updatedAt: setting?.updatedAt ?? null,
+      };
+    }),
+
+  setMaintenanceMode: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/admin/settings/maintenance",
+        tags: ["admin"],
+        summary: "Set maintenance mode status",
+      },
+    })
+    .input(
+      z.object({
+        enabled: z.boolean(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        enabled: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updated = await ctx.db.systemSettings.upsert({
+        where: { key: "maintenance_mode" },
+        update: {
+          value: { enabled: input.enabled },
+          description: "When enabled, only SUPER_ADMIN users can log in.",
+        },
+        create: {
+          key: "maintenance_mode",
+          value: { enabled: input.enabled },
+          description: "When enabled, only SUPER_ADMIN users can log in.",
+        },
+        select: { value: true },
+      });
+
+      const value = updated.value as { enabled?: boolean } | null | undefined;
+      return {
+        success: true,
+        enabled: Boolean(value?.enabled),
+      };
+    }),
+
   // Get all active service types (public - for landing page)
   getPublicServiceTypes: publicProcedure
     .meta({

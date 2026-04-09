@@ -21,6 +21,7 @@ import { showError } from "@/lib/error-handler";
 import { formatDateTime, getInitials } from "@/lib/utils";
 import { resolveLocalizedText } from "@/lib/i18n";
 import { calculateAttributeCredits } from "@/lib/attribute-validation";
+import { getRequestThreadPollingInterval } from "@/lib/request-realtime";
 import { Send, Upload, Play, CheckCircle } from "lucide-react";
 
 export default function ProviderRequestDetailPage() {
@@ -38,13 +39,21 @@ export default function ProviderRequestDetailPage() {
 
   const utils = trpc.useUtils();
 
-  const { data: request, isLoading } = trpc.request.getById.useQuery({
-    id: requestId,
-  });
+  const { data: request, isLoading } = trpc.request.getById.useQuery(
+    { id: requestId },
+    {
+      refetchInterval: (query) =>
+        getRequestThreadPollingInterval(
+          (query.state.data as { status?: string } | undefined)?.status
+        ),
+      refetchIntervalInBackground: false,
+    }
+  );
 
   const addComment = trpc.request.addComment.useMutation({
     onSuccess: () => {
       setComment("");
+      setCommentFiles([]);
       utils.request.getById.invalidate({ id: requestId });
       toast.success(t("toast.messageSent"), {
         description: t("toast.messageSuccess"),
@@ -84,10 +93,9 @@ export default function ProviderRequestDetailPage() {
     if (!comment.trim() && commentFiles.length === 0) return;
     addComment.mutate({
       requestId,
-      content: comment || "(Attachment)",
+      content: comment || tMessages("attachmentFallback"),
       files: commentFiles.map((f) => f.url),
     });
-    setCommentFiles([]);
   };
 
   const handleStartWork = () => {
@@ -543,6 +551,7 @@ export default function ProviderRequestDetailPage() {
                     onFilesChange={setCommentFiles}
                     maxFiles={3}
                     disabled={addComment.isPending}
+                    files={commentFiles}
                   />
                   <div className="flex gap-2">
                     <Textarea

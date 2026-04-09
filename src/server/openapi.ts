@@ -1238,6 +1238,7 @@ export function buildOpenApiDocument(baseUrl: string) {
             properties: {
               bankName: { type: "string" },
               accountName: { type: "string" },
+              instapayLink: { type: "string" },
               iban: { type: "string" },
               swiftCode: { type: "string" },
               currency: { type: "string" },

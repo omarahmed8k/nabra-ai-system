@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CONTINUE_NEW_REQUEST_PATH, parseContinuePath } from "@/lib/landing-request-draft";
+import { trpc } from "@/lib/trpc/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const continuePath = parseContinuePath(searchParams?.get("continue") ?? null);
+  const { data: appState } = trpc.admin.getPublicAppState.useQuery();
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) return;
@@ -75,6 +77,15 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        const maintenanceBlocked =
+          result.error.includes("MAINTENANCE_MODE") || (appState?.maintenanceMode ?? false);
+        if (maintenanceBlocked) {
+          toast.error(t("maintenanceLoginBlocked"), {
+            description: t("maintenanceLoginBlockedDesc"),
+          });
+          setIsLoading(false);
+          return;
+        }
         toast.error(t("loginFailed"), {
           description: t("invalidCredentials"),
         });
@@ -147,6 +158,11 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={onSubmit}>
           <CardContent className="space-y-4">
+            {appState?.maintenanceMode && (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+                {t("maintenanceNote")}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">{t("emailLabel")} *</Label>
               <Input

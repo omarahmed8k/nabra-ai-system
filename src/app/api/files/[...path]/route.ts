@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const s3Client = new S3Client({
@@ -13,7 +13,7 @@ const s3Client = new S3Client({
 
 const BUCKET_NAME = process.env.B2_BUCKET_NAME || "Nabarawy";
 
-export async function GET({ params }: { params: Promise<{ path: string[] }> }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const { path } = await params;
     const key = path.join("/");

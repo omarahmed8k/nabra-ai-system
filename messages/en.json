@@ -55,6 +55,10 @@
       "clientForm": "Client form",
       "providerForm": "Provider form"
     },
+    "notices": {
+      "maintenance": "Maintenance mode is enabled. Login is temporarily unavailable.",
+      "beta": "Beta version: this platform is currently in beta and may change frequently."
+    },
     "hero": {
       "title": "Build with Nabarawy",
       "subtitle": "Describe what you need. We’ll handle the rest.",
@@ -255,7 +259,10 @@
       "welcomeBack": "Welcome back!",
       "successLogin": "You have been successfully logged in.",
       "error": "Error",
-      "errorMessage": "An error occurred. Please try again."
+      "errorMessage": "An error occurred. Please try again.",
+      "maintenanceNote": "Maintenance mode is active. Login is temporarily unavailable.",
+      "maintenanceLoginBlocked": "Login restricted during maintenance",
+      "maintenanceLoginBlockedDesc": "Login is temporarily unavailable."
     },
     "register": {
       "title": "Create an account",
@@ -305,6 +312,16 @@
     "dashboard": {
       "title": "Admin Dashboard",
       "subtitle": "Manage the platform and monitor activity",
+      "maintenance": {
+        "title": "Maintenance Mode",
+        "description": "When enabled, only admin users can log in.",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "turnOn": "Enable Maintenance Mode",
+        "turnOff": "Disable Maintenance Mode",
+        "updating": "Updating...",
+        "loading": "Loading..."
+      },
       "stats": {
         "totalUsers": "Total Users",
         "totalRequests": "Total Requests",
@@ -1072,6 +1089,7 @@
       "bankDetails": {
         "title": "Bank Transfer Details",
         "description": "Send payment to the following account via international bank transfer (IBAN)",
+        "instapay": "InstaPay Link",
         "bankName": "Bank Name",
         "accountName": "Account Name",
         "iban": "IBAN",

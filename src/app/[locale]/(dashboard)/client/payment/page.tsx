@@ -68,6 +68,7 @@ interface PendingSubscription {
 interface PaymentInfo {
   bankName: string;
   accountName: string;
+  instapayLink?: string;
   iban: string;
   swiftCode: string;
   currency: string;
@@ -414,6 +415,28 @@ function BankDetailsCard({
 
         {/* Bank Details */}
         <div className="space-y-3">
+          {paymentInfo.instapayLink && (
+            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+              <div>
+                <p className="text-xs text-muted-foreground">{t("bankDetails.instapay")}</p>
+                <a
+                  href={paymentInfo.instapayLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary underline break-all"
+                >
+                  {paymentInfo.instapayLink}
+                </a>
+              </div>
+              <CopyButton
+                field="instapayLink"
+                value={paymentInfo.instapayLink}
+                copied={copied}
+                onCopy={onCopy}
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
             <div>
               <p className="text-xs text-muted-foreground">{t("bankDetails.bankName")}</p>

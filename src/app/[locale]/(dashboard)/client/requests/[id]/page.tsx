@@ -19,6 +19,7 @@ import { ProviderDeliverables } from "@/components/requests/provider-deliverable
 import { trpc } from "@/lib/trpc/client";
 import { showError } from "@/lib/error-handler";
 import { resolveLocalizedText } from "@/lib/i18n";
+import { getRequestThreadPollingInterval } from "@/lib/request-realtime";
 import { CheckCircle, RotateCcw, Star, CreditCard, MessageCircle } from "lucide-react";
 
 const ADMIN_WHATSAPP_NUMBER = "+966 50 615 9409";
@@ -35,9 +36,16 @@ export default function RequestDetailPage() {
 
   const utils = trpc.useUtils();
 
-  const { data: request, isLoading } = trpc.request.getById.useQuery({
-    id: requestId,
-  });
+  const { data: request, isLoading } = trpc.request.getById.useQuery(
+    { id: requestId },
+    {
+      refetchInterval: (query) =>
+        getRequestThreadPollingInterval(
+          (query.state.data as { status?: string } | undefined)?.status
+        ),
+      refetchIntervalInBackground: false,
+    }
+  );
 
   const { data: subscription } = trpc.subscription.getActive.useQuery();
 

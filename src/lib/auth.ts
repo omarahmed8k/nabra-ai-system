@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
@@ -76,6 +76,19 @@ export const authOptions: NextAuthOptions = {
 
         if (!isPasswordValid) {
           throw new Error("Invalid email or password");
+        }
+
+        const maintenanceSetting = await db.systemSettings.findUnique({
+          where: { key: "maintenance_mode" },
+          select: { value: true },
+        });
+        const maintenanceValue = maintenanceSetting?.value as
+          | { enabled?: boolean }
+          | null
+          | undefined;
+        const maintenanceEnabled = Boolean(maintenanceValue?.enabled);
+        if (maintenanceEnabled && user.role !== "SUPER_ADMIN") {
+          throw new Error("MAINTENANCE_MODE_ONLY_ADMIN");
         }
 
         return {
