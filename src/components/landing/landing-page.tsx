@@ -26,6 +26,8 @@ import {
   Pause,
   Volume2,
   VolumeX,
+  Briefcase,
+  Sparkles,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { setPendingRequestDescription } from "@/lib/landing-request-draft";
@@ -180,6 +182,18 @@ export default function LandingPage() {
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
   const heroReplyScrollRef = useRef<HTMLDivElement>(null);
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const landingNavItems = useMemo(
+    () =>
+      [
+        { href: "#features", label: t("landing.nav.features") },
+        { href: "#gallery", label: t("landing.nav.gallery") },
+        { href: "#pricing", label: t("landing.nav.pricing") },
+        { href: "/forms/client", label: t("landing.nav.clientForm") },
+        { href: "/forms/provider", label: t("landing.nav.providerForm") },
+      ] as const,
+    [t]
+  );
 
   const { data: packagesData } = trpc.admin.getPublicPackages.useQuery(undefined, {
     enabled: true,
@@ -441,63 +455,61 @@ export default function LandingPage() {
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl"
+        className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl"
       >
         <div className="h-px w-full bg-gradient-to-r from-transparent via-[#5db9ba]/45 to-transparent" />
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
-          <Link href="/" className="relative z-10 flex items-center gap-2">
-            <Image
-              src="/images/nabarawy-dark.svg"
-              alt="Nabra Logo"
-              width={120}
-              height={120}
-              className="h-8 w-auto dark:hidden sm:h-10 lg:h-11"
-            />
-            <Image
-              src="/images/nabarawy-light.svg"
-              alt="Nabra Logo"
-              width={120}
-              height={120}
-              className="hidden h-8 w-auto dark:block sm:h-10 lg:h-11"
-            />
-          </Link>
-
-          <nav className="hidden items-center gap-8 md:flex lg:gap-10">
-            {[
-              { href: "#features", label: t("landing.nav.features") },
-              { href: "#gallery", label: t("landing.nav.gallery") },
-              { href: "#pricing", label: t("landing.nav.pricing") },
-              { href: "/forms/client", label: t("landing.nav.clientForm") },
-              { href: "/forms/provider", label: t("landing.nav.providerForm") },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <span className="relative">
-                  {item.label}
-                  <span
-                    className={`absolute -bottom-2 h-px w-full scale-x-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] transition-transform duration-300 group-hover:scale-x-100 ${isRTL ? "right-0 origin-right" : "left-0 origin-left"}`}
-                  />
-                </span>
-              </Link>
-            ))}
-          </nav>
-
-          <div className="relative z-10 flex items-center gap-2 sm:gap-3">
-            <ThemeSwitcher />
-            <LanguageSwitcher />
-            <Link href="/auth/login">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 rounded-md border-border bg-transparent px-4 text-sm font-medium text-foreground hover:bg-muted/50"
-              >
-                {t("common.buttons.signIn")}
-              </Button>
+        <div className="mx-auto max-w-[1400px] px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
+          <div className="flex min-h-[2.75rem] items-center justify-between gap-2 sm:gap-4">
+            <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2">
+              <Image
+                src="/images/nabarawy-dark.svg"
+                alt="Nabra Logo"
+                width={120}
+                height={120}
+                className="h-8 w-auto dark:hidden sm:h-10 lg:h-11"
+              />
+              <Image
+                src="/images/nabarawy-light.svg"
+                alt="Nabra Logo"
+                width={120}
+                height={120}
+                className="hidden h-8 w-auto dark:block sm:h-10 lg:h-11"
+              />
             </Link>
-            {/*
+
+            <nav
+              className="hidden min-w-0 flex-1 items-center justify-center gap-6 md:flex lg:gap-10"
+              aria-label={locale === "ar" ? "التنقل الرئيسي" : "Primary"}
+            >
+              {landingNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group relative shrink-0 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <span className="relative">
+                    {item.label}
+                    <span
+                      className={`absolute -bottom-2 h-px w-full scale-x-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] transition-transform duration-300 group-hover:scale-x-100 ${isRTL ? "right-0 origin-right" : "left-0 origin-left"}`}
+                    />
+                  </span>
+                </Link>
+              ))}
+            </nav>
+
+            <div className="relative z-10 flex shrink-0 items-center gap-1.5 sm:gap-3">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+              <Link href="/auth/login">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 rounded-md border-border bg-transparent px-4 text-sm font-medium text-foreground hover:bg-muted/50"
+                >
+                  {t("common.buttons.signIn")}
+                </Button>
+              </Link>
+              {/*
             <Link href="/auth/register">
               <Button
                 size="sm"
@@ -507,7 +519,23 @@ export default function LandingPage() {
               </Button>
             </Link>
             */}
+            </div>
           </div>
+
+          <nav
+            className="mt-2 flex touch-pan-x gap-1 overflow-x-auto overflow-y-hidden border-t border-border/50 py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
+            aria-label={locale === "ar" ? "التنقل في الصفحة" : "In-page navigation"}
+          >
+            {landingNavItems.map((item) => (
+              <Link
+                key={`m-${item.href}`}
+                href={item.href}
+                className="shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground active:bg-muted"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </motion.header>
 
@@ -545,7 +573,7 @@ export default function LandingPage() {
 
       <main className="relative z-10">
         {/* Hero — Lovable-style: headline + prompt shell */}
-        <section className="relative isolate flex min-h-landing-screen flex-col justify-center pb-14 pt-[calc(5.5rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-28 md:pb-24">
+        <section className="relative isolate flex min-h-landing-screen flex-col justify-center pb-14 pt-[calc(7.5rem+env(safe-area-inset-top,0px))] sm:pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-20 md:pt-[calc(5.75rem+env(safe-area-inset-top,0px))] md:pb-24">
           <div className="pointer-events-none absolute inset-0 z-0 min-h-0 overflow-hidden">
             <video
               className="absolute inset-0 h-[115vh] w-full min-h-0 scale-110 object-cover blur-md"
@@ -563,7 +591,7 @@ export default function LandingPage() {
             />
             <div className="absolute inset-0 bg-black/45" aria-hidden />
           </div>
-          <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 text-center sm:px-6 md:px-8 lg:px-10 xl:max-w-[90rem] xl:px-12">
+          <div className="relative z-10 mx-auto flex min-w-0 w-full max-w-5xl flex-col items-center px-4 text-center sm:px-6 md:px-8 lg:px-10 xl:max-w-[90rem] xl:px-12">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -587,7 +615,7 @@ export default function LandingPage() {
               transition={{ delay: 0.05 }}
               className={`w-full max-w-4xl px-1 sm:px-0 ${FONT_SIZES.hero.title} text-foreground`}
             >
-              <span className="min-w-0 w-full max-w-full px-1 leading-[1.12] sm:px-0 sm:leading-[1.15] md:leading-tight">
+              <span className="min-w-0 w-full max-w-full px-1 leading-[1.12] sm:px-0 sm:leading-[1.15] md:leading-tight text-white">
                 {t("landing.hero.title")}
               </span>
             </motion.h1>
@@ -596,7 +624,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-8 w-full max-w-md rounded-2xl border border-border bg-card/95 p-2.5 backdrop-blur-sm sm:mt-10 sm:max-w-lg sm:p-3 md:max-w-4xl md:p-4"
+              className="mt-8 w-full min-w-0 max-w-md rounded-2xl border border-border bg-card/95 p-2.5 backdrop-blur-sm sm:mt-10 sm:max-w-lg sm:p-3 md:max-w-4xl md:p-4"
             >
               <div className="relative min-h-[5.5rem]">
                 {heroChatPhase === "showingReply" ? (
@@ -680,16 +708,16 @@ export default function LandingPage() {
                 )}
               </div>
               <div
-                className={`flex items-center justify-between border-t border-border px-2 pb-1 pt-2 ${
+                className={`flex flex-nowrap items-center justify-between gap-2 border-t border-border px-1.5 pb-1 pt-2 sm:px-2 ${
                   heroChatPhase === "idle" ? "" : "opacity-60"
                 }`}
               >
-                <div className="group relative">
+                <div className="group relative shrink-0">
                   <button
                     type="button"
                     disabled
                     aria-disabled
-                    className="cursor-not-allowed rounded-full p-2 text-muted-foreground opacity-50"
+                    className="cursor-not-allowed rounded-full p-1.5 text-muted-foreground opacity-50 sm:p-2"
                     aria-label={t("landing.hero.uploadTooltip")}
                   >
                     <Plus className="h-5 w-5" />
@@ -703,9 +731,9 @@ export default function LandingPage() {
                     </span>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
                   <span
-                    className="inline-flex rounded-full p-2 text-muted-foreground"
+                    className="inline-flex shrink-0 rounded-full p-1.5 text-muted-foreground sm:p-2"
                     aria-hidden="true"
                   >
                     <LayoutGrid className="h-4 w-4" />
@@ -714,7 +742,7 @@ export default function LandingPage() {
                     type="button"
                     onClick={() => void handleHeroSubmit()}
                     disabled={heroChatPhase !== "idle" || heroLoadingReply || !heroPrompt.trim()}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#824d7c] to-[#5db9ba] text-white shadow-[0_8px_24px_rgba(130,77,124,0.35)] transition-all hover:scale-[1.03] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-55"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#824d7c] to-[#5db9ba] text-white shadow-[0_8px_24px_rgba(130,77,124,0.35)] transition-all hover:scale-[1.03] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-55 sm:h-9 sm:w-9"
                     aria-label={t("common.buttons.getStarted")}
                   >
                     {heroLoadingReply ? (
@@ -743,57 +771,63 @@ export default function LandingPage() {
               <p className={FONT_SIZES.body.normal}>{t("landing.forms.subheading")}</p>
             </div>
 
-            <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5">
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-muted/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5db9ba]/55 to-transparent opacity-70" />
-                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#5db9ba]/12 via-transparent to-[#824d7c]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 items-stretch gap-5 sm:mt-14 sm:grid-cols-2 sm:gap-6">
+              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#5db9ba]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5db9ba]/55 to-transparent opacity-80" />
+                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#5db9ba]/14 via-transparent to-[#824d7c]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                <div className="flex items-start gap-4">
-                  <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-border bg-muted shadow-sm">
-                    <Image src="/images/logo.png" alt="" fill className="object-contain p-2" />
+                <div className="flex flex-1 flex-row items-start gap-4 sm:gap-6">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#5db9ba]/25 to-[#824d7c]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
+                    aria-hidden
+                  >
+                    <Briefcase className="h-5 w-5 text-foreground/90" strokeWidth={1.75} />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">
+                  <div className="min-w-0 flex-1 text-start">
+                    <h3 className="text-xl font-semibold tracking-tight text-foreground">
                       {t("landing.forms.client.title")}
                     </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
                       {t("landing.forms.client.description")}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <Link href="/forms/client">
-                    <Button className="h-10 rounded-md bg-gradient-to-r from-[#824d7c] to-[#5db9ba] px-5 text-sm font-medium text-white transition-all hover:opacity-95">
+                <div className="mt-4 border-t border-border/50 pt-6 sm:mt-6">
+                  <Link href="/forms/client" className="block w-full sm:inline-block sm:w-auto">
+                    <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-[#824d7c] to-[#5db9ba] px-6 text-sm font-medium text-white shadow-[0_8px_28px_rgba(130,77,124,0.25)] transition-all hover:opacity-95 hover:shadow-[0_12px_36px_rgba(93,185,186,0.2)] sm:w-auto">
                       {t("landing.forms.client.cta")}
                     </Button>
                   </Link>
                 </div>
               </div>
 
-              <div className="group relative overflow-hidden rounded-2xl border border-border bg-muted/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#824d7c]/55 to-transparent opacity-70" />
-                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#824d7c]/12 via-transparent to-[#5db9ba]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#824d7c]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#824d7c]/55 to-transparent opacity-80" />
+                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#824d7c]/14 via-transparent to-[#5db9ba]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                <div className="flex items-start gap-4">
-                  <div className="relative h-12 w-12 overflow-hidden rounded-xl border border-border bg-muted shadow-sm">
-                    <Image src="/images/logo.png" alt="" fill className="object-contain p-2" />
+                <div className="flex flex-1 flex-row items-start gap-4 sm:gap-6">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#824d7c]/25 to-[#5db9ba]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
+                    aria-hidden
+                  >
+                    <Sparkles className="h-5 w-5 text-foreground/90" strokeWidth={1.75} />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">
+                  <div className="min-w-0 flex-1 text-start">
+                    <h3 className="text-xl font-semibold tracking-tight text-foreground">
                       {t("landing.forms.provider.title")}
                     </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground sm:text-[0.9375rem]">
                       {t("landing.forms.provider.description")}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <Link href="/forms/provider">
+                <div className="mt-4 border-t border-border/50 pt-6 sm:mt-6">
+                  <Link href="/forms/provider" className="block w-full sm:inline-block sm:w-auto">
                     <Button
                       variant="outline"
-                      className="h-10 rounded-md border-border bg-transparent px-5 text-sm font-medium text-foreground hover:bg-muted/50"
+                      className="h-11 w-full rounded-xl border-border/80 bg-background/40 px-6 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-[#824d7c]/40 hover:bg-muted/60 sm:w-auto"
                     >
                       {t("landing.forms.provider.cta")}
                     </Button>
@@ -810,7 +844,7 @@ export default function LandingPage() {
             <h2 className="mb-10 text-center text-3xl font-semibold tracking-tight text-foreground sm:mb-14 sm:text-4xl">
               {t("landing.meet.heading")}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-3 sm:gap-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
               {MEET_STEP_KEYS.map((key) => (
                 <motion.div
                   key={key}
@@ -865,7 +899,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto"
+              className="mx-auto grid max-w-6xl grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5"
             >
               {featureItems.map((feature) => {
                 const Icon = feature.icon;
@@ -877,7 +911,7 @@ export default function LandingPage() {
                     key={feature.key}
                     variants={scaleIn}
                     whileHover={{ y: -4, transition: { duration: 0.25 } }}
-                    className="group relative flex min-w-[170px] max-w-[220px] flex-1 flex-col rounded-2xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/40 sm:min-w-[180px] sm:p-4 md:min-w-[200px]"
+                    className="group relative flex min-h-0 min-w-0 w-full flex-col rounded-2xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/40 sm:p-4"
                   >
                     <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5db9ba]/50 to-transparent opacity-60" />
                     <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-[#5db9ba]/10 via-transparent to-[#824d7c]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -1179,7 +1213,7 @@ export default function LandingPage() {
                   {t("landing.stats.heading")}
                 </h2>
 
-                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 gap-3 min-w-0 sm:gap-6">
                   {[
                     {
                       num: "4.9",
@@ -1243,7 +1277,7 @@ export default function LandingPage() {
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
               variants={staggerContainer}
-              className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
+              className="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4"
             >
               {loadingPackages && (
                 <div className="col-span-full flex justify-center py-12">
@@ -1368,8 +1402,8 @@ export default function LandingPage() {
         transition={{ duration: 0.45 }}
         className="relative z-10 border-t border-border bg-background py-10 sm:py-12"
       >
-        <div className="container flex flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row">
-          <div className="flex items-center gap-2">
+        <div className="container flex w-full flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center md:gap-8">
+          <div className="flex shrink-0 items-center gap-2">
             <Image
               src="/images/nabarawy-dark.svg"
               alt="Nabra Logo"
@@ -1386,7 +1420,7 @@ export default function LandingPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground md:justify-end">
             <Link href="#" className="transition-colors hover:text-foreground">
               {t("common.footer.privacy")}
             </Link>
