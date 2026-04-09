@@ -32,7 +32,7 @@ export const paymentRouter = router({
       return {
         bankName: "National Bank of Kuwait",
         accountName: "NABRA E BUSINESS SOLUTIONS",
-        instapayLink: process.env.INSTAPAY_LINK || process.env.NEXT_PUBLIC_INSTAPAY_LINK || "",
+        instapayLink: "https://ipn.eg/S/alaa.elsayed6355/instapay/0ee8nl",
         iban: "EG490023002302302617611610010",
         swiftCode: "WABAEGCXXXX",
         currency: "USD",
