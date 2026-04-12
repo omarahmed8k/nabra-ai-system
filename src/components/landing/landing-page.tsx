@@ -167,8 +167,6 @@ export default function LandingPage() {
   const textDirectionClass = isRTL ? "text-right" : "text-left";
   const typingCaretSpacingClass = isRTL ? "mr-0.5" : "ml-0.5";
 
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [loadingPackages, setLoadingPackages] = useState(true);
   const [heroPrompt, setHeroPrompt] = useState("");
   const [heroSubmittedPrompt, setHeroSubmittedPrompt] = useState("");
   const [heroChatPhase, setHeroChatPhase] = useState<HeroChatPhase>("idle");
@@ -197,16 +195,15 @@ export default function LandingPage() {
     [t]
   );
 
-  const { data: packagesData } = trpc.admin.getPublicPackages.useQuery(undefined, {
-    enabled: true,
-  });
+  const { data: packagesData, isLoading: isPackagesLoading } =
+    trpc.admin.getPublicPackages.useQuery(undefined, {
+      staleTime: 1000 * 60 * 30,
+      gcTime: 1000 * 60 * 60 * 24,
+      refetchOnWindowFocus: false,
+    });
 
-  useEffect(() => {
-    if (packagesData) {
-      setPackages(packagesData);
-      setLoadingPackages(false);
-    }
-  }, [packagesData]);
+  const packages: Package[] = packagesData ?? [];
+  const showPackagesSkeleton = isPackagesLoading && packages.length === 0;
 
   useEffect(() => {
     // Fallback: never block hero content forever on slow networks/dev hiccups.
@@ -1243,46 +1240,32 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing */}
+        {/* Pricing — static layout; packages cached via React Query (no scroll-in animation) */}
         <section
           id="pricing"
           className="relative w-full border-t border-border py-16 sm:py-24 md:py-32"
         >
           <div className="container relative z-10 px-4 sm:px-6">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={fadeInUp}
-              className="mb-12 sm:mb-16 text-center"
-            >
+            <div className="mb-12 sm:mb-16 text-center">
               <h2 className={`${FONT_SIZES.sectionTitle.primary} mb-4 text-foreground sm:mb-6`}>
                 {t("landing.pricing.heading")}
               </h2>
               <p className={FONT_SIZES.body.normal}>{t("landing.pricing.subheading")}</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={staggerContainer}
-              className="mx-auto grid max-w-7xl grid-cols-1 gap-6 pt-2 sm:gap-8 sm:pt-3 md:grid-cols-2 lg:grid-cols-4"
-            >
-              {loadingPackages && (
+            <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 pt-2 sm:gap-8 sm:pt-3 md:grid-cols-2 lg:grid-cols-4">
+              {showPackagesSkeleton && (
                 <div className="col-span-full flex justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               )}
-              {!loadingPackages &&
+              {!showPackagesSkeleton &&
                 packages.length > 0 &&
                 packages.map((pkg) => {
                   return (
-                    <motion.div
+                    <div
                       key={pkg.id}
-                      variants={scaleIn}
-                      whileHover={{ y: -4, transition: { duration: 0.25 } }}
-                      className="group relative"
+                      className="group relative transition-transform duration-200 hover:-translate-y-1"
                     >
                       <div
                         className={`relative flex h-full flex-col overflow-visible rounded-2xl border bg-background p-6 transition-all duration-300 hover:shadow-[0_22px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8 ${
@@ -1345,10 +1328,10 @@ export default function LandingPage() {
                           </Button>
                         </Link> */}
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
-            </motion.div>
+            </div>
           </div>
         </section>
 
