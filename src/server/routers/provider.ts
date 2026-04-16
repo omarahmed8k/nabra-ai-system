@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, providerProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { notifyStatusChange } from "@/lib/notifications";
+import { formatEstimatedDeliveryDuration, getTranslation } from "@/lib/notifications/i18n-helper";
 
 export const providerRouter = router({
   // Get provider profile
@@ -425,10 +426,10 @@ export const providerRouter = router({
     .input(
       z.object({
         requestId: z.string(),
-        estimatedDeliveryHours: z
+        estimatedDeliveryMinutes: z
           .number()
-          .min(1, "Estimated delivery time must be at least 1 hour")
-          .max(720, "Estimated delivery time cannot exceed 720 hours (30 days)"),
+          .min(15, "Estimated delivery time must be at least 15 minutes")
+          .max(480, "Estimated delivery time cannot exceed 480 minutes (8 hours)"),
       })
     )
     .output(z.object({ success: z.boolean(), request: z.any() }))
@@ -462,7 +463,7 @@ export const providerRouter = router({
 
       // Calculate estimated delivery date
       const estimatedDelivery = new Date();
-      estimatedDelivery.setHours(estimatedDelivery.getHours() + input.estimatedDeliveryHours);
+      estimatedDelivery.setMinutes(estimatedDelivery.getMinutes() + input.estimatedDeliveryMinutes);
 
       const updatedRequest = await ctx.db.request.update({
         where: { id: input.requestId },
@@ -472,23 +473,26 @@ export const providerRouter = router({
         },
       });
 
-      // Add system comment with estimated delivery time
-      let deliveryHoursText: string;
-      if (input.estimatedDeliveryHours < 24) {
-        const hourSuffix = input.estimatedDeliveryHours === 1 ? "" : "s";
-        deliveryHoursText = `${input.estimatedDeliveryHours} hour${hourSuffix}`;
-      } else {
-        const days = Math.round(input.estimatedDeliveryHours / 24);
-        const daySuffix = days === 1 ? "" : "s";
-        deliveryHoursText = `${days} day${daySuffix}`;
-      }
+      // Add system comment with estimated delivery time (fully localized units)
+      const deliveryTimeText = await formatEstimatedDeliveryDuration(
+        ctx.locale,
+        input.estimatedDeliveryMinutes
+      );
+
+      const providerStartedWorkComment = await getTranslation(
+        ctx.locale,
+        "requests.messages.systemMessages.providerStartedWork",
+        {
+          deliveryTime: deliveryTimeText,
+        }
+      );
 
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
           type: "SYSTEM",
-          content: `Provider has started working on this request. Estimated delivery: ${deliveryHoursText}.`,
+          content: providerStartedWorkComment,
         },
       });
 

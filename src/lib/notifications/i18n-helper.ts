@@ -81,6 +81,32 @@ export async function getTranslation(
 }
 
 /**
+ * Human-readable estimated delivery duration for system messages (minutes / hours / days),
+ * fully localized (no English unit words in Arabic UI).
+ */
+export async function formatEstimatedDeliveryDuration(
+  locale: string,
+  estimatedMinutes: number
+): Promise<string> {
+  const base = "requests.messages.duration";
+
+  if (estimatedMinutes < 60) {
+    const key = estimatedMinutes === 1 ? `${base}.minutesOne` : `${base}.minutesOther`;
+    return getTranslation(locale, key, { count: estimatedMinutes });
+  }
+
+  if (estimatedMinutes < 1440) {
+    const hours = Number((estimatedMinutes / 60).toFixed(1));
+    const key = hours === 1 ? `${base}.hoursOne` : `${base}.hoursOther`;
+    return getTranslation(locale, key, { count: hours });
+  }
+
+  const days = Number((estimatedMinutes / 1440).toFixed(1));
+  const key = days === 1 ? `${base}.daysOne` : `${base}.daysOther`;
+  return getTranslation(locale, key, { count: days });
+}
+
+/**
  * Get the user's preferred locale from the database or default to 'en'
  * We can extend the User model to include a preferredLanguage field in the future.
  * For now, we default to 'en' but the function accepts locale as a parameter.

@@ -933,7 +933,27 @@
       "messageSent": "Message Sent",
       "messageSuccess": "Your message has been sent.",
       "messageFailed": "Failed to send message",
-      "requestCompleted": "This request has been completed. Comments are no longer available."
+      "requestCompleted": "This request has been completed. Comments are no longer available.",
+      "systemMessages": {
+        "requestCreated": "Request created. Waiting for a provider to accept.",
+        "requestAccepted": "Request accepted.",
+        "requestAcceptedWithDelivery": "Request accepted. Estimated delivery: {deliveryDate}",
+        "providerStartedWork": "Provider has started working on this request. Estimated delivery: {deliveryTime}.",
+        "requestApprovedCompleted": "Request approved and completed.",
+        "revisionRequestedFree": "Revision requested ({used}/{max} free revisions used).",
+        "revisionRequestedPaid": "Paid revision requested ({cost} {creditUnit} used).{resetNote}",
+        "revisionPaidCounterReset": " Free revision counter reset — you now have {max} free revisions available again.",
+        "revisionPaidCounterNotReset": " Free revision counter was not reset — you will need to pay for additional revisions.",
+        "statusUpdated": "Status updated to {status}."
+      },
+      "duration": {
+        "minutesOne": "{count} minute",
+        "minutesOther": "{count} minutes",
+        "hoursOne": "{count} hour",
+        "hoursOther": "{count} hours",
+        "daysOne": "{count} day",
+        "daysOther": "{count} days"
+      }
     },
     "deliverables": {
       "title": "Deliverables",
@@ -1524,17 +1544,21 @@
         "title": "Start Working",
         "description": "Provide an estimated delivery time and start working on this request",
         "estimatedDeliveryTime": "Estimated Delivery Time",
-        "hours": "hours",
-        "enterHours": "Enter hours",
+        "minutes": "minutes",
+        "minute": "minute",
+        "minutesPlural": "minutes",
+        "enterMinutes": "Enter minutes",
+        "customOption": "Custom",
+        "customPlaceholder": "60",
         "hour": "hour",
         "hoursPlural": "hours",
         "day": "day",
         "daysPlural": "days",
-        "estimateRange": "Estimate between 1-720 hours (up to 30 days)",
+        "estimateRange": "Estimate between 15-480 minutes (up to 8 hours)",
         "button": "Start Work",
         "starting": "Starting...",
         "invalidInput": "Invalid Input",
-        "invalidInputDesc": "Please enter a valid estimated time between 1 and 720 hours (30 days)."
+        "invalidInputDesc": "Please enter a valid estimated time between 15 and 480 minutes (8 hours)."
       },
       "submitDeliverable": {
         "title": "Submit Deliverable",
@@ -1739,6 +1763,39 @@
     "paymentVerification": {
       "title": "New Payment Verification Required",
       "message": "{clientNameOrEmail} submitted a payment proof: {amount} {currency}."
+    },
+    "newRequestAvailable": {
+      "title": "New Request Available",
+      "message": "New {serviceName} request: \"{requestTitle}\""
+    },
+    "requestAccepted": {
+      "title": "Request Accepted",
+      "message": "Your request \"{requestTitle}\" has been accepted by a provider."
+    },
+    "deliverableReady": {
+      "title": "Deliverable Ready",
+      "message": "Your request \"{requestTitle}\" has a new deliverable ready for review."
+    },
+    "requestStatusUpdate": {
+      "title": "Status Update",
+      "message": "Your request \"{requestTitle}\" status has been updated."
+    },
+    "ratingSubmitted": {
+      "title": "Rating Submitted",
+      "message": "You received a {rating}-star rating for \"{requestTitle}\"."
+    },
+    "paymentApproved": {
+      "title": "Payment Approved! 🎉",
+      "message": "Your payment has been verified. Your {packageName} subscription is now active!"
+    },
+    "paymentRejected": {
+      "title": "Payment Verification Failed",
+      "message": "Your payment could not be verified. Reason: {reason}. Please contact support or try again."
+    },
+    "subscriptionCancelled": {
+      "title": "Subscription Cancelled",
+      "activeMessage": "Your subscription has been cancelled. You can still use remaining credits until the end date.",
+      "pendingMessage": "Your pending subscription has been cancelled."
     }
   },
   "pwa": {

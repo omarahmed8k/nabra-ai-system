@@ -5,7 +5,13 @@ import { checkAndDeductCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses, calculateAttributeCredits } from "@/lib/attribute-validation";
 import { getPriorityCostsForService } from "@/lib/priority-costs";
-import { notifyNewMessage, notifyStatusChange } from "@/lib/notifications";
+import {
+  createNotification,
+  getLocalizedRequestStatusLabel,
+  notifyNewMessage,
+  notifyStatusChange,
+} from "@/lib/notifications";
+import { getTranslation } from "@/lib/notifications/i18n-helper";
 import type { ServiceAttribute, AttributeResponse } from "@/types/service-attributes";
 
 /**
@@ -117,7 +123,8 @@ async function notifyMatchingProviders(
   db: any,
   serviceTypeId: string,
   serviceName: string,
-  requestTitle: string
+  requestTitle: string,
+  locale: string
 ) {
   const providersWithService = await db.providerProfile.findMany({
     where: {
@@ -134,17 +141,26 @@ async function notifyMatchingProviders(
   });
 
   if (providersWithService.length > 0) {
-    const { createNotification } = await import("@/lib/notifications");
-
+    const title = await getTranslation(locale, "notifications.newRequestAvailable.title");
+    const message = await getTranslation(locale, "notifications.newRequestAvailable.message", {
+      serviceName,
+      requestTitle,
+    });
     await Promise.all(
       providersWithService.map((provider: { userId: string }) =>
         createNotification({
           userId: provider.userId,
-          title: "New Request Available",
-          message: `New ${serviceName} request: "${requestTitle}"`,
+          title,
+          message,
           type: "general",
           link: `/provider/available`,
           sendEmail: false,
+          locale,
+          sseI18n: {
+            titleKey: "notifications.newRequestAvailable.title",
+            messageKey: "notifications.newRequestAvailable.message",
+            messageParams: { serviceName, requestTitle },
+          },
         })
       )
     );
@@ -313,17 +329,27 @@ export const requestRouter = router({
       });
 
       // Create system comment
+      const requestCreatedComment = await getTranslation(
+        ctx.locale,
+        "requests.messages.systemMessages.requestCreated"
+      );
       await ctx.db.requestComment.create({
         data: {
           requestId: request.id,
           userId,
-          content: "Request created. Waiting for a provider to accept.",
+          content: requestCreatedComment,
           type: "SYSTEM",
         },
       });
 
       // Notify matching providers
-      await notifyMatchingProviders(ctx.db, input.serviceTypeId, serviceType.name, input.title);
+      await notifyMatchingProviders(
+        ctx.db,
+        input.serviceTypeId,
+        serviceType.name,
+        input.title,
+        ctx.locale
+      );
 
       // Build success message with cost breakdown
       const message = buildCostBreakdownMessage(
@@ -556,26 +582,46 @@ export const requestRouter = router({
       });
 
       // Create system comment
-      const deliveryMessage = estimatedDelivery
-        ? `Estimated delivery: ${estimatedDelivery.toLocaleDateString()}`
-        : "";
+      const deliveryDate = estimatedDelivery ? estimatedDelivery.toLocaleDateString() : null;
+      const requestAcceptedComment = deliveryDate
+        ? await getTranslation(
+            ctx.locale,
+            "requests.messages.systemMessages.requestAcceptedWithDelivery",
+            {
+              deliveryDate,
+            }
+          )
+        : await getTranslation(ctx.locale, "requests.messages.systemMessages.requestAccepted");
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
-          content: `Request accepted. ${deliveryMessage}`.trim(),
+          content: requestAcceptedComment,
           type: "SYSTEM",
         },
       });
 
       // Notify client
-      await ctx.db.notification.create({
-        data: {
-          userId: request.clientId,
-          title: "Request Accepted",
-          message: `Your request "${request.title}" has been accepted by a provider.`,
-          type: "request",
-          link: `/client/requests/${request.id}`,
+      const acceptedTitle = await getTranslation(ctx.locale, "notifications.requestAccepted.title");
+      const acceptedMessage = await getTranslation(
+        ctx.locale,
+        "notifications.requestAccepted.message",
+        {
+          requestTitle: request.title,
+        }
+      );
+      await createNotification({
+        userId: request.clientId,
+        title: acceptedTitle,
+        message: acceptedMessage,
+        type: "status_change",
+        link: `/client/requests/${request.id}`,
+        sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: "notifications.requestAccepted.title",
+          messageKey: "notifications.requestAccepted.message",
+          messageParams: { requestTitle: request.title },
         },
       });
 
@@ -623,27 +669,49 @@ export const requestRouter = router({
 
       // Create comment
       const commentType = input.status === "DELIVERED" ? "DELIVERABLE" : "SYSTEM";
+      let commentContent = input.message;
+      if (!commentContent) {
+        const statusLabel = await getLocalizedRequestStatusLabel(ctx.locale, input.status);
+        commentContent = await getTranslation(
+          ctx.locale,
+          "requests.messages.systemMessages.statusUpdated",
+          {
+            status: statusLabel,
+          }
+        );
+      }
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
-          content: input.message || `Status updated to ${input.status}`,
+          content: commentContent,
           type: commentType,
           files: input.files || [],
         },
       });
 
       // Notify client
-      await ctx.db.notification.create({
-        data: {
-          userId: request.clientId,
-          title: input.status === "DELIVERED" ? "Deliverable Ready" : "Status Update",
-          message:
-            input.status === "DELIVERED"
-              ? `Your request "${request.title}" has a new deliverable ready for review.`
-              : `Your request "${request.title}" status has been updated.`,
-          type: "request",
-          link: `/client/requests/${request.id}`,
+      const statusNotificationKey =
+        input.status === "DELIVERED"
+          ? "notifications.deliverableReady"
+          : "notifications.requestStatusUpdate";
+      const statusTitle = await getTranslation(ctx.locale, `${statusNotificationKey}.title`);
+      const statusMessage = await getTranslation(ctx.locale, `${statusNotificationKey}.message`, {
+        requestTitle: request.title,
+      });
+
+      await createNotification({
+        userId: request.clientId,
+        title: statusTitle,
+        message: statusMessage,
+        type: "status_change",
+        link: `/client/requests/${request.id}`,
+        sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: `${statusNotificationKey}.title`,
+          messageKey: `${statusNotificationKey}.message`,
+          messageParams: { requestTitle: request.title },
         },
       });
 
@@ -665,7 +733,7 @@ export const requestRouter = router({
       const userId = ctx.session.user.id;
 
       // Use the smart revision logic
-      const result = await handleRevisionRequest(input.requestId, userId);
+      const result = await handleRevisionRequest(input.requestId, userId, ctx.locale);
 
       if (!result.allowed) {
         throw new TRPCError({
@@ -727,11 +795,15 @@ export const requestRouter = router({
       });
 
       // System comment
+      const approvedComment = await getTranslation(
+        ctx.locale,
+        "requests.messages.systemMessages.requestApprovedCompleted"
+      );
       await ctx.db.requestComment.create({
         data: {
           requestId: input.requestId,
           userId,
-          content: "Request approved and completed.",
+          content: approvedComment,
           type: "SYSTEM",
         },
       });
@@ -826,12 +898,17 @@ export const requestRouter = router({
       } else {
         // Non-client commented (provider/admin) - notify client
         // Mask provider identity for client-facing notifications
-        const maskedSenderName = isProviderRole ? "Nabarawy" : senderName;
+        const brandProviderName = await getTranslation(
+          ctx.locale,
+          "requests.sidebar.brandProviderName"
+        );
+        const maskedSenderName = isProviderRole ? brandProviderName : senderName;
         await notifyNewMessage({
           requestId: input.requestId,
           senderName: maskedSenderName,
           recipientId: request.clientId,
           messagePreview: input.content.slice(0, 100),
+          locale: ctx.locale,
         });
       }
 
@@ -905,14 +982,28 @@ export const requestRouter = router({
       });
 
       // Send real-time notification to provider
-      const { createNotification } = await import("@/lib/notifications");
+      const ratingTitle = await getTranslation(ctx.locale, "notifications.ratingSubmitted.title");
+      const ratingMessage = await getTranslation(
+        ctx.locale,
+        "notifications.ratingSubmitted.message",
+        {
+          rating: input.rating,
+          requestTitle: request.title,
+        }
+      );
       await createNotification({
         userId: request.providerId,
-        title: "Rating Submitted",
-        message: `You received a ${input.rating}-star rating for "${request.title}"`,
+        title: ratingTitle,
+        message: ratingMessage,
         type: "general",
         link: `/provider/requests/${request.id}`,
         sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: "notifications.ratingSubmitted.title",
+          messageKey: "notifications.ratingSubmitted.message",
+          messageParams: { rating: input.rating.toString(), requestTitle: request.title },
+        },
       });
 
       return {

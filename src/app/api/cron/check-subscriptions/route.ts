@@ -54,6 +54,7 @@ async function processExpiringSubscriptions(
         await notifySubscriptionExpiring({
           userId: subscription.userId,
           packageName: subscription.package.name,
+          packageNameI18n: subscription.package.nameI18n as Record<string, string> | null,
           daysRemaining,
           remainingCredits: subscription.remainingCredits,
         });
@@ -85,6 +86,7 @@ async function processExpiredSubscriptions(
         await notifySubscriptionExpired({
           userId: subscription.userId,
           packageName: subscription.package.name,
+          packageNameI18n: subscription.package.nameI18n as Record<string, string> | null,
         });
         results.expiredNotified++;
       }
@@ -135,6 +137,7 @@ export async function GET(request: Request) {
         package: {
           select: {
             name: true,
+            nameI18n: true,
           },
         },
       },
@@ -159,6 +162,7 @@ export async function GET(request: Request) {
         package: {
           select: {
             name: true,
+            nameI18n: true,
           },
         },
       },

@@ -933,7 +933,27 @@
       "messageSent": "تم إرسال الرسالة",
       "messageSuccess": "تم إرسال رسالتك.",
       "messageFailed": "فشل إرسال الرسالة",
-      "requestCompleted": "تم إكمال هذا الطلب. لم تعد التعليقات متاحة."
+      "requestCompleted": "تم إكمال هذا الطلب. لم تعد التعليقات متاحة.",
+      "systemMessages": {
+        "requestCreated": "تم إنشاء الطلب. بانتظار قبول المبدع.",
+        "requestAccepted": "تم قبول الطلب.",
+        "requestAcceptedWithDelivery": "تم قبول الطلب. موعد التسليم المتوقع: {deliveryDate}",
+        "providerStartedWork": "بدأ المبدع العمل على هذا الطلب. وقت التسليم المتوقع: {deliveryTime}.",
+        "requestApprovedCompleted": "تمت الموافقة على الطلب واكتماله.",
+        "revisionRequestedFree": "تم طلب مراجعة ({used}/{max} من المراجعات المجانية المستخدمة).",
+        "revisionRequestedPaid": "تم طلب مراجعة مدفوعة ({cost} {creditUnit} مستخدمة).{resetNote}",
+        "revisionPaidCounterReset": " أُعيد تعيين عداد المراجعات المجانية — لديك الآن {max} مراجعات مجانية.",
+        "revisionPaidCounterNotReset": " لم يُعاد تعيين عداد المراجعات المجانية — ستحتاج للدفع مقابل المراجعات الإضافية.",
+        "statusUpdated": "تم تحديث الحالة إلى {status}."
+      },
+      "duration": {
+        "minutesOne": "{count} دقيقة",
+        "minutesOther": "{count} دقيقة",
+        "hoursOne": "{count} ساعة",
+        "hoursOther": "{count} ساعة",
+        "daysOne": "{count} يوم",
+        "daysOther": "{count} يوم"
+      }
     },
     "deliverables": {
       "title": "التسليمات",
@@ -1524,17 +1544,21 @@
         "title": "بدء العمل",
         "description": "قدّم وقت تسليم متوقع وابدأ العمل على هذا الطلب",
         "estimatedDeliveryTime": "وقت التسليم المتوقع",
-        "hours": "ساعات",
-        "enterHours": "أدخل الساعات",
+        "minutes": "دقيقة",
+        "minute": "دقيقة",
+        "minutesPlural": "دقائق",
+        "enterMinutes": "أدخل الدقائق",
+        "customOption": "مخصص",
+        "customPlaceholder": "60",
         "hour": "ساعة",
         "hoursPlural": "ساعة",
         "day": "يوم",
         "daysPlural": "أيام",
-        "estimateRange": "قدر بين 1-720 ساعة (حتى 30 يوماً)",
+        "estimateRange": "قدّر بين 15 و480 دقيقة (حتى 8 ساعات)",
         "button": "بدء العمل",
         "starting": "جاري البدء...",
         "invalidInput": "إدخال غير صالح",
-        "invalidInputDesc": "يرجى إدخال وقت تقديري صالح بين 1 و 720 ساعة (30 يوماً)."
+        "invalidInputDesc": "يرجى إدخال وقت تقديري صالح بين 15 و480 دقيقة (8 ساعات)."
       },
       "submitDeliverable": {
         "title": "تقديم التسليم",
@@ -1739,6 +1763,39 @@
     "paymentVerification": {
       "title": "مطلوب التحقق من دفعة جديدة",
       "message": "{clientNameOrEmail} قدم إثبات دفع: {amount} {currency}."
+    },
+    "newRequestAvailable": {
+      "title": "طلب جديد متاح",
+      "message": "طلب جديد لخدمة {serviceName}: \"{requestTitle}\""
+    },
+    "requestAccepted": {
+      "title": "تم قبول الطلب",
+      "message": "تم قبول طلبك \"{requestTitle}\" من قِبل مبدع."
+    },
+    "deliverableReady": {
+      "title": "التسليم جاهز",
+      "message": "طلبك \"{requestTitle}\" لديه تسليم جديد جاهز للمراجعة."
+    },
+    "requestStatusUpdate": {
+      "title": "تحديث حالة الطلب",
+      "message": "تم تحديث حالة طلبك \"{requestTitle}\"."
+    },
+    "ratingSubmitted": {
+      "title": "تم استلام تقييم",
+      "message": "لقد استلمت تقييماً {rating} نجوم على \"{requestTitle}\"."
+    },
+    "paymentApproved": {
+      "title": "تمت الموافقة على الدفع! 🎉",
+      "message": "تم التحقق من دفعتك. أصبح اشتراكك في {packageName} نشطاً الآن!"
+    },
+    "paymentRejected": {
+      "title": "فشل التحقق من الدفع",
+      "message": "تعذر التحقق من دفعتك. السبب: {reason}. يرجى التواصل مع الدعم أو المحاولة مرة أخرى."
+    },
+    "subscriptionCancelled": {
+      "title": "تم إلغاء الاشتراك",
+      "activeMessage": "تم إلغاء اشتراكك. يمكنك الاستمرار في استخدام الكريدت المتبقي حتى تاريخ الانتهاء.",
+      "pendingMessage": "تم إلغاء اشتراكك المعلّق."
     }
   },
   "pwa": {

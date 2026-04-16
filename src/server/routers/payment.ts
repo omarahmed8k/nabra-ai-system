@@ -2,7 +2,9 @@ import { z } from "zod";
 import { router, protectedProcedure, clientProcedure, adminProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { PaymentStatus } from "@prisma/client";
-import { notifyAdminsNewPendingPayment } from "@/lib/notifications";
+import { createNotification, notifyAdminsNewPendingPayment } from "@/lib/notifications";
+import { getTranslation } from "@/lib/notifications/i18n-helper";
+import { resolveLocalizedText } from "@/lib/i18n";
 
 export const paymentRouter = router({
   // Get IBAN info for payment (public info clients need)
@@ -301,14 +303,32 @@ export const paymentRouter = router({
         },
       });
 
-      // Notify the user
-      await ctx.db.notification.create({
-        data: {
-          userId: payment.userId,
-          title: "Payment Approved! 🎉",
-          message: `Your payment has been verified. Your ${payment.subscription.package.name} subscription is now active!`,
-          type: "payment",
-          link: "/client/subscription",
+      // Notify the user (DB + SSE)
+      const localizedPackageName = resolveLocalizedText(
+        payment.subscription.package.nameI18n as Record<string, string> | null,
+        ctx.locale,
+        payment.subscription.package.name
+      );
+      const approvedTitle = await getTranslation(ctx.locale, "notifications.paymentApproved.title");
+      const approvedMessage = await getTranslation(
+        ctx.locale,
+        "notifications.paymentApproved.message",
+        {
+          packageName: localizedPackageName,
+        }
+      );
+      await createNotification({
+        userId: payment.userId,
+        title: approvedTitle,
+        message: approvedMessage,
+        type: "general",
+        link: "/client/subscription",
+        sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: "notifications.paymentApproved.title",
+          messageKey: "notifications.paymentApproved.message",
+          messageParams: { packageName: localizedPackageName },
         },
       });
 
@@ -381,14 +401,27 @@ export const paymentRouter = router({
         },
       });
 
-      // Notify the user
-      await ctx.db.notification.create({
-        data: {
-          userId: payment.userId,
-          title: "Payment Verification Failed",
-          message: `Your payment could not be verified. Reason: ${input.reason}. Please contact support or try again.`,
-          type: "payment",
-          link: "/client/subscription",
+      // Notify the user (DB + SSE)
+      const rejectedTitle = await getTranslation(ctx.locale, "notifications.paymentRejected.title");
+      const rejectedMessage = await getTranslation(
+        ctx.locale,
+        "notifications.paymentRejected.message",
+        {
+          reason: input.reason,
+        }
+      );
+      await createNotification({
+        userId: payment.userId,
+        title: rejectedTitle,
+        message: rejectedMessage,
+        type: "general",
+        link: "/client/subscription",
+        sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: "notifications.paymentRejected.title",
+          messageKey: "notifications.paymentRejected.message",
+          messageParams: { reason: input.reason },
         },
       });
 

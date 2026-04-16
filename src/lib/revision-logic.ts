@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { deductCredits } from "@/lib/credit-logic";
 import { notifyStatusChange } from "@/lib/notifications";
+import { getTranslation } from "@/lib/notifications/i18n-helper";
 
 export interface RevisionResult {
   allowed: boolean;
@@ -38,7 +39,8 @@ export interface RevisionResult {
  */
 export async function handleRevisionRequest(
   requestId: string,
-  userId: string
+  userId: string,
+  locale = "en"
 ): Promise<RevisionResult> {
   // Step 1: Get the request with its service type
   const request = await db.request.findUnique({
@@ -125,11 +127,19 @@ export async function handleRevisionRequest(
     });
 
     // Create system comment for tracking
+    const freeRevisionComment = await getTranslation(
+      locale,
+      "requests.messages.systemMessages.revisionRequestedFree",
+      {
+        used: currentCount + 1,
+        max: maxFreeRevisions,
+      }
+    );
     await db.requestComment.create({
       data: {
         requestId,
         userId,
-        content: `Revision requested (${currentCount + 1}/${maxFreeRevisions} free revisions used)`,
+        content: freeRevisionComment,
         type: "SYSTEM",
       },
     });
@@ -142,6 +152,7 @@ export async function handleRevisionRequest(
         userId: request.providerId,
         oldStatus: "DELIVERED",
         newStatus: "REVISION_REQUESTED",
+        locale,
       });
     }
 
@@ -197,15 +208,34 @@ export async function handleRevisionRequest(
   });
 
   // Create system comment
-  const resetMessage = resetFreeRevisionsOnPaid
-    ? ` Free revision counter reset - you now have ${maxFreeRevisions} free revisions available again.`
-    : " Free revision counter NOT reset - you will need to pay for additional revisions.";
+  const resetNote = await getTranslation(
+    locale,
+    resetFreeRevisionsOnPaid
+      ? "requests.messages.systemMessages.revisionPaidCounterReset"
+      : "requests.messages.systemMessages.revisionPaidCounterNotReset",
+    resetFreeRevisionsOnPaid ? { max: maxFreeRevisions } : undefined
+  );
+
+  const creditUnit = await getTranslation(
+    locale,
+    paidRevisionCost === 1 ? "requests.header.credit" : "requests.header.credits"
+  );
+
+  const paidRevisionComment = await getTranslation(
+    locale,
+    "requests.messages.systemMessages.revisionRequestedPaid",
+    {
+      cost: paidRevisionCost,
+      creditUnit,
+      resetNote,
+    }
+  );
 
   await db.requestComment.create({
     data: {
       requestId,
       userId,
-      content: `Paid revision requested (${paidRevisionCost} ${paidRevisionCost === 1 ? "credit" : "credits"} used).${resetMessage}`,
+      content: paidRevisionComment,
       type: "SYSTEM",
     },
   });
@@ -218,6 +248,7 @@ export async function handleRevisionRequest(
       userId: request.providerId,
       oldStatus: "DELIVERED",
       newStatus: "REVISION_REQUESTED",
+      locale,
     });
   }
 

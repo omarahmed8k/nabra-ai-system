@@ -2,6 +2,8 @@ import { z } from "zod";
 import { router, protectedProcedure, clientProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { getCreditBalance } from "@/lib/credit-logic";
+import { createNotification } from "@/lib/notifications";
+import { getTranslation } from "@/lib/notifications/i18n-helper";
 
 export const subscriptionRouter = router({
   // Get active subscription for current user
@@ -277,15 +279,26 @@ export const subscriptionRouter = router({
         },
       });
 
-      // Create notification
-      await ctx.db.notification.create({
-        data: {
-          userId,
-          title: "Subscription Cancelled",
-          message: subscription.isActive
-            ? "Your subscription has been cancelled. You can still use remaining credits until the end date."
-            : "Your pending subscription has been cancelled.",
-          type: "subscription",
+      // Notify user (DB + SSE)
+      const cancellationMessageKey = subscription.isActive
+        ? "notifications.subscriptionCancelled.activeMessage"
+        : "notifications.subscriptionCancelled.pendingMessage";
+      const cancellationTitle = await getTranslation(
+        ctx.locale,
+        "notifications.subscriptionCancelled.title"
+      );
+      const cancellationMessage = await getTranslation(ctx.locale, cancellationMessageKey);
+
+      await createNotification({
+        userId,
+        title: cancellationTitle,
+        message: cancellationMessage,
+        type: "general",
+        sendEmail: false,
+        locale: ctx.locale,
+        sseI18n: {
+          titleKey: "notifications.subscriptionCancelled.title",
+          messageKey: cancellationMessageKey,
         },
       });
 

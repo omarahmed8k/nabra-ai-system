@@ -24,6 +24,8 @@ import { calculateAttributeCredits } from "@/lib/attribute-validation";
 import { getRequestThreadPollingInterval } from "@/lib/request-realtime";
 import { Send, Upload, Play, CheckCircle } from "lucide-react";
 
+const ESTIMATE_PRESET_MINUTES = [15, 30, 45] as const;
+
 export default function ProviderRequestDetailPage() {
   const params = useParams();
   const t = useTranslations("provider.requestDetail");
@@ -35,9 +37,24 @@ export default function ProviderRequestDetailPage() {
   const [commentFiles, setCommentFiles] = useState<UploadedFile[]>([]);
   const [deliverable, setDeliverable] = useState("");
   const [deliverableFiles, setDeliverableFiles] = useState<UploadedFile[]>([]);
-  const [estimatedHours, setEstimatedHours] = useState<string>("24");
+  const [estimatedDeliveryMode, setEstimatedDeliveryMode] = useState<"preset" | "custom">("preset");
+  const [estimatedPresetMinutes, setEstimatedPresetMinutes] = useState<string>(
+    ESTIMATE_PRESET_MINUTES[1].toString()
+  );
+  const [customEstimatedMinutes, setCustomEstimatedMinutes] = useState<string>("");
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const previousLastCommentIdRef = useRef<string | null>(null);
+  const selectedEstimateMinutesInput =
+    estimatedDeliveryMode === "custom" ? customEstimatedMinutes : estimatedPresetMinutes;
+  const parsedEstimatedMinutes = Number.parseInt(selectedEstimateMinutesInput, 10);
+  const isEstimatedMinutesValid =
+    !Number.isNaN(parsedEstimatedMinutes) &&
+    parsedEstimatedMinutes >= 15 &&
+    parsedEstimatedMinutes <= 480;
+  const showCustomEstimateValidation =
+    estimatedDeliveryMode === "custom" &&
+    customEstimatedMinutes.trim().length > 0 &&
+    !isEstimatedMinutesValid;
 
   const utils = trpc.useUtils();
 
@@ -102,8 +119,7 @@ export default function ProviderRequestDetailPage() {
   };
 
   const handleStartWork = () => {
-    const hours = Number.parseInt(estimatedHours, 10);
-    if (Number.isNaN(hours) || hours < 1 || hours > 720) {
+    if (!isEstimatedMinutesValid) {
       toast.error(t("startWork.invalidInput"), {
         description: t("startWork.invalidInputDesc"),
       });
@@ -111,7 +127,7 @@ export default function ProviderRequestDetailPage() {
     }
     startWork.mutate({
       requestId,
-      estimatedDeliveryHours: hours,
+      estimatedDeliveryMinutes: parsedEstimatedMinutes,
     });
   };
 
@@ -124,6 +140,26 @@ export default function ProviderRequestDetailPage() {
     });
     setDeliverableFiles([]);
   };
+
+  useEffect(() => {
+    const handleThreadUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ notification?: { type?: string }; link?: string }>)
+        .detail;
+      const notificationType = detail?.notification?.type;
+      const link = detail?.link ?? "";
+      const isThreadEvent = notificationType === "message" || notificationType === "status_change";
+      const isCurrentRequest = link.includes(`/requests/${requestId}`);
+
+      if (!isThreadEvent || !isCurrentRequest) {
+        return;
+      }
+
+      void utils.request.getById.invalidate({ id: requestId });
+    };
+
+    globalThis.addEventListener("nabra:request-thread-updated", handleThreadUpdate);
+    return () => globalThis.removeEventListener("nabra:request-thread-updated", handleThreadUpdate);
+  }, [requestId, utils.request.getById]);
 
   useEffect(() => {
     const lastCommentId = request?.comments?.at(-1)?.id ?? null;
@@ -280,42 +316,83 @@ export default function ProviderRequestDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="estimatedHours" className="text-sm font-medium text-blue-800">
+                  <label htmlFor="estimatedMinutes" className="text-sm font-medium text-blue-800">
                     {t("startWork.estimatedDeliveryTime")}
                   </label>
                   <div className="flex gap-2 items-center">
-                    <input
-                      id="estimatedHours"
-                      type="number"
-                      min="1"
-                      max="720"
-                      value={estimatedHours}
-                      onChange={(e) => setEstimatedHours(e.target.value)}
+                    <select
+                      id="estimatedMinutes"
+                      value={estimatedDeliveryMode === "custom" ? "custom" : estimatedPresetMinutes}
+                      onChange={(e) => {
+                        if (e.target.value === "custom") {
+                          setEstimatedDeliveryMode("custom");
+                          return;
+                        }
+                        setEstimatedDeliveryMode("preset");
+                        setEstimatedPresetMinutes(e.target.value);
+                      }}
                       className="flex text-black h-10 w-24 rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="24"
-                    />
-                    <span className="text-sm text-blue-700">{t("startWork.hours")}</span>
-                    <span className="text-xs text-blue-600 flex items-center gap-2">
-                      (
-                      {(() => {
-                        const hours = Number.parseInt(estimatedHours, 10);
-                        if (Number.isNaN(hours) || hours <= 0) {
-                          return t("startWork.enterHours");
-                        }
-                        if (hours < 24) {
-                          return `${hours} ${hours === 1 ? t("startWork.hour") : t("startWork.hoursPlural")}`;
-                        }
-                        const days = Math.round(hours / 24);
-                        return `~${days} ${days === 1 ? t("startWork.day") : t("startWork.daysPlural")}`;
-                      })()}
-                      )
-                    </span>
+                    >
+                      {ESTIMATE_PRESET_MINUTES.map((minutes) => (
+                        <option key={minutes} value={minutes.toString()}>
+                          {minutes}
+                        </option>
+                      ))}
+                      <option value="custom">{t("startWork.customOption")}</option>
+                    </select>
+                    <span className="text-sm text-blue-700">{t("startWork.minutes")}</span>
                   </div>
+                  {estimatedDeliveryMode === "custom" && (
+                    <div className="flex gap-2 items-center">
+                      <input
+                        id="customEstimatedMinutes"
+                        type="number"
+                        min="15"
+                        max="480"
+                        value={customEstimatedMinutes}
+                        onChange={(e) => setCustomEstimatedMinutes(e.target.value)}
+                        aria-invalid={showCustomEstimateValidation}
+                        className={`flex text-black h-10 w-28 rounded-md border bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                          showCustomEstimateValidation ? "border-red-400" : "border-input"
+                        }`}
+                        placeholder={t("startWork.customPlaceholder")}
+                      />
+                      <span className="text-sm text-blue-700">{t("startWork.minutes")}</span>
+                    </div>
+                  )}
+                  <p className="text-xs text-blue-600">
+                    {(() => {
+                      const selectedMinutes =
+                        estimatedDeliveryMode === "custom"
+                          ? customEstimatedMinutes
+                          : estimatedPresetMinutes;
+                      const minutes = Number.parseInt(selectedMinutes, 10);
+                      if (Number.isNaN(minutes) || minutes <= 0) {
+                        return t("startWork.enterMinutes");
+                      }
+                      if (minutes < 15 || minutes > 480) {
+                        return t("startWork.invalidInputDesc");
+                      }
+                      if (minutes < 60) {
+                        return `${minutes} ${
+                          minutes === 1 ? t("startWork.minute") : t("startWork.minutesPlural")
+                        }`;
+                      }
+                      if (minutes < 1440) {
+                        const hours = Number((minutes / 60).toFixed(1));
+                        return `${hours} ${
+                          hours === 1 ? t("startWork.hour") : t("startWork.hoursPlural")
+                        }`;
+                      }
+                      const days = Number((minutes / 1440).toFixed(1));
+                      return `~${days} ${days === 1 ? t("startWork.day") : t("startWork.daysPlural")}`;
+                    })()}
+                  </p>
                   <p className="text-xs text-blue-600">{t("startWork.estimateRange")}</p>
                 </div>
                 <Button
                   onClick={handleStartWork}
-                  disabled={startWork.isPending}
+                  disabled={startWork.isPending || !isEstimatedMinutesValid}
                   className="flex items-center gap-2"
                 >
                   <Play className="h-4 w-4" />
@@ -638,11 +715,13 @@ export default function ProviderRequestDetailPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center">
-                    {Array.from({ length: 5 }, (_, i) => (
+                    {Array.from({ length: 5 }, (_, i) => i + 1).map((star) => (
                       <span
-                        key={i}
+                        key={star}
                         className={`text-2xl ${
-                          i < (request as any).rating.rating ? "text-amber-500" : "text-gray-300"
+                          star <= (request as any).rating.rating
+                            ? "text-amber-500"
+                            : "text-gray-300"
                         }`}
                       >
                         ★

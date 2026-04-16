@@ -62,6 +62,26 @@ export function MessagesCard({
 
   const utils = trpc.useUtils();
 
+  useEffect(() => {
+    const handleThreadUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ notification?: { type?: string }; link?: string }>)
+        .detail;
+      const notificationType = detail?.notification?.type;
+      const link = detail?.link ?? "";
+      const isThreadEvent = notificationType === "message" || notificationType === "status_change";
+      const isCurrentRequest = link.includes(`/requests/${requestId}`);
+
+      if (!isThreadEvent || !isCurrentRequest) {
+        return;
+      }
+
+      void utils.request.getById.invalidate({ id: requestId });
+    };
+
+    globalThis.addEventListener("nabra:request-thread-updated", handleThreadUpdate);
+    return () => globalThis.removeEventListener("nabra:request-thread-updated", handleThreadUpdate);
+  }, [requestId, utils.request.getById]);
+
   const addComment = trpc.request.addComment.useMutation({
     onSuccess: () => {
       setComment("");
@@ -128,7 +148,9 @@ export function MessagesCard({
           setIsRecording(false);
           // Stop all audio tracks to release mic access
           if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current.getTracks().forEach((track) => {
+              track.stop();
+            });
             streamRef.current = null;
           }
         }

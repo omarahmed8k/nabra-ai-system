@@ -50,6 +50,34 @@ interface NotificationData {
   };
 }
 
+function resolveLocalizedPackageName(params: {
+  locale: string;
+  packageName: string;
+  packageNameI18n?: Record<string, string> | null;
+}): string {
+  const { locale, packageName, packageNameI18n } = params;
+  if (!packageNameI18n || typeof packageNameI18n !== "object") {
+    return packageName;
+  }
+
+  const localizedValue = packageNameI18n[locale];
+  if (localizedValue && localizedValue.trim().length > 0) {
+    return localizedValue;
+  }
+
+  const englishFallback = packageNameI18n.en;
+  if (englishFallback && englishFallback.trim().length > 0) {
+    return englishFallback;
+  }
+
+  const arabicFallback = packageNameI18n.ar;
+  if (arabicFallback && arabicFallback.trim().length > 0) {
+    return arabicFallback;
+  }
+
+  return packageName;
+}
+
 async function sendEmailNotification(
   emailTemplate: NotificationData["emailTemplate"],
   userEmail: string | null | undefined
@@ -145,7 +173,7 @@ export async function createNotification(data: NotificationData) {
       userId,
       title,
       message,
-      type: "general",
+      type,
       link,
       isRead: false,
     },
@@ -216,6 +244,15 @@ export async function notifyAdminsNewPendingPayment(params: {
         link,
         sendEmail: false,
         locale,
+        sseI18n: {
+          titleKey: "notifications.paymentVerification.title",
+          messageKey: "notifications.paymentVerification.message",
+          messageParams: {
+            clientNameOrEmail,
+            amount: amount.toFixed(2),
+            currency,
+          },
+        },
       })
     )
   );
@@ -233,6 +270,27 @@ function getLinkForNotificationRecipient(
     return isAssigned ? `/provider/requests/${requestId}` : `/provider/available/${requestId}`;
   }
   return `/provider/requests/${requestId}`;
+}
+
+function normalizeStatusKey(status: string): string {
+  return status.trim().toUpperCase().replaceAll(" ", "_");
+}
+
+/** Localized label for a request status enum (e.g. IN_PROGRESS → Arabic string). */
+export async function getLocalizedRequestStatusLabel(
+  locale: string,
+  status: string
+): Promise<string> {
+  const normalizedStatus = normalizeStatusKey(status);
+  const translationKey = `common.requestStatus.${normalizedStatus}`;
+  const translatedStatus = await getTranslation(locale, translationKey);
+
+  // getTranslation falls back to returning the key when missing
+  if (translatedStatus === translationKey) {
+    return status.replaceAll("_", " ");
+  }
+
+  return translatedStatus;
 }
 
 export async function notifyNewMessage(params: {
@@ -318,11 +376,16 @@ export async function notifyStatusChange(params: {
 
   if (!request) return;
 
+  const [oldStatusLabel, newStatusLabel] = await Promise.all([
+    getLocalizedRequestStatusLabel(locale, oldStatus),
+    getLocalizedRequestStatusLabel(locale, newStatus),
+  ]);
+
   const title = await getTranslation(locale, "notifications.statusChange.title");
   const message = await getTranslation(locale, "notifications.statusChange.message", {
     requestTitle: request.title,
-    oldStatus: oldStatus.replaceAll("_", " "),
-    newStatus: newStatus.replaceAll("_", " "),
+    oldStatus: oldStatusLabel,
+    newStatus: newStatusLabel,
   });
   const emailTemplate = await getStatusChangeEmailTemplate(
     request.title,
@@ -345,8 +408,8 @@ export async function notifyStatusChange(params: {
       messageKey: "notifications.statusChange.message",
       messageParams: {
         requestTitle: request.title,
-        oldStatus: oldStatus.replaceAll("_", " "),
-        newStatus: newStatus.replaceAll("_", " "),
+        oldStatus: oldStatusLabel,
+        newStatus: newStatusLabel,
       },
     },
   });
@@ -387,22 +450,35 @@ export async function notifyProviderAssignment(params: {
 export async function notifySubscriptionExpiring(params: {
   userId: string;
   packageName: string;
+  packageNameI18n?: Record<string, string> | null;
   daysRemaining: number;
   remainingCredits: number;
   locale?: string;
 }) {
-  const { userId, packageName, daysRemaining, remainingCredits, locale = "en" } = params;
+  const {
+    userId,
+    packageName,
+    packageNameI18n,
+    daysRemaining,
+    remainingCredits,
+    locale = "en",
+  } = params;
+  const localizedPackageName = resolveLocalizedPackageName({
+    locale,
+    packageName,
+    packageNameI18n,
+  });
 
   const title = await getTranslation(locale, "notifications.subscriptionExpiring.title", {
-    packageName,
+    packageName: localizedPackageName,
     daysRemaining: daysRemaining.toString(),
   });
   const message = await getTranslation(locale, "notifications.subscriptionExpiring.message", {
-    packageName,
+    packageName: localizedPackageName,
     daysRemaining: daysRemaining.toString(),
   });
   const emailTemplate = await getSubscriptionExpiringEmailTemplate(
-    packageName,
+    localizedPackageName,
     daysRemaining,
     remainingCredits,
     locale
@@ -422,17 +498,23 @@ export async function notifySubscriptionExpiring(params: {
 export async function notifySubscriptionExpired(params: {
   userId: string;
   packageName: string;
+  packageNameI18n?: Record<string, string> | null;
   locale?: string;
 }) {
-  const { userId, packageName, locale = "en" } = params;
+  const { userId, packageName, packageNameI18n, locale = "en" } = params;
+  const localizedPackageName = resolveLocalizedPackageName({
+    locale,
+    packageName,
+    packageNameI18n,
+  });
 
   const title = await getTranslation(locale, "notifications.subscriptionExpired.title", {
-    packageName,
+    packageName: localizedPackageName,
   });
   const message = await getTranslation(locale, "notifications.subscriptionExpired.message", {
-    packageName,
+    packageName: localizedPackageName,
   });
-  const emailTemplate = await getSubscriptionExpiredEmailTemplate(packageName, locale);
+  const emailTemplate = await getSubscriptionExpiredEmailTemplate(localizedPackageName, locale);
 
   return createNotification({
     userId,
@@ -472,14 +554,19 @@ export async function sendWelcomeEmail(params: {
       html: emailTemplate.html,
     });
 
-    await db.notification.create({
-      data: {
-        userId,
-        title,
-        message,
-        type: "general",
-        link: notificationLink,
-        isRead: false,
+    await createNotification({
+      userId,
+      title,
+      message,
+      type: "general",
+      link: notificationLink,
+      sendEmail: false,
+      locale,
+      sseI18n: {
+        titleKey: "notifications.welcome.title",
+        titleParams: { userName },
+        messageKey: "notifications.welcome.message",
+        messageParams: { userName },
       },
     });
 

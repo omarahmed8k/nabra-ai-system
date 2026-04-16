@@ -15,6 +15,11 @@ interface RealtimeNotification {
   timestamp?: Date;
 }
 
+interface NotificationEventDetail {
+  notification: RealtimeNotification;
+  link?: string;
+}
+
 interface NotificationContextType {
   isConnected: boolean;
   requestPermission: () => Promise<boolean>;
@@ -70,6 +75,11 @@ function navigateToNotification(targetPath: string, currentPath: string, router:
   } else {
     router.push(targetPath);
   }
+}
+
+function normalizePath(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return normalized.replace(/^\/(en|ar)(\/|$)/, "/");
 }
 
 export function NotificationProvider({ children }: { readonly children: React.ReactNode }) {
@@ -176,13 +186,35 @@ export function NotificationProvider({ children }: { readonly children: React.Re
           : undefined,
       });
 
-      setUnreadCount((prev) => prev + 1);
+      void fetchUnreadCount();
       showDesktopNotification(notification);
+
+      const eventDetail: NotificationEventDetail = {
+        notification,
+        link: linkWithLocale,
+      };
+      globalThis.dispatchEvent(
+        new CustomEvent<NotificationEventDetail>("nabra:notification", { detail: eventDetail })
+      );
+
+      const normalizedCurrentPath = normalizePath(currentPath);
+      const normalizedTargetPath = linkWithLocale ? normalizePath(linkWithLocale) : "";
+      const isCurrentRequestPath =
+        normalizedTargetPath.length > 0 &&
+        normalizedCurrentPath === normalizedTargetPath &&
+        normalizedTargetPath.includes("/requests/");
+      if (isCurrentRequestPath) {
+        globalThis.dispatchEvent(
+          new CustomEvent<NotificationEventDetail>("nabra:request-thread-updated", {
+            detail: eventDetail,
+          })
+        );
+      }
 
       // Play notification sound
       playNotificationSound();
     },
-    [router, showDesktopNotification, locale, t]
+    [router, showDesktopNotification, locale, t, fetchUnreadCount]
   );
 
   useEffect(() => {
@@ -274,7 +306,7 @@ export function NotificationProvider({ children }: { readonly children: React.Re
 
       setIsConnected(false);
     };
-  }, [session, status, handleNotificationMessage]);
+  }, [session, status, handleNotificationMessage, t]);
 
   const contextValue = useMemo(
     () => ({

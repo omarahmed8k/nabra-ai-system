@@ -1140,9 +1140,9 @@ export function buildOpenApiDocument(baseUrl: string) {
             type: "object",
             properties: {
               requestId: { type: "string" },
-              estimatedDeliveryHours: { type: "integer" },
+              estimatedDeliveryMinutes: { type: "integer", minimum: 15, maximum: 480 },
             },
-            required: ["requestId", "estimatedDeliveryHours"],
+            required: ["requestId", "estimatedDeliveryMinutes"],
           },
           DeliverWork: {
             type: "object",

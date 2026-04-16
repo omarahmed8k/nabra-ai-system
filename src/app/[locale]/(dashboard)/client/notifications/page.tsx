@@ -39,6 +39,16 @@ export default function NotificationsPage() {
     refreshUnreadCount();
   }, [refreshUnreadCount]);
 
+  useEffect(() => {
+    const handleIncomingNotification = () => {
+      utils.notification.getAll.invalidate();
+      refreshUnreadCount();
+    };
+
+    globalThis.addEventListener("nabra:notification", handleIncomingNotification);
+    return () => globalThis.removeEventListener("nabra:notification", handleIncomingNotification);
+  }, [refreshUnreadCount, utils.notification.getAll]);
+
   const unreadCount =
     notifications?.notifications.filter((n: { isRead: boolean }) => !n.isRead).length || 0;
 
