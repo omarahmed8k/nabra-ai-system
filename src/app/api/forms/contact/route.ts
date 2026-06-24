@@ -12,6 +12,7 @@ const BodySchema = z.object({
   company: z.string().max(120).optional().default(""),
   website: z.string().max(300).optional().default(""),
   message: z.string().max(4000).optional().default(""),
+  serviceLabels: z.string().max(1000).optional().default(""),
 });
 
 function escapeHtml(input: string) {
@@ -99,6 +100,11 @@ export async function POST(req: Request) {
           <tr><td style="padding: 6px 0; color: #555;">WhatsApp</td><td style="padding: 6px 0;">${escapeHtml(body.whatsapp)}</td></tr>
           <tr><td style="padding: 6px 0; color: #555;">Company</td><td style="padding: 6px 0;">${escapeHtml(body.company || "-")}</td></tr>
           <tr><td style="padding: 6px 0; color: #555;">Website</td><td style="padding: 6px 0;">${escapeHtml(body.website || "-")}</td></tr>
+          ${
+            body.type === "provider"
+              ? `<tr><td style="padding: 6px 0; color: #555;">Services</td><td style="padding: 6px 0;">${escapeHtml(body.serviceLabels || "-")}</td></tr>`
+              : ""
+          }
         </table>
         <h3 style="margin: 18px 0 8px;">Message</h3>
         <div style="white-space: pre-wrap; background: #f7f7f7; border: 1px solid #eee; border-radius: 8px; padding: 12px;">

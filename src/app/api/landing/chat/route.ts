@@ -49,6 +49,16 @@ function formPageUrl(origin: string, locale: "en" | "ar", kind: "client" | "prov
   return `${origin}/${locale}/forms/${kind}`;
 }
 
+function getPublicOrigin(req: Request) {
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+
+  if (configuredOrigin?.startsWith("http")) {
+    return new URL(configuredOrigin).origin;
+  }
+
+  return new URL(req.url).origin;
+}
+
 function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: string) {
   const clientUrl = formPageUrl(origin, locale, "client");
   const providerUrl = formPageUrl(origin, locale, "provider");
@@ -198,7 +208,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "OPENAI_API_KEY is not configured" }, { status: 500 });
     }
 
-    const origin = new URL(req.url).origin;
+    const origin = getPublicOrigin(req);
     const replyLocale = detectPromptLocale(body.prompt, body.locale);
     const knowledgeBase = await loadKnowledgeBase();
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";

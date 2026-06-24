@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 
-const s3Client = new S3Client({
-  endpoint: `https://${process.env.B2_ENDPOINT}`,
-  region: process.env.B2_REGION || "us-east-005",
-  credentials: {
-    accessKeyId: process.env.B2_KEY_ID || "",
-    secretAccessKey: process.env.B2_APP_KEY || "",
-  },
-  forcePathStyle: true,
-});
+export const runtime = "nodejs";
 
-const BUCKET_NAME = process.env.B2_BUCKET_NAME || "Nabarawy";
+const STORAGE_ROOT = process.env.LOCAL_UPLOAD_DIR || path.join(process.cwd(), "storage");
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -67,13 +60,18 @@ export async function POST(req: Request) {
     const key = `uploads/${session.user.id}/${timestamp}-${sanitizedFileName}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const filePath = path.join(STORAGE_ROOT, key);
+    const metadataPath = `${filePath}.meta.json`;
 
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, buffer);
+    await writeFile(
+      metadataPath,
+      JSON.stringify({
+        originalName: file.name,
+        contentType: file.type,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
       })
     );
 

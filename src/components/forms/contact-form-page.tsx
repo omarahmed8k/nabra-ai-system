@@ -40,7 +40,7 @@ interface ContactFormPageProps {
 }
 
 interface SubmitDebugInfo {
-  source: "web3forms";
+  source: "contact-api";
   status: number;
   ok: boolean;
   contentType: string | null;
@@ -108,22 +108,6 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
     };
 
     try {
-      const web3ClientKey =
-        variant === "client"
-          ? process.env.NEXT_PUBLIC_WEB3FORMS_CLIENT_ACCESS_KEY
-          : process.env.NEXT_PUBLIC_WEB3FORMS_PROVIDER_ACCESS_KEY;
-      const web3FallbackKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
-      const web3AccessKey = (web3ClientKey || web3FallbackKey || "").trim();
-
-      if (!web3AccessKey) {
-        console.error("[ContactForm] Missing Web3Forms key for variant:", variant);
-        return;
-      }
-
-      const web3Subject =
-        variant === "provider"
-          ? `Provider form submission — ${payload.fullName}`
-          : `Client form submission — ${payload.fullName}`;
       let serviceLabelsForEmail = "";
       if (variant === "provider") {
         serviceLabelsForEmail =
@@ -132,41 +116,26 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
             : "—";
       }
 
-      const web3Message = [
-        `Type: ${payload.type}`,
-        `Name: ${payload.fullName}`,
-        `Email: ${payload.email}`,
-        `WhatsApp: ${payload.whatsapp}`,
-        `Company: ${payload.company || "-"}`,
-        `Website / portfolio / social: ${payload.website || "-"}`,
-        ...(variant === "provider" ? [`Services offered: ${serviceLabelsForEmail}`] : []),
-        `Message: ${payload.message || "-"}`,
-      ].join("\n");
-
-      const web3Res = await fetch("https://api.web3forms.com/submit", {
+      const res = await fetch("/api/forms/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          access_key: web3AccessKey,
-          subject: web3Subject,
-          from_name: "Nabarawy Website Forms",
-          name: payload.fullName,
-          email: payload.email,
-          replyto: payload.email,
-          message: web3Message,
+          ...payload,
+          serviceLabels: serviceLabelsForEmail,
         }),
       });
 
-      const web3Debug = await inspectSubmissionResponse("web3forms", web3Res);
-      console.info("[ContactForm] submit response", web3Debug);
+      const debug = await inspectSubmissionResponse("contact-api", res);
+      console.info("[ContactForm] submit response", debug);
 
-      if (web3Debug.ok) {
+      if (debug.ok) {
         formEl.reset();
         toast.success(t("forms.toast.sentTitle"), { description: t("forms.toast.sentDesc") });
         return;
       }
 
-      console.error("[ContactForm] Web3Forms failed", web3Debug);
+      console.error("[ContactForm] contact API failed", debug);
+      toast.error(t("forms.toast.errorTitle"), { description: t("forms.toast.errorDesc") });
     } catch (error) {
       console.error("[ContactForm] submit exception", error);
       toast.error(t("forms.toast.errorTitle"), { description: t("forms.toast.errorDesc") });
