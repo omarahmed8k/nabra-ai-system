@@ -552,6 +552,169 @@ export const adminRouter = router({
       };
     }),
 
+  // Provider wallet and platform finance overview in credits/tokens.
+  getFinanceOverview: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/finance/overview",
+        tags: ["admin"],
+        summary: "Get provider wallet finance overview",
+      },
+    })
+    .output(z.any())
+    .query(async ({ ctx }) => {
+      const [ledgerTotals, walletTotals, providers, unsettledCompletedRequests] = await Promise.all(
+        [
+          ctx.db.providerFinanceLedger.aggregate({
+            _sum: {
+              totalCredits: true,
+              providerCredits: true,
+              totalAmountEgp: true,
+              providerAmountEgp: true,
+            },
+            _count: true,
+          }),
+          ctx.db.providerWallet.aggregate({
+            _sum: {
+              balanceCredits: true,
+              pendingCredits: true,
+              paidCredits: true,
+              balanceEgp: true,
+              pendingEgp: true,
+              paidEgp: true,
+            },
+          }),
+          ctx.db.user.findMany({
+            where: {
+              role: "PROVIDER",
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              providerWallet: true,
+              _count: {
+                select: {
+                  providerRequests: true,
+                  providerFinance: true,
+                },
+              },
+            },
+            orderBy: { createdAt: "desc" },
+          }),
+          ctx.db.request.count({
+            where: {
+              status: "COMPLETED",
+              providerId: { not: null },
+              providerFinance: null,
+            },
+          }),
+        ]
+      );
+
+      const providerWallets = providers.map((provider) => ({
+        provider: {
+          id: provider.id,
+          name: provider.name,
+          email: provider.email,
+          image: provider.image,
+        },
+        balanceCredits: provider.providerWallet?.balanceCredits ?? 0,
+        pendingCredits: provider.providerWallet?.pendingCredits ?? 0,
+        paidCredits: provider.providerWallet?.paidCredits ?? 0,
+        balanceEgp: provider.providerWallet?.balanceEgp ?? 0,
+        pendingEgp: provider.providerWallet?.pendingEgp ?? 0,
+        paidEgp: provider.providerWallet?.paidEgp ?? 0,
+        requestCount: provider._count.providerRequests,
+        ledgerCount: provider._count.providerFinance,
+      }));
+
+      return {
+        summary: {
+          totalSettledRequests: ledgerTotals._count,
+          totalRequestCredits: ledgerTotals._sum.totalCredits ?? 0,
+          totalProviderCredits: ledgerTotals._sum.providerCredits ?? 0,
+          totalRequestAmountEgp: ledgerTotals._sum.totalAmountEgp ?? 0,
+          totalProviderAmountEgp: ledgerTotals._sum.providerAmountEgp ?? 0,
+          totalWalletBalanceCredits: walletTotals._sum.balanceCredits ?? 0,
+          totalPendingCredits: walletTotals._sum.pendingCredits ?? 0,
+          totalPaidCredits: walletTotals._sum.paidCredits ?? 0,
+          totalWalletBalanceEgp: walletTotals._sum.balanceEgp ?? 0,
+          totalPendingEgp: walletTotals._sum.pendingEgp ?? 0,
+          totalPaidEgp: walletTotals._sum.paidEgp ?? 0,
+          unsettledCompletedRequests,
+        },
+        providerWallets,
+      };
+    }),
+
+  getProviderFinanceLedger: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/finance/ledger",
+        tags: ["admin"],
+        summary: "Get provider finance ledger entries",
+      },
+    })
+    .input(
+      z
+        .object({
+          providerId: z.string().optional(),
+          limit: z.number().min(1).max(100).default(50),
+        })
+        .optional()
+    )
+    .output(z.any())
+    .query(async ({ ctx, input }) => {
+      const where = input?.providerId ? { providerId: input.providerId } : {};
+
+      const ledger = await ctx.db.providerFinanceLedger.findMany({
+        where,
+        include: {
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          request: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              creditCost: true,
+              completedAt: true,
+              client: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          serviceType: {
+            select: {
+              id: true,
+              name: true,
+              nameI18n: true,
+              icon: true,
+            },
+          },
+        },
+        orderBy: { settledAt: "desc" },
+        take: input?.limit ?? 50,
+      });
+
+      return { ledger };
+    }),
+
   // Get all users
   getUsers: adminProcedure
     .meta({
@@ -722,6 +885,7 @@ export const adminRouter = router({
         priorityCostLow: z.number().min(0).default(0), // Additional credits for low priority
         priorityCostMedium: z.number().min(0).default(1), // Additional credits for medium priority
         priorityCostHigh: z.number().min(0).default(2), // Additional credits for high priority
+        creditPriceEgp: z.number().min(0).default(1),
         sortOrder: z.number().default(0),
       })
     )
@@ -753,6 +917,7 @@ export const adminRouter = router({
           priorityCostLow: input.priorityCostLow,
           priorityCostMedium: input.priorityCostMedium,
           priorityCostHigh: input.priorityCostHigh,
+          creditPriceEgp: input.creditPriceEgp,
           sortOrder: input.sortOrder,
         } as any,
       });
@@ -782,6 +947,7 @@ export const adminRouter = router({
         priorityCostLow: z.number().min(0).optional(), // Additional credits for low priority
         priorityCostMedium: z.number().min(0).optional(), // Additional credits for medium priority
         priorityCostHigh: z.number().min(0).optional(), // Additional credits for high priority
+        creditPriceEgp: z.number().min(0).optional(),
         sortOrder: z.number().optional(),
         isActive: z.boolean().optional(),
       })

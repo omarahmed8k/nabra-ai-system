@@ -241,6 +241,7 @@
         "dashboard": "Dashboard",
         "available": "Available Jobs",
         "myRequests": "My Requests",
+        "wallet": "Wallet",
         "notifications": "Notifications",
         "profile": "Profile"
       },
@@ -249,6 +250,7 @@
         "users": "Users",
         "requests": "All Requests",
         "payments": "Payments",
+        "finance": "Finance",
         "notifications": "Notifications",
         "packages": "Packages",
         "services": "Services",
@@ -650,7 +652,9 @@
         "paidRevisionCost": "Paid Revision Cost (credits)",
         "paidRevisionCostHint": "Credits charged for paid revisions",
         "resetFreeRevisionsOnPaid": "Reset free revisions on paid",
-        "resetFreeRevisionsOnPaidHint": "Reset free revision count after a paid revision"
+        "resetFreeRevisionsOnPaidHint": "Reset free revision count after a paid revision",
+        "creditPriceEgp": "Credit Price (EGP)",
+        "creditPriceEgpHint": "EGP value of one credit for this service. Used to calculate provider wallet value."
       },
       "info": {
         "questions": "question",
@@ -691,7 +695,56 @@
         "creditsLabel": "credits",
         "revisionInfo": "{freeRevisions} free, then {paidCost} {creditLabel}/revision",
         "resetsOnPaid": "Resets on paid",
-        "noResetOnPaid": "No reset on paid"
+        "noResetOnPaid": "No reset on paid",
+        "creditPriceEgp": "{price} EGP per credit"
+      }
+    },
+    "finance": {
+      "title": "Provider Wallets",
+      "subtitle": "Credit/token finance for providers and Nabra shares",
+      "summary": {
+        "providerCredits": "Provider Credits",
+        "providerAmount": "Provider Amount",
+        "providerCreditsDesc": "Total credits credited to providers",
+        "walletBalance": "Wallet Balance",
+        "walletBalanceDesc": "Current provider wallet balances",
+        "settledRequests": "Settled Requests",
+        "settledRequestsDesc": "Completed requests credited to providers",
+        "creditDetail": "{credits} credits"
+      },
+      "wallets": {
+        "title": "Provider Wallets",
+        "description": "All providers and their current credit wallet status",
+        "provider": "Provider",
+        "balance": "Balance",
+        "balanceEgp": "Balance EGP",
+        "paid": "Paid",
+        "paidEgp": "Paid EGP",
+        "requests": "Requests",
+        "ledger": "Ledger Entries",
+        "actions": "Actions",
+        "viewLedger": "View Ledger",
+        "showAll": "Show All"
+      },
+      "ledger": {
+        "title": "Finance Ledger",
+        "description": "Request-level provider and Nabra credit split",
+        "filteredBy": "Showing ledger entries for {provider}",
+        "unsettled": "{count} completed request(s) without ledger",
+        "provider": "Provider",
+        "request": "Request",
+        "service": "Service",
+        "total": "Total",
+        "creditPrice": "Credit Price",
+        "providerCredits": "Provider",
+        "providerAmount": "Provider EGP",
+        "status": "Status",
+        "settledAt": "Settled"
+      },
+      "status": {
+        "AVAILABLE": "Available",
+        "PAID": "Paid",
+        "VOIDED": "Voided"
       }
     },
     "attributesManager": {
@@ -1019,7 +1072,8 @@
         "phone": "Add a phone number so providers can reach you"
       },
       "successMessage": "Profile updated successfully",
-      "errorMessage": "Failed to update profile"
+      "errorMessage": "Failed to update profile",
+      "sessionExpired": "Your session no longer matches an existing user. Please sign in again."
     },
     "changePassword": {
       "title": "Change Password",
@@ -1497,6 +1551,37 @@
         "actionLabel": "Browse Available Jobs"
       }
     },
+    "walletPage": {
+      "title": "Wallet",
+      "subtitle": "Track your credited request earnings in tokens/credits",
+      "summary": {
+        "balance": "Wallet Balance",
+        "balanceDesc": "Available EGP value from approved work",
+        "periodEarnings": "Last 30 Days",
+        "periodEarningsDesc": "EGP value credited in the current period",
+        "completed": "Settled Requests",
+        "completedDesc": "Approved requests with wallet entries",
+        "creditDetail": "{credits} credits"
+      },
+      "ledger": {
+        "title": "Credit Ledger",
+        "description": "Every approved request credited to your wallet",
+        "empty": "No wallet entries yet. Credits appear here after clients approve delivered work.",
+        "request": "Request",
+        "service": "Service",
+        "total": "Request Credits",
+        "creditPrice": "Credit Price",
+        "providerCredits": "Your Credits",
+        "providerAmount": "Your EGP",
+        "status": "Status",
+        "settledAt": "Settled"
+      },
+      "status": {
+        "AVAILABLE": "Available",
+        "PAID": "Paid",
+        "VOIDED": "Voided"
+      }
+    },
     "notifications": {
       "title": "Notifications",
       "subtitle": "Stay updated on your jobs and activity",
@@ -1531,7 +1616,8 @@
         "reset": "Reset",
         "saveChanges": "Save Changes",
         "saving": "Saving...",
-        "notAvailable": "Provider profile not available"
+        "notAvailable": "Provider profile not available",
+        "sessionExpired": "Your session no longer matches an existing user. Please sign in again."
       }
     },
     "requestDetail": {

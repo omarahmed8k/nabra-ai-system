@@ -241,6 +241,7 @@
         "dashboard": "لوحة التحكم",
         "available": "الوظائف المتاحة",
         "myRequests": "طلباتي",
+        "wallet": "المحفظة",
         "notifications": "الإشعارات",
         "profile": "الملف الشخصي"
       },
@@ -249,6 +250,7 @@
         "users": "المستخدمون",
         "requests": "كل الطلبات",
         "payments": "المدفوعات",
+        "finance": "المالية",
         "notifications": "الإشعارات",
         "packages": "الباقات",
         "services": "الخدمات",
@@ -650,7 +652,9 @@
         "paidRevisionCost": "تكلفة المراجعة المدفوعة (كريدت)",
         "paidRevisionCostHint": "الكريدت المحملة للمراجعات المدفوعة",
         "resetFreeRevisionsOnPaid": "إعادة تعيين المراجعات المجانية عند الدفع",
-        "resetFreeRevisionsOnPaidHint": "إعادة تعيين عدد المراجعات المجانية بعد مراجعة مدفوعة"
+        "resetFreeRevisionsOnPaidHint": "إعادة تعيين عدد المراجعات المجانية بعد مراجعة مدفوعة",
+        "creditPriceEgp": "سعر الكريدت (جنيه)",
+        "creditPriceEgpHint": "قيمة الكريدت الواحد بالجنيه لهذه الخدمة. تُستخدم لحساب قيمة محفظة المبدع."
       },
       "info": {
         "questions": "سؤال",
@@ -691,7 +695,56 @@
         "creditsLabel": "كريدت",
         "revisionInfo": "{freeRevisions} مجاني، ثم {paidCost} {creditLabel}/تعديل",
         "resetsOnPaid": "يتم إعادة التعيين عند الدفع",
-        "noResetOnPaid": "لا يتم إعادة التعيين عند الدفع"
+        "noResetOnPaid": "لا يتم إعادة التعيين عند الدفع",
+        "creditPriceEgp": "{price} جنيه لكل كريدت"
+      }
+    },
+    "finance": {
+      "title": "محافظ المبدعين",
+      "subtitle": "مالية الكريدت للمبدعين ونصيب نبرا",
+      "summary": {
+        "providerCredits": "كريدت المبدعين",
+        "providerAmount": "مبلغ المبدعين",
+        "providerCreditsDesc": "إجمالي الكريدت المضافة للمبدعين",
+        "walletBalance": "رصيد المحافظ",
+        "walletBalanceDesc": "أرصدة محافظ المبدعين الحالية",
+        "settledRequests": "طلبات مسواة",
+        "settledRequestsDesc": "طلبات مكتملة تمت إضافتها للمبدعين",
+        "creditDetail": "{credits} كريدت"
+      },
+      "wallets": {
+        "title": "محافظ المبدعين",
+        "description": "كل المبدعين وحالة محافظ الكريدت الحالية",
+        "provider": "المبدع",
+        "balance": "الرصيد",
+        "balanceEgp": "الرصيد بالجنيه",
+        "paid": "المدفوع",
+        "paidEgp": "المدفوع بالجنيه",
+        "requests": "الطلبات",
+        "ledger": "قيود المالية",
+        "actions": "الإجراءات",
+        "viewLedger": "عرض القيود",
+        "showAll": "عرض الكل"
+      },
+      "ledger": {
+        "title": "سجل المالية",
+        "description": "تقسيم كريدت كل طلب بين المبدع ونبرا",
+        "filteredBy": "عرض قيود {provider}",
+        "unsettled": "{count} طلب مكتمل بدون قيد مالي",
+        "provider": "المبدع",
+        "request": "الطلب",
+        "service": "الخدمة",
+        "total": "الإجمالي",
+        "creditPrice": "سعر الكريدت",
+        "providerCredits": "المبدع",
+        "providerAmount": "جنيه المبدع",
+        "status": "الحالة",
+        "settledAt": "تاريخ التسوية"
+      },
+      "status": {
+        "AVAILABLE": "متاح",
+        "PAID": "مدفوع",
+        "VOIDED": "ملغي"
       }
     },
     "attributesManager": {
@@ -1019,7 +1072,8 @@
         "phone": "أضف رقم هاتف لتسهيل التواصل معك"
       },
       "successMessage": "تم تحديث الملف الشخصي بنجاح",
-      "errorMessage": "فشل تحديث الملف الشخصي"
+      "errorMessage": "فشل تحديث الملف الشخصي",
+      "sessionExpired": "جلستك لم تعد مرتبطة بمستخدم موجود. يرجى تسجيل الدخول مرة أخرى."
     },
     "changePassword": {
       "title": "تغيير كلمة المرور",
@@ -1497,6 +1551,37 @@
         "actionLabel": "تصفح الوظائف المتاحة"
       }
     },
+    "walletPage": {
+      "title": "المحفظة",
+      "subtitle": "تابع أرباحك المضافة من الطلبات بالكريدت",
+      "summary": {
+        "balance": "رصيد المحفظة",
+        "balanceDesc": "القيمة بالجنيه من الأعمال المعتمدة",
+        "periodEarnings": "آخر 30 يوم",
+        "periodEarningsDesc": "القيمة بالجنيه المضافة في الفترة الحالية",
+        "completed": "طلبات مسواة",
+        "completedDesc": "طلبات معتمدة لها قيود في المحفظة",
+        "creditDetail": "{credits} كريدت"
+      },
+      "ledger": {
+        "title": "سجل الكريدت",
+        "description": "كل طلب معتمد تمت إضافته إلى محفظتك",
+        "empty": "لا توجد قيود في المحفظة بعد. تظهر الكريدت هنا بعد اعتماد العميل للعمل المسلم.",
+        "request": "الطلب",
+        "service": "الخدمة",
+        "total": "كريدت الطلب",
+        "creditPrice": "سعر الكريدت",
+        "providerCredits": "كريدتك",
+        "providerAmount": "جنيهك",
+        "status": "الحالة",
+        "settledAt": "تاريخ التسوية"
+      },
+      "status": {
+        "AVAILABLE": "متاح",
+        "PAID": "مدفوع",
+        "VOIDED": "ملغي"
+      }
+    },
     "notifications": {
       "title": "الإشعارات",
       "subtitle": "ابقَ على اطلاع على وظائفك ونشاطك",
@@ -1531,7 +1616,8 @@
         "reset": "إعادة تعيين",
         "saveChanges": "حفظ التغييرات",
         "saving": "جاري الحفظ...",
-        "notAvailable": "ملف المبدع غير متاح"
+        "notAvailable": "ملف المبدع غير متاح",
+        "sessionExpired": "جلستك لم تعد مرتبطة بمستخدم موجود. يرجى تسجيل الدخول مرة أخرى."
       }
     },
     "requestDetail": {

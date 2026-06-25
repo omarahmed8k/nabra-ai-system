@@ -277,8 +277,16 @@ export const providerRouter = router({
       z.object({
         totalEarnings: z.number(),
         completedCount: z.number(),
+        balanceCredits: z.number(),
+        pendingCredits: z.number(),
+        paidCredits: z.number(),
+        balanceEgp: z.number(),
+        pendingEgp: z.number(),
+        paidEgp: z.number(),
+        totalEarningsEgp: z.number(),
         period: z.object({ start: z.date(), end: z.date() }),
         requests: z.array(z.any()),
+        ledger: z.array(z.any()),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -286,34 +294,104 @@ export const providerRouter = router({
       const startDate = input?.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const endDate = input?.endDate || new Date();
 
-      const completedRequests = await ctx.db.request.findMany({
-        where: {
-          providerId: userId,
-          status: "COMPLETED",
-          completedAt: {
-            gte: startDate,
-            lte: endDate,
+      const [wallet, ledger] = await Promise.all([
+        ctx.db.providerWallet.findUnique({
+          where: { providerId: userId },
+        }),
+        ctx.db.providerFinanceLedger.findMany({
+          where: {
+            providerId: userId,
+            settledAt: {
+              gte: startDate,
+              lte: endDate,
+            },
           },
-        },
-        include: {
-          serviceType: true,
-        },
-      });
+          include: {
+            request: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                completedAt: true,
+                creditCost: true,
+              },
+            },
+            serviceType: {
+              select: {
+                id: true,
+                name: true,
+                nameI18n: true,
+                icon: true,
+              },
+            },
+          },
+          orderBy: { settledAt: "desc" },
+        }),
+      ]);
 
-      // For demo purposes, assign a base value per request
-      // In production, this would come from actual pricing
-      const baseValuePerRequest = 50;
-      const totalEarnings = completedRequests.length * baseValuePerRequest;
+      const completedRequests = ledger.map((entry) => ({
+        ...entry.request,
+        serviceType: entry.serviceType,
+        finance: {
+          totalCredits: entry.totalCredits,
+          providerCredits: entry.providerCredits,
+          creditPriceEgp: entry.creditPriceEgp,
+          totalAmountEgp: entry.totalAmountEgp,
+          providerAmountEgp: entry.providerAmountEgp,
+          status: entry.status,
+          settledAt: entry.settledAt,
+        },
+      }));
+
+      const totals = ledger.reduce(
+        (
+          sum: {
+            providerCredits: number;
+            providerAmountEgp: number;
+          },
+          entry
+        ) => ({
+          providerCredits: sum.providerCredits + entry.providerCredits,
+          providerAmountEgp: sum.providerAmountEgp + entry.providerAmountEgp,
+        }),
+        { providerCredits: 0, providerAmountEgp: 0 }
+      );
 
       return {
-        totalEarnings,
-        completedCount: completedRequests.length,
+        totalEarnings: totals.providerCredits,
+        completedCount: ledger.length,
+        balanceCredits: wallet?.balanceCredits ?? 0,
+        pendingCredits: wallet?.pendingCredits ?? 0,
+        paidCredits: wallet?.paidCredits ?? 0,
+        balanceEgp: wallet?.balanceEgp ?? 0,
+        pendingEgp: wallet?.pendingEgp ?? 0,
+        paidEgp: wallet?.paidEgp ?? 0,
+        totalEarningsEgp: totals.providerAmountEgp,
         period: {
           start: startDate,
           end: endDate,
         },
         requests: completedRequests,
+        ledger,
       };
+    }),
+
+  // Get completed requests that have not yet been settled into a wallet.
+  getUnsettledCompletedRequests: providerProcedure
+    .output(z.array(z.any()))
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+
+      return ctx.db.request.findMany({
+        where: {
+          providerId: userId,
+          status: "COMPLETED",
+          providerFinance: null,
+        },
+        include: {
+          serviceType: true,
+        },
+      });
     }),
 
   // Get recent reviews

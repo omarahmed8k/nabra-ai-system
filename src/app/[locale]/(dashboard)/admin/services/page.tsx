@@ -144,6 +144,7 @@ export default function AdminServicesPage() {
     priorityCostLowValue: formData.get("priorityCostLow") as string,
     priorityCostMediumValue: formData.get("priorityCostMedium") as string,
     priorityCostHighValue: formData.get("priorityCostHigh") as string,
+    creditPriceEgpValue: formData.get("creditPriceEgp") as string,
     nameEn: (formData.get("name_en") as string) || "",
     nameAr: (formData.get("name_ar") as string) || "",
     descEn: (formData.get("description_en") as string) || "",
@@ -181,6 +182,7 @@ export default function AdminServicesPage() {
     priorityCostHigh: data.priorityCostHighValue
       ? Number.parseInt(data.priorityCostHighValue, 10)
       : 2,
+    creditPriceEgp: data.creditPriceEgpValue ? Number.parseFloat(data.creditPriceEgpValue) : 1,
     attributes: attributes.length > 0 ? attributes : undefined,
   });
 
@@ -214,6 +216,9 @@ export default function AdminServicesPage() {
         : undefined,
       priorityCostHigh: data.priorityCostHighValue
         ? Number.parseInt(data.priorityCostHighValue, 10)
+        : undefined,
+      creditPriceEgp: data.creditPriceEgpValue
+        ? Number.parseFloat(data.creditPriceEgpValue)
         : undefined,
     });
   };
@@ -428,6 +433,23 @@ export default function AdminServicesPage() {
         </div>
       </div>
 
+      {/* Credit Value for Edit */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor={`creditPriceEgp-${service.id}`}>{t("fields.creditPriceEgp")}</Label>
+          <Input
+            id={`creditPriceEgp-${service.id}`}
+            name="creditPriceEgp"
+            type="number"
+            min="0"
+            step="0.01"
+            defaultValue={service.creditPriceEgp ?? 1}
+            required
+          />
+          <p className="text-xs text-muted-foreground">{t("fields.creditPriceEgpHint")}</p>
+        </div>
+      </div>
+
       {/* Attributes Manager for Edit */}
       <AttributesManager attributes={editAttributes} onChange={setEditAttributes} />
 
@@ -482,6 +504,9 @@ export default function AdminServicesPage() {
               ) : (
                 <span className="text-xs text-red-600">❌ {t("display.noResetOnPaid")}</span>
               )}
+            </p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {t("display.creditPriceEgp", { price: service.creditPriceEgp ?? 1 })}
             </p>
           </div>
         </div>
@@ -714,6 +739,23 @@ export default function AdminServicesPage() {
                   <p className="text-xs text-muted-foreground">
                     {t("fields.priorityCostHighHint")}
                   </p>
+                </div>
+              </div>
+
+              {/* Credit Value */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="creditPriceEgp">{t("fields.creditPriceEgp")}</Label>
+                  <Input
+                    id="creditPriceEgp"
+                    name="creditPriceEgp"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue="1"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">{t("fields.creditPriceEgpHint")}</p>
                 </div>
               </div>
 

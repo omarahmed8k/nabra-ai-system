@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,14 +12,36 @@ import { trpc } from "@/lib/trpc/client";
 import { toast } from "sonner";
 import { Loader2, Briefcase, Link as LinkIcon, Award } from "lucide-react";
 
+function isNotFoundError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    (error as { data?: { code?: string } }).data?.code === "NOT_FOUND"
+  );
+}
+
 export function EditProviderProfileForm() {
   const t = useTranslations("provider.profile.providerInfo");
-  const { data: profile, isLoading, refetch } = trpc.user.getProfile.useQuery();
+  const {
+    data: profile,
+    isLoading,
+    error: profileError,
+    refetch,
+  } = trpc.user.getProfile.useQuery(undefined, {
+    retry: (failureCount, error) => (isNotFoundError(error) ? false : failureCount < 2),
+  });
   const updateProviderProfile = trpc.user.updateProviderProfile.useMutation();
 
   const [bio, setBio] = useState("");
   const [portfolio, setPortfolio] = useState("");
   const [skills, setSkills] = useState("");
+
+  useEffect(() => {
+    if (!isNotFoundError(profileError)) return;
+    toast.error(t("sessionExpired"));
+    signOut({ callbackUrl: "/auth/login" });
+  }, [profileError, t]);
 
   useEffect(() => {
     if (profile?.providerProfile) {
@@ -51,8 +74,8 @@ export function EditProviderProfileForm() {
 
       toast.success(result.message);
       refetch();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update provider profile");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to update provider profile");
     }
   };
 

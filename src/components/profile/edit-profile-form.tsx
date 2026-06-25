@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,9 +32,25 @@ const getInitials = (value?: string | null) =>
     .map((part) => part[0]?.toUpperCase())
     .join("") || "?";
 
+function isNotFoundError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    (error as { data?: { code?: string } }).data?.code === "NOT_FOUND"
+  );
+}
+
 export function EditProfileForm() {
   const t = useTranslations("profile.editProfile");
-  const { data: profile, isLoading, refetch } = trpc.user.getProfile.useQuery();
+  const {
+    data: profile,
+    isLoading,
+    error: profileError,
+    refetch,
+  } = trpc.user.getProfile.useQuery(undefined, {
+    retry: (failureCount, error) => (isNotFoundError(error) ? false : failureCount < 2),
+  });
   const updateProfile = trpc.user.updateProfile.useMutation();
   const { update: updateSession } = useSession();
 
@@ -47,6 +63,12 @@ export function EditProfileForm() {
   const [hasWhatsapp, setHasWhatsapp] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  useEffect(() => {
+    if (!isNotFoundError(profileError)) return;
+    toast.error(t("sessionExpired"));
+    signOut({ callbackUrl: "/auth/login" });
+  }, [profileError, t]);
 
   useEffect(() => {
     if (phone) return;
@@ -141,7 +163,7 @@ export function EditProfileForm() {
       });
 
       refetch();
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError(error, t("errorMessage"));
     }
   };

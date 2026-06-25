@@ -91,7 +91,7 @@ export default function RootLayout({
       <head>
         <script>{`try{var t=localStorage.getItem('theme');document.documentElement.classList.add(t==='light'?'light':'dark')}catch(e){}`}</script>
       </head>
-      <body className="font-sans">
+      <body className="font-sans" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
             <TRPCProvider>

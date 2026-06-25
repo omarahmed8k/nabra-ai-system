@@ -9,29 +9,31 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
+  id                  String                  @id @default(cuid())
   name                String?
-  email               String               @unique
+  email               String                  @unique
   emailVerified       DateTime?
   password            String?
   image               String?
   phone               String?
-  hasWhatsapp         Boolean              @default(false)
-  role                Role                 @default(CLIENT)
-  registrationIp      String?              // IP address during registration for abuse prevention
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  hasWhatsapp         Boolean                 @default(false)
+  role                Role                    @default(CLIENT)
+  registrationIp      String? // IP address during registration for abuse prevention
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
   deletedAt           DateTime?
   accounts            Account[]
   clientSubscriptions ClientSubscription[]
   notifications       Notification[]
-  reviewedPayments    PaymentProof[]       @relation("PaymentReviewer")
+  reviewedPayments    PaymentProof[]          @relation("PaymentReviewer")
   paymentProofs       PaymentProof[]
   providerProfile     ProviderProfile?
-  ratings             Rating[]             @relation("ClientRatings")
-  receivedRatings     Rating[]             @relation("ProviderRatings")
-  clientRequests      Request[]            @relation("ClientRequests")
-  providerRequests    Request[]            @relation("ProviderRequests")
+  providerWallet      ProviderWallet?
+  providerFinance     ProviderFinanceLedger[] @relation("ProviderFinanceLedger")
+  ratings             Rating[]                @relation("ClientRatings")
+  receivedRatings     Rating[]                @relation("ProviderRatings")
+  clientRequests      Request[]               @relation("ClientRequests")
+  providerRequests    Request[]               @relation("ProviderRequests")
   comments            RequestComment[]
   sessions            Session[]
   watchedRequests     RequestWatcher[]
@@ -67,12 +69,12 @@ model Session {
 }
 
 model RequestWatcher {
-  id         String   @id @default(cuid())
-  request    Request  @relation(fields: [requestId], references: [id])
-  requestId  String
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  request   Request  @relation(fields: [requestId], references: [id])
+  requestId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
 
   @@unique([requestId, userId])
 }
@@ -99,55 +101,57 @@ model ProviderProfile {
 }
 
 model ServiceType {
-  id                        String            @id @default(cuid())
-  name                      String            @unique
-  description               String?
-  nameI18n                  Json?
-  descriptionI18n           Json?
-  icon                      String?
-  formFields                Json?
-  attributes                Json? // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
-  creditCost                Int               @default(1) // Number of credits required to create a request for this service
-  maxFreeRevisions          Int               @default(3) // Number of free revisions per request
-  paidRevisionCost          Int               @default(1) // Cost in credits for paid revisions
-  resetFreeRevisionsOnPaid  Boolean           @default(true) // Whether to reset free revision counter after paid revision
-  priorityCostLow           Int               @default(0) // Additional credits for low priority
-  priorityCostMedium        Int               @default(1) // Additional credits for medium priority
-  priorityCostHigh          Int               @default(2) // Additional credits for high priority
-  isActive                  Boolean           @default(true)
-  sortOrder                 Int               @default(0)
-  createdAt                 DateTime          @default(now())
-  updatedAt                 DateTime          @updatedAt
-  deletedAt                 DateTime?
-  requests                  Request[]
-  providers                 ProviderProfile[] @relation("ProviderServices")
-  packages                  PackageService[]
+  id                       String                  @id @default(cuid())
+  name                     String                  @unique
+  description              String?
+  nameI18n                 Json?
+  descriptionI18n          Json?
+  icon                     String?
+  formFields               Json?
+  attributes               Json? // Custom Q&A for each service: [{question: string, required: boolean, type: 'text'|'select'|'multiselect', options?: string[]}]
+  creditCost               Int                     @default(1) // Number of credits required to create a request for this service
+  maxFreeRevisions         Int                     @default(3) // Number of free revisions per request
+  paidRevisionCost         Int                     @default(1) // Cost in credits for paid revisions
+  resetFreeRevisionsOnPaid Boolean                 @default(true) // Whether to reset free revision counter after paid revision
+  priorityCostLow          Int                     @default(0) // Additional credits for low priority
+  priorityCostMedium       Int                     @default(1) // Additional credits for medium priority
+  priorityCostHigh         Int                     @default(2) // Additional credits for high priority
+  creditPriceEgp           Float                   @default(1) // EGP value of one credit for this service
+  isActive                 Boolean                 @default(true)
+  sortOrder                Int                     @default(0)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  deletedAt                DateTime?
+  requests                 Request[]
+  financeLedger            ProviderFinanceLedger[]
+  providers                ProviderProfile[]       @relation("ProviderServices")
+  packages                 PackageService[]
 
   @@index([deletedAt])
 }
 
 model Package {
-  id                        String               @id @default(cuid())
-  name                      String
-  description               String?
-  nameI18n                  Json?
-  descriptionI18n           Json?
-  featuresI18n              Json?
-  credits                   Int
-  price                     Float
-  durationDays              Int                  @default(30)
-  features                  String[]             @default([])
-  isActive                  Boolean              @default(true)
-  isFreePackage             Boolean              @default(false)
-  isFeatured                Boolean              @default(false)
-  supportAllServices        Boolean              @default(false)
-  sortOrder                 Int                  @default(0)
-  version                   Int                  @default(1)
-  createdAt                 DateTime             @default(now())
-  updatedAt                 DateTime             @updatedAt
-  deletedAt                 DateTime?
-  subscriptions             ClientSubscription[]
-  services                  PackageService[]
+  id                 String               @id @default(cuid())
+  name               String
+  description        String?
+  nameI18n           Json?
+  descriptionI18n    Json?
+  featuresI18n       Json?
+  credits            Int
+  price              Float
+  durationDays       Int                  @default(30)
+  features           String[]             @default([])
+  isActive           Boolean              @default(true)
+  isFreePackage      Boolean              @default(false)
+  isFeatured         Boolean              @default(false)
+  supportAllServices Boolean              @default(false)
+  sortOrder          Int                  @default(0)
+  version            Int                  @default(1)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  deletedAt          DateTime?
+  subscriptions      ClientSubscription[]
+  services           PackageService[]
 
   @@index([deletedAt])
 }
@@ -166,21 +170,21 @@ model PackageService {
 }
 
 model ClientSubscription {
-  id                        String        @id @default(cuid())
-  userId                    String
-  packageId                 String
-  packageVersion            Int           @default(1)
-  remainingCredits          Int
-  startDate                 DateTime      @default(now())
-  endDate                   DateTime
-  isActive                  Boolean       @default(true)
-  isFreeTrialUsed           Boolean       @default(false)
-  cancelledAt               DateTime?
-  createdAt                 DateTime      @default(now())
-  updatedAt                 DateTime      @updatedAt
-  package                   Package       @relation(fields: [packageId], references: [id])
-  user                      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paymentProof              PaymentProof?
+  id               String        @id @default(cuid())
+  userId           String
+  packageId        String
+  packageVersion   Int           @default(1)
+  remainingCredits Int
+  startDate        DateTime      @default(now())
+  endDate          DateTime
+  isActive         Boolean       @default(true)
+  isFreeTrialUsed  Boolean       @default(false)
+  cancelledAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  package          Package       @relation(fields: [packageId], references: [id])
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentProof     PaymentProof?
 
   @@index([userId, isActive])
   @@index([userId, endDate]) // For credit availability checks
@@ -214,36 +218,37 @@ model PaymentProof {
 }
 
 model Request {
-  id                   String           @id @default(cuid())
+  id                   String                 @id @default(cuid())
   title                String
   description          String
   clientId             String
   providerId           String?
   serviceTypeId        String
-  status               RequestStatus    @default(PENDING)
-  priority             Int              @default(1)
-  creditCost           Int              @default(1) // Total credit cost at time of creation
-  baseCreditCost       Int              @default(1) // Base cost from service type
-    attributeCredits     Int              @default(0) // Additional cost from service attributes
-    priorityCreditCost   Int              @default(0) // Additional cost from priority
-  isRevision           Boolean          @default(false) // Whether this is a revision request
-  revisionType         String?          // "free" or "paid"
+  status               RequestStatus          @default(PENDING)
+  priority             Int                    @default(1)
+  creditCost           Int                    @default(1) // Total credit cost at time of creation
+  baseCreditCost       Int                    @default(1) // Base cost from service type
+  attributeCredits     Int                    @default(0) // Additional cost from service attributes
+  priorityCreditCost   Int                    @default(0) // Additional cost from priority
+  isRevision           Boolean                @default(false) // Whether this is a revision request
+  revisionType         String? // "free" or "paid"
   formData             Json?
   attributeResponses   Json? // Client's answers to service-specific Q&A: [{question: string, answer: string}]
-  attachments          String[]         @default([])
+  attachments          String[]               @default([])
   estimatedDelivery    DateTime?
-  currentRevisionCount Int              @default(0)
-  totalRevisions       Int              @default(0)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  currentRevisionCount Int                    @default(0)
+  totalRevisions       Int                    @default(0)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
   completedAt          DateTime?
   deletedAt            DateTime?
   rating               Rating?
-  client               User             @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
-  provider             User?            @relation("ProviderRequests", fields: [providerId], references: [id])
-  serviceType          ServiceType      @relation(fields: [serviceTypeId], references: [id])
+  client               User                   @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
+  provider             User?                  @relation("ProviderRequests", fields: [providerId], references: [id])
+  serviceType          ServiceType            @relation(fields: [serviceTypeId], references: [id])
   comments             RequestComment[]
   watchers             RequestWatcher[]
+  providerFinance      ProviderFinanceLedger?
 
   @@index([clientId, status])
   @@index([clientId, createdAt]) // For client dashboard pagination
@@ -251,6 +256,45 @@ model Request {
   @@index([providerId, createdAt]) // For provider dashboard pagination
   @@index([status, createdAt]) // For filtering by status and sorting
   @@index([deletedAt])
+}
+
+model ProviderWallet {
+  id             String   @id @default(cuid())
+  providerId     String   @unique
+  balanceCredits Int      @default(0)
+  pendingCredits Int      @default(0)
+  paidCredits    Int      @default(0)
+  balanceEgp     Float    @default(0)
+  pendingEgp     Float    @default(0)
+  paidEgp        Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  provider       User     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model ProviderFinanceLedger {
+  id                String                @id @default(cuid())
+  requestId         String                @unique
+  providerId        String
+  serviceTypeId     String
+  totalCredits      Int
+  providerCredits   Int
+  creditPriceEgp    Float
+  totalAmountEgp    Float
+  providerAmountEgp Float
+  status            ProviderFinanceStatus @default(AVAILABLE)
+  settledAt         DateTime              @default(now())
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  provider          User                  @relation("ProviderFinanceLedger", fields: [providerId], references: [id], onDelete: Cascade)
+  request           Request               @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  serviceType       ServiceType           @relation(fields: [serviceTypeId], references: [id])
+
+  @@index([providerId, status])
+  @@index([settledAt])
+  @@index([serviceTypeId])
 }
 
 model RequestComment {
@@ -334,4 +378,10 @@ enum PaymentStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum ProviderFinanceStatus {
+  AVAILABLE
+  PAID
+  VOIDED
 }

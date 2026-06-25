@@ -10,6 +10,8 @@ async function main() {
   // Clean existing data
   await prisma.notification.deleteMany();
   await prisma.rating.deleteMany();
+  await prisma.providerFinanceLedger.deleteMany();
+  await prisma.providerWallet.deleteMany();
   await prisma.requestComment.deleteMany();
   await prisma.requestWatcher.deleteMany();
   await prisma.request.deleteMany();
@@ -81,6 +83,7 @@ async function main() {
         ar: "تصميمات احترافية لمنصات التواصل الاجتماعي",
       },
       creditCost: 5,
+      creditPriceEgp: 1,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -99,6 +102,7 @@ async function main() {
         ar: "ريلز قصيرة لمنصات التواصل الاجتماعي (5-10 ثوان أساسي، +5 كريدت لكل 10 ثوان إضافية)",
       },
       creditCost: 10,
+      creditPriceEgp: 2,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -129,6 +133,7 @@ async function main() {
         ar: "تصميم شعار احترافي لعلامتك التجارية",
       },
       creditCost: 50,
+      creditPriceEgp: 1,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -146,6 +151,7 @@ async function main() {
         ar: "أداء صوتي احترافي باللغة العربية للفيديوهات",
       },
       creditCost: 5,
+      creditPriceEgp: 1,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -164,6 +170,7 @@ async function main() {
         ar: "منيو رقمي مع رمز QR (50 كريدت لأول 20 منتج، +1 كريدت لكل منتج إضافي)",
       },
       creditCost: 50,
+      creditPriceEgp: 1,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -196,6 +203,7 @@ async function main() {
         ar: "فيديو انيميشن 2D (20 كريدت لأول 10 ثوان، +10 كريدت لكل 10 ثوان إضافية)",
       },
       creditCost: 20,
+      creditPriceEgp: 2,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -227,6 +235,7 @@ async function main() {
         ar: "فيديو انيميشن 3D (40 كريدت لأول 10 ثوان، +15 كريدت لكل 10 ثوان إضافية)",
       },
       creditCost: 40,
+      creditPriceEgp: 2,
       maxFreeRevisions: 1,
       paidRevisionCost: 2,
       isActive: true,
@@ -462,13 +471,13 @@ async function main() {
   console.log("─".repeat(50));
   console.log("\n🎨 Service Types Created:");
   console.log("─".repeat(50));
-  console.log("1. Social Media Design (5 credits)");
-  console.log("2. Reel Video 5-10s (10 credits + 5/extra 10s)");
-  console.log("3. Logo Design (50 credits)");
-  console.log("4. Voice Over Arabic (5 credits)");
-  console.log("5. Digital QR Menu (50 credits + 1/product after 20)");
-  console.log("6. 2D Animation (20 credits + 10/extra 10s)");
-  console.log("7. 3D Animation (40 credits + 15/extra 10s)");
+  console.log("1. Social Media Design (5 credits, 1 EGP/credit)");
+  console.log("2. Reel Video 5-10s (10 credits + 5/extra 10s, 2 EGP/credit)");
+  console.log("3. Logo Design (50 credits, 1 EGP/credit)");
+  console.log("4. Voice Over Arabic (5 credits, 1 EGP/credit)");
+  console.log("5. Digital QR Menu (50 credits + 1/product after 20, 1 EGP/credit)");
+  console.log("6. 2D Animation (20 credits + 10/extra 10s, 2 EGP/credit)");
+  console.log("7. 3D Animation (40 credits + 15/extra 10s, 2 EGP/credit)");
   console.log("─".repeat(50));
   console.log("\n💡 New clients will automatically receive the free plan upon registration.");
   console.log("💡 All services follow the revision policy: First revision free, 2 credits after.");

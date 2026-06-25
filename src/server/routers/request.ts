@@ -5,6 +5,7 @@ import { checkAndDeductCredits } from "@/lib/credit-logic";
 import { handleRevisionRequest, getRevisionInfo } from "@/lib/revision-logic";
 import { validateAttributeResponses, calculateAttributeCredits } from "@/lib/attribute-validation";
 import { getPriorityCostsForService } from "@/lib/priority-costs";
+import { settleCompletedRequest } from "@/lib/provider-wallet";
 import {
   createNotification,
   getLocalizedRequestStatusLabel,
@@ -786,26 +787,34 @@ export const requestRouter = router({
         });
       }
 
-      const updatedRequest = await ctx.db.request.update({
-        where: { id: input.requestId },
-        data: {
-          status: "COMPLETED",
-          completedAt: new Date(),
-        },
-      });
-
-      // System comment
       const approvedComment = await getTranslation(
         ctx.locale,
         "requests.messages.systemMessages.requestApprovedCompleted"
       );
-      await ctx.db.requestComment.create({
-        data: {
-          requestId: input.requestId,
-          userId,
-          content: approvedComment,
-          type: "SYSTEM",
-        },
+
+      const updatedRequest = await ctx.db.$transaction(async (tx) => {
+        const completedRequest = await tx.request.update({
+          where: { id: input.requestId },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+          },
+        });
+
+        if (request.providerId) {
+          await settleCompletedRequest(tx, input.requestId);
+        }
+
+        await tx.requestComment.create({
+          data: {
+            requestId: input.requestId,
+            userId,
+            content: approvedComment,
+            type: "SYSTEM",
+          },
+        });
+
+        return completedRequest;
       });
 
       // Notify provider
