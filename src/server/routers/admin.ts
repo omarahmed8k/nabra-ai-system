@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import { router, adminProcedure, publicProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
@@ -455,7 +455,7 @@ export const adminRouter = router({
     )
     .output(z.object({ subscriptions: z.array(z.any()), total: z.number(), hasMore: z.boolean() }))
     .query(async ({ ctx, input }) => {
-      const where: any = {};
+      const where: Prisma.ClientSubscriptionWhereInput = {};
 
       if (input?.status === "active") {
         where.isActive = true;
@@ -839,7 +839,9 @@ export const adminRouter = router({
         .optional()
     )
     .query(async ({ ctx, input }) => {
-      const where: any = {};
+      const where: Prisma.RequestWhereInput = {
+        deletedAt: null,
+      };
 
       if (input?.status) {
         where.status = input.status;
@@ -1713,6 +1715,7 @@ export const adminRouter = router({
         where: { id: input.requestId },
         data: {
           deletedAt: new Date(),
+          status: "CANCELLED",
         },
       });
 
