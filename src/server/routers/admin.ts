@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { notifyProviderAssignment } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
+import { assignFreeClientSubscription } from "@/lib/free-client-subscription";
 
 /** Only one package may be featured; clears `isFeatured` on all other rows. */
 async function clearFeaturedExcept(db: PrismaClient, keepId: string) {
@@ -1543,6 +1544,10 @@ export const adminRouter = router({
               : undefined,
           },
         });
+      }
+
+      if (input.role === "CLIENT") {
+        await assignFreeClientSubscription(ctx.db, user.id);
       }
 
       return {

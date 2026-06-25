@@ -4,6 +4,7 @@ import { router, publicProcedure, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { sendWelcomeEmail } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
+import { assignFreeClientSubscription } from "@/lib/free-client-subscription";
 
 const DEFAULT_AVATAR = "/images/nabarawy.png";
 
@@ -76,30 +77,7 @@ export const authRouter = router({
         },
       });
 
-      // Automatically subscribe user to free package
-      const freePackage = await ctx.db.package.findFirst({
-        where: {
-          isFreePackage: true,
-          isActive: true,
-        },
-      });
-
-      if (freePackage) {
-        const now = new Date();
-        const endDate = new Date(Date.now() + freePackage.durationDays * 24 * 60 * 60 * 1000);
-
-        await ctx.db.clientSubscription.create({
-          data: {
-            userId: user.id,
-            packageId: freePackage.id,
-            remainingCredits: freePackage.credits,
-            startDate: now,
-            endDate,
-            isActive: true, // Free package is immediately active
-            isFreeTrialUsed: true, // Mark as free trial used so can't resubscribe
-          },
-        });
-      }
+      await assignFreeClientSubscription(ctx.db, user.id);
 
       // Send welcome email (non-blocking)
       sendWelcomeEmail({
