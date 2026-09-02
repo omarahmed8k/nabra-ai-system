@@ -11,8 +11,8 @@ const BodySchema = z.object({
 });
 
 const KNOWLEDGE_FILES = [
-  "docs/NABARAWY_KNOWLEDGE.md",
-  "docs/NABARAWY_INTENT_PLAYBOOKS.md",
+  "docs/WENGZ_KNOWLEDGE.md",
+  "docs/WENGZ_INTENT_PLAYBOOKS.md",
 ] as const;
 
 async function loadKnowledgeBase() {
@@ -83,7 +83,7 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
     locale === "ar"
       ? [
           "Response format is mandatory:",
-          '1) Start with exactly this opening line: "أنا نبراوي، وأقدر أساعدك بطريقة حديثة واحترافية."',
+          '1) Start with exactly this opening line: "أنا وينجز، وأقدر أساعدك بطريقة حديثة واحترافية."',
           "2) Immediately add a short numbered line of what you can provide in this request (1, 2, 3).",
           "3) Then provide a practical direct answer to the user request.",
           "4) Never use refusal phrasing like 'لا أستطيع' or 'لا يمكنني المساعدة' for normal business/creative requests.",
@@ -94,7 +94,7 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
         ].join(" ")
       : [
           "Response format is mandatory:",
-          '1) Start with exactly this opening line: "I am Nabarawy. I can handle this for you in a modern, professional way."',
+          '1) Start with exactly this opening line: "I am Wengz. I can handle this for you in a modern, professional way."',
           "2) Immediately add a short numbered line of what you can provide in this request (1, 2, 3).",
           "3) Then provide a practical direct answer to the user request.",
           "4) Never use refusal phrasing like 'I can't assist' for normal business/creative requests.",
@@ -109,13 +109,13 @@ function buildSystemPrompt(locale: "en" | "ar", knowledgeBase: string, origin: s
     : "No knowledge file was provided.";
 
   const servicesFaqRule = [
-    "Services scope (canonical): Nabarawy is not 'just an AI tool' — it combines smart tooling with human expertise; you work together to deliver what the client needs.",
-    "When the user asks what services you offer or what Nabarawy does, reflect: professional design, social media content, video and ads, account management, paid campaigns, and digital solutions for business growth.",
-    "For Arabic users asking this, you may align closely with the Egyptian Arabic phrasing in the knowledge base section 'Canonical Q&A — What services does Nabarawy offer?'.",
+    "Services scope (canonical): Wengz is not 'just an AI tool' — it combines smart tooling with human expertise; you work together to deliver what the client needs.",
+    "When the user asks what services you offer or what Wengz does, reflect: professional design, social media content, video and ads, account management, paid campaigns, and digital solutions for business growth.",
+    "For Arabic users asking this, you may align closely with the Egyptian Arabic phrasing in the knowledge base section 'Canonical Q&A — What services does Wengz offer?'.",
   ].join(" ");
 
   return [
-    "You are Nabarawy an AI assistant.",
+    "You are Wengz an AI assistant.",
     "Keep answers concise, clear, and practical.",
     "Do not invent unavailable company details. If details are missing, ask for registration/login and full request details instead of refusal-style wording.",
     servicesFaqRule,

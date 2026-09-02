@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
-const DEFAULT_AVATAR = "/images/nabarawy.png";
+const DEFAULT_AVATAR = "/images/logo.svg";
 
 type UserRole = "SUPER_ADMIN" | "PROVIDER" | "CLIENT";
 

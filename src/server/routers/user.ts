@@ -4,7 +4,7 @@ import { router, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 
-const DEFAULT_AVATAR = "/images/nabarawy.png";
+const DEFAULT_AVATAR = "/images/logo.svg";
 
 export const userRouter = router({
   // Get current user profile

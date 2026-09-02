@@ -10,7 +10,7 @@ export async function generateMetadata({
   const isArabic = locale === "ar";
 
   return {
-    title: isArabic ? "نبراوي | منصة الخدمات الرقمية" : "Nabarawy | Digital Services Marketplace",
+    title: isArabic ? "منصة الخدمات الرقمية" : "Digital Services Marketplace",
     description: isArabic
       ? "احصل على خدمات تصميم وتطوير وإنتاج محتوى عبر مبدعين موثوقين وباشتراك مرن قائم على الكريدت."
       : "Get design, development, and content services from trusted creators with flexible credit-based subscriptions.",

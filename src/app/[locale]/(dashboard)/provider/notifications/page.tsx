@@ -45,8 +45,8 @@ export default function ProviderNotificationsPage() {
       refreshUnreadCount();
     };
 
-    globalThis.addEventListener("nabra:notification", handleIncomingNotification);
-    return () => globalThis.removeEventListener("nabra:notification", handleIncomingNotification);
+    globalThis.addEventListener("wengz:notification", handleIncomingNotification);
+    return () => globalThis.removeEventListener("wengz:notification", handleIncomingNotification);
   }, [refreshUnreadCount, utils.notification.getAll]);
 
   const unreadCount =

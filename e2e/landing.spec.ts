@@ -5,7 +5,7 @@ test.describe("Landing Page", () => {
     await page.goto("/");
 
     // Check page title
-    await expect(page).toHaveTitle(/Nabra AI System/);
+    await expect(page).toHaveTitle(/Wengz/);
 
     // Check main heading
     const heading = page.getByRole("heading", { level: 1 });

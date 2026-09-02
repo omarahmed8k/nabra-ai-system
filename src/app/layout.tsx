@@ -27,30 +27,30 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: "Nabarawy | Digital Services Marketplace",
-    template: "%s | Nabarawy",
+    default: "Wengz",
+    template: "%s | Wengz",
   },
   description:
     "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
-  applicationName: "Nabarawy",
+  applicationName: "Wengz",
   keywords: [
-    "Nabarawy",
+    "Wengz",
     "digital services",
     "service marketplace",
     "creative services",
     "subscription",
   ],
   openGraph: {
-    title: "Nabarawy | Digital Services Marketplace",
+    title: "Wengz | Digital Services Marketplace",
     description:
       "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
-    siteName: "Nabarawy",
+    siteName: "Wengz",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nabarawy | Digital Services Marketplace",
+    title: "Wengz | Digital Services Marketplace",
     description:
       "Connect with trusted creators through a credit-based subscription model for design, development, video production, and more.",
   },
@@ -62,15 +62,15 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Nabarawy",
+    title: "Wengz",
   },
   formatDetection: {
     telephone: false,
   },
   icons: {
-    icon: "/images/logo.png",
-    shortcut: "/images/logo.png",
-    apple: "/images/logo.png",
+    icon: "/images/logo.svg",
+    shortcut: "/images/logo.svg",
+    apple: "/images/logo.svg",
   },
 };
 
@@ -79,6 +79,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#690DD4",
 };
 
 export default function RootLayout({

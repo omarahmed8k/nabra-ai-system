@@ -193,7 +193,7 @@ export default function RequestDetailPage() {
           <ProviderDeliverables
             comments={request.comments as any}
             providerName={tSidebar("brandProviderName")}
-            providerImage="/images/nabarawy.png"
+            providerImage="/images/logo.svg"
           />
 
           {/* Service-Specific Q&A Responses */}

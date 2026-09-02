@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { setPendingRequestDescription } from "@/lib/landing-request-draft";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 // Typography (Lovable-style: large hero, restrained body)
 const FONT_SIZES = {
@@ -445,9 +446,9 @@ export default function LandingPage() {
     >
       {/* Brand color ambience — overflow-hidden stops off-canvas blurs from extending document scroll height */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-48 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-[#824d7c]/20 blur-3xl" />
-        <div className="absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full bg-[#5db9ba]/18 blur-3xl" />
-        <div className="absolute bottom-[-220px] left-[-160px] h-[640px] w-[640px] rounded-full bg-[#5db9ba]/10 blur-3xl" />
+        <div className="absolute -top-48 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-[#690DD4]/20 blur-3xl" />
+        <div className="absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full bg-[#E0F840]/18 blur-3xl" />
+        <div className="absolute bottom-[-220px] left-[-160px] h-[640px] w-[640px] rounded-full bg-[#E0F840]/10 blur-3xl" />
       </div>
 
       <motion.header
@@ -459,24 +460,11 @@ export default function LandingPage() {
         <div className="border-b border-border/60 bg-primary/10 px-3 py-1 text-center text-xs text-foreground">
           {t("landing.notices.beta")}
         </div>
-        <div className="h-px w-full bg-gradient-to-r from-transparent via-[#5db9ba]/45 to-transparent" />
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-[#E0F840]/45 to-transparent" />
         <div className="mx-auto max-w-[1400px] px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
           <div className="flex min-h-[2.75rem] items-center justify-between gap-2 sm:gap-4">
             <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2">
-              <Image
-                src="/images/nabarawy-dark.svg"
-                alt="Nabarawy Logo"
-                width={200}
-                height={40}
-                className="h-4 w-auto dark:hidden sm:h-6 lg:h-8"
-              />
-              <Image
-                src="/images/nabarawy-light.svg"
-                alt="Nabarawy Logo"
-                width={200}
-                height={40}
-                className="hidden h-4 w-auto dark:block sm:h-6 lg:h-8"
-              />
+              <BrandLogo className="h-4 sm:h-6 lg:h-8" priority />
             </Link>
 
             <nav
@@ -492,7 +480,7 @@ export default function LandingPage() {
                   <span className="relative">
                     {item.label}
                     <span
-                      className={`absolute -bottom-2 h-px w-full scale-x-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] transition-transform duration-300 group-hover:scale-x-100 ${isRTL ? "right-0 origin-right" : "left-0 origin-left"}`}
+                      className={`absolute -bottom-2 h-px w-full scale-x-0 bg-gradient-to-r from-[#E0F840] to-[#690DD4] transition-transform duration-300 group-hover:scale-x-100 ${isRTL ? "right-0 origin-right" : "left-0 origin-left"}`}
                     />
                   </span>
                 </Link>
@@ -515,7 +503,7 @@ export default function LandingPage() {
             <Link href="/auth/register">
               <Button
                 size="sm"
-                className="h-9 rounded-md bg-gradient-to-r from-[#824d7c] to-[#5db9ba] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(93,185,186,0.15)] transition-all hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_14px_40px_rgba(130,77,124,0.18)]"
+                className="h-9 rounded-md bg-[#690DD4] px-4 text-sm font-medium text-[#E0F840] shadow-[0_10px_30px_rgba(105,13,212,0.25)] transition-all hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_14px_40px_rgba(105,13,212,0.35)]"
               >
                 {t("common.buttons.getStarted")}
               </Button>
@@ -534,22 +522,12 @@ export default function LandingPage() {
         >
           <div className="flex flex-col items-center gap-8 sm:gap-10">
             <span className="sr-only">{locale === "ar" ? "جاري التحميل" : "Loading"}</span>
-            <span className="relative block h-40 w-40 sm:h-52 sm:w-52 md:h-64 md:w-64 lg:h-72 lg:w-72 xl:h-80 xl:w-80">
-              <Image
-                src="/images/nabarawy.gif"
-                alt=""
-                fill
-                sizes="(max-width: 640px) 10rem, (max-width: 768px) 13rem, (max-width: 1024px) 16rem, (max-width: 1280px) 18rem, 20rem"
-                className="object-contain"
-                unoptimized
-                aria-hidden
-              />
-            </span>
+            <BrandLogo tone="yellow" className="h-16 sm:h-24 md:h-28" />
             <div className="flex items-center gap-3 sm:gap-4" aria-hidden>
               {[0, 1, 2].map((i) => (
                 <span
                   key={i}
-                  className="landing-loader-dot h-4 w-4 rounded-full bg-gradient-to-br from-[#5db9ba] to-[#824d7c] shadow-[0_0_14px_rgba(93,185,186,0.4)] sm:h-5 sm:w-5"
+                  className="landing-loader-dot h-4 w-4 rounded-full bg-gradient-to-br from-[#E0F840] to-[#690DD4] shadow-[0_0_14px_rgba(224,248,64,0.4)] sm:h-5 sm:w-5"
                   style={{ animationDelay: `${i * 180}ms` }}
                 />
               ))}
@@ -584,17 +562,7 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-4 sm:mb-6"
             >
-              <span className="relative mx-auto block h-40 w-40">
-                <Image
-                  src="/images/nabarawy-animated.gif"
-                  alt="Nabarawy animated"
-                  fill
-                  sizes="(max-width: 640px) 4rem, (max-width: 768px) 5rem, (max-width: 1024px) 6rem, (max-width: 1280px) 7rem, 7rem"
-                  className="object-contain object-center"
-                  aria-hidden="true"
-                  unoptimized
-                />
-              </span>
+              <BrandLogo tone="yellow" className="h-16 sm:h-20 md:h-24" />
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
@@ -620,7 +588,7 @@ export default function LandingPage() {
                     className={`relative z-[1] max-h-56 overflow-y-auto px-3 py-2 ${textDirectionClass}`}
                   >
                     <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                      {locale === "ar" ? "رد نبراوي" : "Nabarawy reply"}
+                      {locale === "ar" ? "رد وينجز" : "Wengz reply"}
                     </p>
                     <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">
                       {renderReplyWithLinks(heroReply)}
@@ -729,7 +697,7 @@ export default function LandingPage() {
                     type="button"
                     onClick={() => void handleHeroSubmit()}
                     disabled={heroChatPhase !== "idle" || heroLoadingReply || !heroPrompt.trim()}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#824d7c] to-[#5db9ba] text-white shadow-[0_8px_24px_rgba(130,77,124,0.35)] transition-all hover:scale-[1.03] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-55 sm:h-9 sm:w-9"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#690DD4] text-[#E0F840] shadow-[0_8px_24px_rgba(105,13,212,0.35)] transition-all hover:scale-[1.03] hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-55 sm:h-9 sm:w-9"
                     aria-label={t("common.buttons.getStarted")}
                   >
                     {heroLoadingReply ? (
@@ -748,7 +716,7 @@ export default function LandingPage() {
         <section className="relative w-full border-t border-border bg-background py-16 sm:py-24">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background/55 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(93,185,186,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(130,77,124,0.10),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(224,248,64,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(105,13,212,0.10),transparent_55%)]" />
 
           <div className="container relative z-10 px-4 sm:px-6">
             <div className="mx-auto max-w-5xl text-center">
@@ -759,13 +727,13 @@ export default function LandingPage() {
             </div>
 
             <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 items-stretch gap-5 sm:mt-14 sm:grid-cols-2 sm:gap-6">
-              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#5db9ba]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5db9ba]/55 to-transparent opacity-80" />
-                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#5db9ba]/14 via-transparent to-[#824d7c]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#E0F840]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E0F840]/55 to-transparent opacity-80" />
+                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#E0F840]/14 via-transparent to-[#690DD4]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="flex flex-1 flex-row items-start gap-4 sm:gap-6">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#5db9ba]/25 to-[#824d7c]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#E0F840]/25 to-[#690DD4]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
                     aria-hidden
                   >
                     <Briefcase className="h-5 w-5 text-foreground/90" strokeWidth={1.75} />
@@ -782,20 +750,20 @@ export default function LandingPage() {
 
                 <div className="mt-4 border-t border-border/50 pt-6 sm:mt-6">
                   <Link href="/forms/client" className="block w-full sm:inline-block sm:w-auto">
-                    <Button className="h-11 w-full rounded-xl bg-gradient-to-r from-[#824d7c] to-[#5db9ba] px-6 text-sm font-medium text-white shadow-[0_8px_28px_rgba(130,77,124,0.25)] transition-all hover:opacity-95 hover:shadow-[0_12px_36px_rgba(93,185,186,0.2)] sm:w-auto">
+                    <Button className="h-11 w-full rounded-xl bg-[#690DD4] px-6 text-sm font-medium text-[#E0F840] shadow-[0_8px_28px_rgba(105,13,212,0.25)] transition-all hover:opacity-95 hover:shadow-[0_12px_36px_rgba(224,248,64,0.2)] sm:w-auto">
                       {t("landing.forms.client.cta")}
                     </Button>
                   </Link>
                 </div>
               </div>
 
-              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#824d7c]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#824d7c]/55 to-transparent opacity-80" />
-                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#824d7c]/14 via-transparent to-[#5db9ba]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="group relative flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-b from-muted/40 to-muted/15 p-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#690DD4]/35 hover:shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:rounded-3xl sm:p-8">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#690DD4]/55 to-transparent opacity-80" />
+                <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#690DD4]/14 via-transparent to-[#E0F840]/8 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="flex flex-1 flex-row items-start gap-4 sm:gap-6">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#824d7c]/25 to-[#5db9ba]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#690DD4]/25 to-[#E0F840]/20 ring-1 ring-border/60 shadow-inner sm:h-12 sm:w-12"
                     aria-hidden
                   >
                     <Sparkles className="h-5 w-5 text-foreground/90" strokeWidth={1.75} />
@@ -814,7 +782,7 @@ export default function LandingPage() {
                   <Link href="/forms/provider" className="block w-full sm:inline-block sm:w-auto">
                     <Button
                       variant="outline"
-                      className="h-11 w-full rounded-xl border-border/80 bg-background/40 px-6 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-[#824d7c]/40 hover:bg-muted/60 sm:w-auto"
+                      className="h-11 w-full rounded-xl border-border/80 bg-background/40 px-6 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-[#690DD4]/40 hover:bg-muted/60 sm:w-auto"
                     >
                       {t("landing.forms.provider.cta")}
                     </Button>
@@ -839,8 +807,8 @@ export default function LandingPage() {
                   whileHover={{ y: -6 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#824d7c]/55 to-transparent opacity-70" />
-                  <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-[#824d7c]/10 via-transparent to-[#5db9ba]/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#690DD4]/55 to-transparent opacity-70" />
+                  <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-[#690DD4]/10 via-transparent to-[#E0F840]/10 opacity-0 transition-opacity group-hover:opacity-100" />
                   <div className="pointer-events-none absolute inset-0 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.35)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   <h3 className="mb-2 text-base font-medium text-foreground">
                     {t(`landing.meet.steps.${key}.title`)}
@@ -859,7 +827,7 @@ export default function LandingPage() {
           id="features"
           className="relative w-full border-t border-border py-16 sm:py-24 md:py-32"
         >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(130,77,124,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(93,185,186,0.09),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(105,13,212,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(224,248,64,0.09),transparent_55%)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background/55 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
           <div className="container relative z-10 px-4 sm:px-6">
@@ -900,10 +868,10 @@ export default function LandingPage() {
                     whileHover={{ y: -4, transition: { duration: 0.25 } }}
                     className="group relative flex min-h-0 min-w-0 w-full flex-col rounded-2xl border border-border bg-muted/30 p-3 transition-colors hover:border-primary/40 sm:p-4"
                   >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5db9ba]/50 to-transparent opacity-60" />
-                    <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-[#5db9ba]/10 via-transparent to-[#824d7c]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E0F840]/50 to-transparent opacity-60" />
+                    <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-[#E0F840]/10 via-transparent to-[#690DD4]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <div className="pointer-events-none absolute inset-0 rounded-2xl shadow-[0_18px_70px_rgba(0,0,0,0.45)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#824d7c]/25 to-[#5db9ba]/20 sm:h-12 sm:w-12">
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#690DD4]/25 to-[#E0F840]/20 sm:h-12 sm:w-12">
                       <Icon className="h-5 w-5 text-foreground/90 transition-transform duration-300 group-hover:scale-110 sm:h-6 sm:w-6" />
                     </div>
                     <h3
@@ -962,7 +930,7 @@ export default function LandingPage() {
                       >
                         <div className="group relative overflow-hidden rounded-2xl border border-border bg-card sm:rounded-3xl">
                           <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(93,185,186,0.16),transparent_55%),radial-gradient(circle_at_70%_80%,rgba(130,77,124,0.14),transparent_55%)]" />
+                          <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[radial-gradient(circle_at_30%_20%,rgba(224,248,64,0.16),transparent_55%),radial-gradient(circle_at_70%_80%,rgba(105,13,212,0.14),transparent_55%)]" />
                           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                           <video
                             className="aspect-[9/16] w-full object-cover"
@@ -1044,7 +1012,7 @@ export default function LandingPage() {
                                 onChange={(event) => {
                                   seekVideo(idx, Number(event.target.value));
                                 }}
-                                className="h-1 w-full cursor-pointer appearance-none bg-transparent accent-[#5db9ba]"
+                                className="h-1 w-full cursor-pointer appearance-none bg-transparent accent-[#E0F840]"
                                 aria-label={locale === "ar" ? "تقدم الفيديو" : "Video progress"}
                               />
                             </div>
@@ -1141,7 +1109,7 @@ export default function LandingPage() {
                               key={`landing-img-${imgRowKey}-${n}-${strip}`}
                               className="group relative aspect-[4/5] w-[38vw] max-w-[11rem] shrink-0 overflow-hidden rounded-lg border border-border transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-[0_18px_70px_rgba(0,0,0,0.55)] sm:w-44 sm:max-w-none md:w-48 sm:rounded-xl"
                             >
-                              <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[linear-gradient(135deg,rgba(130,77,124,0.18),transparent_45%),linear-gradient(315deg,rgba(93,185,186,0.16),transparent_45%)]" />
+                              <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 bg-[linear-gradient(135deg,rgba(105,13,212,0.18),transparent_45%),linear-gradient(315deg,rgba(224,248,64,0.16),transparent_45%)]" />
                               <Image
                                 src={`/images/landing/${n}.jpg`}
                                 alt={`Portfolio ${n}`}
@@ -1163,7 +1131,7 @@ export default function LandingPage() {
 
         {/* Stats — Lovable “in numbers” tone */}
         <section className="relative w-full border-t border-border py-16 sm:py-24 md:py-32">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(130,77,124,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(93,185,186,0.09),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(105,13,212,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(224,248,64,0.09),transparent_55%)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background/55 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
           <div className="container relative z-10 px-4 sm:px-6">
@@ -1176,14 +1144,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.8 }}
                 className="flex justify-center"
               >
-                <Image
-                  src="/images/nabarawy.gif"
-                  alt="Nabarawy Animation"
-                  width={600}
-                  height={600}
-                  unoptimized
-                  className="w-64 sm:w-80 md:w-[600px] h-64 sm:h-80 md:h-[600px] object-contain drop-shadow-2xl filter saturate-110"
-                />
+                <BrandLogo tone="auto" className="h-24 sm:h-32 md:h-40" />
               </motion.div>
 
               {/* Stats Grid */}
@@ -1226,9 +1187,9 @@ export default function LandingPage() {
                       whileHover={{ y: -4 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#824d7c]/55 to-transparent opacity-60" />
-                      <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#5db9ba]/10 via-transparent to-[#824d7c]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                      <div className="mb-2 text-2xl font-semibold tracking-tight bg-gradient-to-r from-[#5db9ba] to-[#824d7c] bg-clip-text text-transparent sm:text-3xl">
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#690DD4]/55 to-transparent opacity-60" />
+                      <div className="pointer-events-none absolute -inset-px rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#E0F840]/10 via-transparent to-[#690DD4]/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      <div className="mb-2 text-2xl font-semibold tracking-tight bg-gradient-to-r from-[#E0F840] to-[#690DD4] bg-clip-text text-transparent sm:text-3xl">
                         {stat.num}
                       </div>
                       <p className={`${FONT_SIZES.body.small}`}>{t(stat.labelKey)}</p>
@@ -1270,13 +1231,13 @@ export default function LandingPage() {
                       <div
                         className={`relative flex h-full flex-col overflow-visible rounded-2xl border bg-background p-6 transition-all duration-300 hover:shadow-[0_22px_90px_rgba(0,0,0,0.55)] sm:rounded-3xl sm:p-8 ${
                           pkg.isFeatured
-                            ? "border-[#5db9ba]/40 shadow-[0_0_0_1px_rgba(93,185,186,0.12)] hover:border-[#5db9ba]/55"
+                            ? "border-[#E0F840]/40 shadow-[0_0_0_1px_rgba(224,248,64,0.12)] hover:border-[#E0F840]/55"
                             : "border-border hover:border-primary/40"
                         }`}
                       >
                         {pkg.isFeatured ? (
                           <div className="pointer-events-none absolute -top-3 left-1/2 z-20 -translate-x-1/2 sm:-top-3.5">
-                            <Badge className="relative border border-white/25 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] px-4 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-white shadow-[0_10px_28px_rgba(130,77,124,0.45),0_2px_8px_rgba(93,185,186,0.35)] ring-2 ring-background">
+                            <Badge className="relative border border-white/25 bg-[#690DD4] px-4 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-[#E0F840] shadow-[0_10px_28px_rgba(105,13,212,0.45),0_2px_8px_rgba(224,248,64,0.35)] ring-2 ring-background">
                               {t("landing.pricing.featuredBadge")}
                             </Badge>
                           </div>
@@ -1292,7 +1253,7 @@ export default function LandingPage() {
                           {pkg.credits} {t("common.credits")}
                         </p>
 
-                        <div className="mb-6 h-px w-full bg-gradient-to-r from-[#824d7c]/35 via-white/10 to-[#5db9ba]/35" />
+                        <div className="mb-6 h-px w-full bg-gradient-to-r from-[#690DD4]/35 via-white/10 to-[#E0F840]/35" />
 
                         <div className="mb-6">
                           <div className="mb-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl text-center">
@@ -1337,7 +1298,7 @@ export default function LandingPage() {
 
         {/* CTA — Lovable-style closing band */}
         <section className="relative w-full border-t border-border py-16 sm:py-24 md:py-32">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(130,77,124,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(93,185,186,0.09),transparent_55%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(105,13,212,0.10),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(224,248,64,0.09),transparent_55%)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-background/55 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/55 to-transparent" />
           <div className="container relative z-10 mx-auto max-w-2xl px-4 sm:px-6">
@@ -1392,20 +1353,7 @@ export default function LandingPage() {
       >
         <div className="container flex w-full flex-col items-center justify-between gap-6 px-4 sm:px-6 md:flex-row md:items-center md:gap-8">
           <div className="flex shrink-0 items-center gap-2">
-            <Image
-              src="/images/nabarawy-dark.svg"
-              alt="Nabarawy Logo"
-              width={120}
-              height={24}
-              className="h-6 w-auto dark:hidden sm:h-7 md:h-8"
-            />
-            <Image
-              src="/images/nabarawy-light.svg"
-              alt="Nabarawy Logo"
-              width={120}
-              height={24}
-              className="hidden h-6 w-auto dark:block sm:h-7 md:h-8"
-            />
+            <BrandLogo className="h-6 sm:h-7 md:h-8" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground md:justify-end">

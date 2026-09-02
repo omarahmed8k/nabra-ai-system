@@ -78,8 +78,8 @@ export function MessagesCard({
       void utils.request.getById.invalidate({ id: requestId });
     };
 
-    globalThis.addEventListener("nabra:request-thread-updated", handleThreadUpdate);
-    return () => globalThis.removeEventListener("nabra:request-thread-updated", handleThreadUpdate);
+    globalThis.addEventListener("wengz:request-thread-updated", handleThreadUpdate);
+    return () => globalThis.removeEventListener("wengz:request-thread-updated", handleThreadUpdate);
   }, [requestId, utils.request.getById]);
 
   const addComment = trpc.request.addComment.useMutation({
@@ -262,7 +262,7 @@ export function MessagesCard({
                 displayName = t("system");
               } else if (maskProviderNames && comment.user?.role === "PROVIDER") {
                 displayName = tSidebar("brandProviderName");
-                displayImage = "/images/nabarawy.png";
+                displayImage = "/images/logo.svg";
               } else if (maskClientNames && comment.user?.role === "CLIENT") {
                 displayName = tSidebar("brandClientName");
               } else {

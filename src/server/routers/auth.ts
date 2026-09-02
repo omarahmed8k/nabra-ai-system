@@ -6,7 +6,7 @@ import { sendWelcomeEmail } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 import { assignFreeClientSubscription } from "@/lib/free-client-subscription";
 
-const DEFAULT_AVATAR = "/images/nabarawy.png";
+const DEFAULT_AVATAR = "/images/logo.svg";
 
 export const authRouter = router({
   // Register a new user

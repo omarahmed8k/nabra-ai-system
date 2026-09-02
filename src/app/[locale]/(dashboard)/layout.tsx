@@ -2,7 +2,6 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { Link, usePathname } from "@/i18n/routing";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +29,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { getInitials } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const clientNavConfig = [
   { href: "/client", labelKey: "client.dashboard", icon: LayoutDashboard },
@@ -109,20 +109,7 @@ export default function DashboardLayout({
           )}
         </Button>
         <Link href={basePath} className="flex items-center gap-2 flex-1">
-          <Image
-            src="/images/nabarawy-dark.svg"
-            alt="Nabarawy Logo"
-            width={200}
-            height={40}
-            className="h-6 w-auto dark:hidden sm:h-7"
-          />
-          <Image
-            src="/images/nabarawy-light.svg"
-            alt="Nabarawy Logo"
-            width={200}
-            height={40}
-            className="hidden h-6 w-auto dark:block sm:h-7"
-          />
+          <BrandLogo className="h-6 sm:h-7" />
         </Link>
         <div className="flex items-center gap-2">
           <ThemeSwitcher />
@@ -145,20 +132,7 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="flex h-14 sm:h-16 items-center gap-2 border-b px-4 sm:px-6">
             <Link href={basePath} className="flex items-center gap-2">
-              <Image
-                src="/images/nabarawy-dark.svg"
-                alt="Nabarawy Logo"
-                width={200}
-                height={40}
-                className="h-6 w-auto dark:hidden sm:h-7"
-              />
-              <Image
-                src="/images/nabarawy-light.svg"
-                alt="Nabarawy Logo"
-                width={200}
-                height={40}
-                className="hidden h-6 w-auto dark:block sm:h-7"
-              />
+              <BrandLogo className="h-6 sm:h-7" />
             </Link>
           </div>
 

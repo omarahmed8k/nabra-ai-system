@@ -16,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const isArabic = locale === "ar";
-  const brand = isArabic ? "نبراوي" : "Nabarawy";
+  const brand = isArabic ? "وينجز" : "Wengz";
   const description = isArabic
     ? "منصة خدمات رقمية تربطك بمبدعين محترفين عبر اشتراك قائم على الكريدت."
     : "A digital services marketplace that connects you with trusted creators through a credit-based subscription model.";

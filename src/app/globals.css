@@ -14,96 +14,96 @@
   }
 
   :root {
-    /* Dark theme as default - Nabarawy brand colors */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 94%;
+    /* Dark theme as default — Wengz purple + yellow */
+    --background: 268 40% 5%;
+    --foreground: 68 40% 96%;
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 94%;
+    --card: 268 32% 8%;
+    --card-foreground: 68 40% 96%;
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 94%;
+    --popover: 268 32% 8%;
+    --popover-foreground: 68 40% 96%;
 
-    --primary: 307 26% 41%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 268 88% 44%;
+    --primary-foreground: 68 93% 61%;
 
-    --secondary: 181 40% 55%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 68 93% 61%;
+    --secondary-foreground: 268 70% 12%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 268 22% 14%;
+    --muted-foreground: 268 10% 68%;
 
-    --accent: 307 26% 41%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 268 88% 44%;
+    --accent-foreground: 68 93% 61%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 307 26% 41%;
+    --border: 268 22% 18%;
+    --input: 268 22% 18%;
+    --ring: 268 88% 44%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 94%;
+    --background: 268 40% 5%;
+    --foreground: 68 40% 96%;
 
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 94%;
+    --card: 268 32% 8%;
+    --card-foreground: 68 40% 96%;
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 94%;
+    --popover: 268 32% 8%;
+    --popover-foreground: 68 40% 96%;
 
-    --primary: 307 26% 41%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 268 88% 44%;
+    --primary-foreground: 68 93% 61%;
 
-    --secondary: 181 40% 55%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 68 93% 61%;
+    --secondary-foreground: 268 70% 12%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 268 22% 14%;
+    --muted-foreground: 268 10% 68%;
 
-    --accent: 307 26% 41%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 268 88% 44%;
+    --accent-foreground: 68 93% 61%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 307 26% 41%;
+    --border: 268 22% 18%;
+    --input: 268 22% 18%;
+    --ring: 268 88% 44%;
   }
 
   .light {
     --background: 0 0% 100%;
-    --foreground: 0 0% 6%;
+    --foreground: 268 40% 8%;
 
-    --card: 0 0% 97%;
-    --card-foreground: 0 0% 6%;
+    --card: 268 30% 98%;
+    --card-foreground: 268 40% 8%;
 
-    --popover: 0 0% 97%;
-    --popover-foreground: 0 0% 6%;
+    --popover: 268 30% 98%;
+    --popover-foreground: 268 40% 8%;
 
-    --primary: 307 26% 41%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 268 88% 44%;
+    --primary-foreground: 68 93% 61%;
 
-    --secondary: 181 40% 55%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 68 90% 48%;
+    --secondary-foreground: 268 70% 12%;
 
-    --muted: 0 0% 92%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 268 20% 94%;
+    --muted-foreground: 268 16% 38%;
 
-    --accent: 307 26% 41%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 268 88% 44%;
+    --accent-foreground: 68 93% 61%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 86%;
-    --input: 0 0% 86%;
-    --ring: 307 26% 41%;
+    --border: 268 16% 88%;
+    --input: 268 16% 88%;
+    --ring: 268 88% 44%;
   }
 }
 

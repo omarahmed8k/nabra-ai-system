@@ -32,10 +32,10 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
-      name: "Nabarawy",
+      name: "Wengz",
       email: "nabraagency20@gmail.com",
       password: hashedAdminPassword,
-      image: "/images/nabarawy.png",
+      image: "/images/logo.svg",
       role: "SUPER_ADMIN",
     },
   });

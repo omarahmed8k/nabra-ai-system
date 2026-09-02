@@ -34,12 +34,12 @@ import {
   Line,
 } from "recharts";
 
-const COLORS = ["#824d7c", "#5db9ba", "#d400ff", "#a06898", "#4aafb0", "#c060b0"];
+const COLORS = ["#690DD4", "#E0F840", "#9B4DFF", "#C8F060", "#4A1A8A", "#F4FF8A"];
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "#c09040",
-  IN_PROGRESS: "#824d7c",
-  DELIVERED: "#5db9ba",
+  IN_PROGRESS: "#690DD4",
+  DELIVERED: "#E0F840",
   REVISION_REQUESTED: "#c07040",
   COMPLETED: "#509060",
   CANCELLED: "#c04040",
@@ -252,9 +252,9 @@ export default function AdminDashboard() {
                   <Line
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#824d7c"
+                    stroke="#690DD4"
                     strokeWidth={2}
-                    dot={{ fill: "#824d7c" }}
+                    dot={{ fill: "#690DD4" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#824d7c" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="#690DD4" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -387,7 +387,7 @@ export default function AdminDashboard() {
                     <XAxis type="number" />
                     <YAxis dataKey="service" type="category" width={100} />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#5db9ba" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" fill="#E0F840" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

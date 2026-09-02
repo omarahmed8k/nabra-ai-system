@@ -39,6 +39,10 @@ const config: Config = {
         cairo: ["var(--font-cairo)", "sans-serif"],
       },
       colors: {
+        brand: {
+          purple: "#690DD4",
+          yellow: "#E0F840",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

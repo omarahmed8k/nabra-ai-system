@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { Loader2, User, Mail, Upload, X } from "lucide-react";
 import { showError } from "@/lib/error-handler";
 
-const DEFAULT_AVATAR = "/images/nabarawy.png";
+const DEFAULT_AVATAR = "/images/logo.svg";
 
 const getInitials = (value?: string | null) =>
   value

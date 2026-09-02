@@ -1,5 +1,5 @@
 /** Session draft for hero → register → login → new client request flow (same tab). */
-export const PENDING_REQUEST_DESCRIPTION_KEY = "nabra_pending_request_description";
+export const PENDING_REQUEST_DESCRIPTION_KEY = "wengz_pending_request_description";
 
 /** Safe post-auth path we allow from ?continue= (avoid open redirects). */
 export const CONTINUE_NEW_REQUEST_PATH = "/client/requests/new";

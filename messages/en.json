@@ -14,7 +14,7 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "contact": "Contact",
-      "copyright": "© 2026 Nabarawy. All rights reserved."
+      "copyright": "© 2026 Wengz. All rights reserved."
     },
     "requestStatus": {
       "PENDING": "Pending",
@@ -35,8 +35,8 @@
       "HIGH": "High"
     }
   },
-  "nabarawy": {
-    "welcome": "Hi! I'm Nabarawy, your AI assistant!",
+  "wengz": {
+    "welcome": "Hi! I'm Wengz, your AI assistant!",
     "help": "How can I help you today?",
     "explore": "Feel free to explore our services!",
     "online": "Online & Ready to Help",
@@ -45,7 +45,7 @@
     "pricing": "See Pricing",
     "getStarted": "Get Started",
     "contact": "Contact Us",
-    "footer": "Powered by Nabarawy AI • Always here to help"
+    "footer": "Powered by Wengz AI • Always here to help"
   },
   "landing": {
     "nav": {
@@ -60,17 +60,17 @@
       "beta": "Beta version: this platform is currently in beta and may change frequently."
     },
     "hero": {
-      "title": "Build with Nabarawy",
+      "title": "Build with Wengz",
       "subtitle": "Describe what you need. We’ll handle the rest.",
       "socialProof": "Trusted by teams who ship and launch",
-      "promptPlaceholder": "Ask Nabarawy what you need",
+      "promptPlaceholder": "Ask Wengz what you need",
       "promptHint": "Write a quick brief to get started.",
       "uploadTooltip": "File upload is available after you sign in.",
       "submitWrongRole": "Sign in with a client account to create a request from here.",
       "promptRotate0": "I'm ready to start—what's blocking my marketing most: content, time, or real results?",
       "promptRotate1": "I need design that sells—not just something that looks pretty.",
       "promptRotate2": "Should I push awareness or sales first? Help me pick what fits my stage.",
-      "promptRotate3": "I'm on my own—how does Nabarawy adapt to my situation and build a clear system for me?",
+      "promptRotate3": "I'm on my own—how does Wengz adapt to my situation and build a clear system for me?",
       "promptRotate4": "I don't know how to start—my work is in [describe your field]. What should I do first?",
       "promptRotate5": "I want to work with you—here's what I offer and what I need help with.",
       "promptRotate6": "Sales are weak—is it my product, my marketing, or the way I'm doing both?",
@@ -79,7 +79,7 @@
       "learnMore": "Learn More"
     },
     "meet": {
-      "heading": "Meet Nabarawy",
+      "heading": "Meet Wengz",
       "steps": {
         "start": {
           "title": "Start with a brief",
@@ -144,7 +144,7 @@
       }
     },
     "stats": {
-      "heading": "Nabarawy in numbers",
+      "heading": "Wengz in numbers",
       "subheading": "Creators and clients turning ideas into shipped work",
       "happyClients": "Happy Clients",
       "expertCreators": "Expert Creators",
@@ -159,7 +159,7 @@
     },
     "cta": {
       "heading": "Ready to get started?",
-      "subheading": "Join thousands of creators using Nabarawy to bring their ideas to life",
+      "subheading": "Join thousands of creators using Wengz to bring their ideas to life",
       "startTrial": "Start Free Trial",
       "viewPlans": "View Plans"
     },
@@ -701,7 +701,7 @@
     },
     "finance": {
       "title": "Provider Wallets",
-      "subtitle": "Credit/token finance for providers and Nabra shares",
+      "subtitle": "Credit/token finance for providers and Wengz shares",
       "summary": {
         "providerCredits": "Provider Credits",
         "providerAmount": "Provider Amount",
@@ -728,7 +728,7 @@
       },
       "ledger": {
         "title": "Finance Ledger",
-        "description": "Request-level provider and Nabra credit split",
+        "description": "Request-level provider and Wengz credit split",
         "filteredBy": "Showing ledger entries for {provider}",
         "unsettled": "{count} completed request(s) without ledger",
         "provider": "Provider",
@@ -948,7 +948,7 @@
     "sidebar": {
       "client": "Client",
       "provider": "Provider",
-      "brandProviderName": "Nabarawy",
+      "brandProviderName": "Wengz",
       "brandClientName": "Client",
       "waitingForProvider": "Waiting for provider",
       "details": "Details",
@@ -1803,14 +1803,14 @@
       }
     },
     "welcome": {
-      "title": "Welcome to Nabarawy! 🎉",
+      "title": "Welcome to Wengz! 🎉",
       "message": "Hi {userName}! Your account has been created successfully. Start exploring the platform now.",
-      "emailSubject": "Welcome to Nabarawy! 🎉",
+      "emailSubject": "Welcome to Wengz! 🎉",
       "emailBody": {
-        "heading": "Welcome to Nabarawy!",
+        "heading": "Welcome to Wengz!",
         "subheading": "We're excited to have you on board",
         "greeting": "Hi {userName}! 👋",
-        "intro": "Thank you for joining Nabarawy. Your account has been created successfully!",
+        "intro": "Thank you for joining Wengz. Your account has been created successfully!",
         "quickStartTitle": "🚀 Quick Start Guide",
         "client": {
           "step1Title": "1. Choose a Package",
@@ -1842,8 +1842,8 @@
         "needHelp": "Need help getting started?",
         "emailUs": "📧 Email us at:",
         "contactSupport": "💬 Visit our help center or contact support",
-        "copyright": "© {year} Nabarawy. All rights reserved.",
-        "disclaimer": "You received this email because you signed up for Nabarawy."
+        "copyright": "© {year} Wengz. All rights reserved.",
+        "disclaimer": "You received this email because you signed up for Wengz."
       }
     },
     "paymentVerification": {
@@ -1886,12 +1886,12 @@
   },
   "pwa": {
     "install": {
-      "title": "Install Nabarawy App",
+      "title": "Install Wengz App",
       "description": "Add to your home screen for quick access and offline support",
       "installButton": "Install",
       "dismissButton": "Not now",
       "ios": {
-        "title": "Install Nabarawy App",
+        "title": "Install Wengz App",
         "intro": "To install this app on iPhone/iPad:",
         "step1": "Tap the Share button or the Options button",
         "step2": "Scroll and tap \"Add to Home Screen\"",

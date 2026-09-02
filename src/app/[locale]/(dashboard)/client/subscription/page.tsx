@@ -170,7 +170,7 @@ export default function SubscriptionPage() {
                   <CardHeader>
                     <div className="space-y-2">
                       {pkgData.isFeatured && (
-                        <Badge className="border-0 bg-gradient-to-r from-[#5db9ba] to-[#824d7c] text-white hover:opacity-95">
+                        <Badge className="border-0 bg-[#690DD4] text-[#E0F840] hover:opacity-95">
                           {t("plans.featuredBadge")}
                         </Badge>
                       )}

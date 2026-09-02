@@ -1,4 +1,4 @@
-# Advanced guide — technical architecture (Nabra AI System)
+# Advanced guide — technical architecture (Wengz)
 
 This document maps **stack choices**, **runtime boundaries**, and **important code paths** so engineers can navigate the repo without spelunking every folder. It complements `docs/ADVANCED_BUSINESS.md` (domain) and the focused i18n guides under `docs/`.
 

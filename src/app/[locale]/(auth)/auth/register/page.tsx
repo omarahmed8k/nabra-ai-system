@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -29,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
 import { emailSchema, phoneNumberOnlySchema } from "@/lib/validations";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { CONTINUE_NEW_REQUEST_PATH, parseContinuePath } from "@/lib/landing-request-draft";
 
 export default function RegisterPage() {
@@ -159,20 +159,7 @@ export default function RegisterPage() {
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
-                <Image
-                  src="/images/nabarawy-dark.svg"
-                  alt="Nabarawy Logo"
-                  width={200}
-                  height={40}
-                  className="h-10 w-auto dark:hidden"
-                />
-                <Image
-                  src="/images/nabarawy-light.svg"
-                  alt="Nabarawy Logo"
-                  width={200}
-                  height={40}
-                  className="hidden h-10 w-auto dark:block"
-                />
+                <BrandLogo className="h-10" priority />
               </motion.div>
             </Link>
           </div>

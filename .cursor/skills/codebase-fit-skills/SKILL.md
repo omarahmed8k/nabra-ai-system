@@ -1,13 +1,13 @@
 ---
 name: codebase-fit-skills
-description: Maps the repo using docs/ADVANCED_BUSINESS.md and docs/ADVANCED_TECHNICAL.md first, then code, to propose and author project-scoped skills under .cursor/skills/. Use when bootstrapping skills, refreshing after refactors, or aligning agents with Nabra documentation.
+description: Maps the repo using docs/ADVANCED_BUSINESS.md and docs/ADVANCED_TECHNICAL.md first, then code, to propose and author project-scoped skills under .cursor/skills/. Use when bootstrapping skills, refreshing after refactors, or aligning agents with Wengz documentation.
 ---
 
-# Codebase-fit project skills (Nabra)
+# Codebase-fit project skills (Wengz)
 
 ## Goal
 
-Turn what is **documented and true in the repo** into **small, discoverable skills** under `.cursor/skills/<name>/SKILL.md` so agents default to **Nabra’s** conventions (credits, locales, tRPC context, notifications) instead of generic patterns.
+Turn what is **documented and true in the repo** into **small, discoverable skills** under `.cursor/skills/<name>/SKILL.md` so agents default to **Wengz** conventions (credits, locales, tRPC context, notifications) instead of generic patterns.
 
 **Canonical narrative:** `docs/ADVANCED_BUSINESS.md` (what the product is) → `docs/ADVANCED_TECHNICAL.md` (how it is built) → implementation detail for toasts/notifications in **`src/lib/error-handler.ts`**, **`src/lib/notifications/`**, **`messages/*.json`**. **`.cursor/rules/*.mdc`** are editor-side distillations; skills may go deeper and must **link** the ADVANCED docs and real paths.
 
@@ -53,7 +53,7 @@ Skip:
 
 For each candidate:
 
-1. **Name**: lowercase, hyphens, max 64 chars (e.g. `nabra-notification-locale`, not `backend-helper`).
+1. **Name**: lowercase, hyphens, max 64 chars (e.g. `wengz-notification-locale`, not `backend-helper`).
 2. **Description** (YAML): third person, **WHAT** + **WHEN**, include trigger terms.
 3. **Body**: Prerequisites, steps, checklists, **`docs/...` links** and example file paths. Keep **SKILL.md** under ~500 lines; add `reference.md` in the same folder if needed.
 4. **Progressive disclosure**: at most one level of `reference.md` / `examples.md`.

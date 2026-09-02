@@ -1,4 +1,4 @@
-# Advanced guide — business domain (Nabra AI System)
+# Advanced guide — business domain (Wengz)
 
 This document describes the **business model**, **actors**, and **core workflows** implemented in the product. It is aimed at product owners, operations, and engineers who need shared language for features and policy.
 
@@ -6,7 +6,7 @@ This document describes the **business model**, **actors**, and **core workflows
 
 ## Product positioning
 
-**Nabra AI System** is a **service marketplace** where clients purchase **subscription packages** denominated in **credits**, then spend those credits to open **requests** for configurable **service types** (e.g. design, development, media). **Providers** fulfill work; **super admins** configure the catalog, review certain money flows, and oversee the platform.
+**Wengz** is a **service marketplace** where clients purchase **subscription packages** denominated in **credits**, then spend those credits to open **requests** for configurable **service types** (e.g. design, development, media). **Providers** fulfill work; **super admins** configure the catalog, review certain money flows, and oversee the platform.
 
 The application is **bilingual (English and Arabic)** end-to-end, including marketing surfaces, dashboards, transactional messaging, and notifications. UI copy lives in `messages/en.json` and `messages/ar.json`; toasts use `src/lib/error-handler.ts`, and outbound channels use `src/lib/notifications/` with **`locale`** aligned to the user (see `docs/ADVANCED_TECHNICAL.md`).
 

@@ -1,11 +1,11 @@
 {
-  "name": "Nabra AI System",
-  "short_name": "Nabra AI",
+  "name": "Wengz",
+  "short_name": "Wengz",
   "description": "Connect with service providers through a credit-based subscription model",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#690DD4",
+  "theme_color": "#690DD4",
   "orientation": "portrait-primary",
   "icons": [
     {

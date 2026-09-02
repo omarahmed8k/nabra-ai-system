@@ -80,7 +80,7 @@ export function RequestSidebar({
             {provider ? (
               <div className="flex items-center gap-3">
                 <Avatar>
-                  <AvatarImage src="/images/nabarawy.png" />
+                  <AvatarImage src="/images/logo.svg" />
                   <AvatarFallback>{getInitials(t("brandProviderName"))}</AvatarFallback>
                 </Avatar>
                 <div>

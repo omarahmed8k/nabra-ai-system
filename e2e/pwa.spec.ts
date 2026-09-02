@@ -6,8 +6,8 @@ test.describe("PWA Features", () => {
     expect(response?.status()).toBe(200);
 
     const manifest = await response?.json();
-    expect(manifest.name).toBe("Nabra AI System");
-    expect(manifest.short_name).toBe("Nabra AI");
+    expect(manifest.name).toBe("Wengz");
+    expect(manifest.short_name).toBe("Wengz");
   });
 
   test("should have app icons", async ({ page }) => {

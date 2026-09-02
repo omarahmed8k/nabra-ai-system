@@ -495,7 +495,7 @@ export default function AdminUsersPage() {
       case "PROVIDER":
         return "bg-primary/15 text-primary";
       case "CLIENT":
-        return "bg-[#5db9ba]/15 text-[#5db9ba]";
+        return "bg-[#E0F840]/20 text-[#690DD4] dark:text-[#E0F840]";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -690,10 +690,10 @@ export default function AdminUsersPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("filters.client")}</CardTitle>
-            <Users className="h-4 w-4 text-[#5db9ba]" />
+            <Users className="h-4 w-4 text-[#690DD4] dark:text-[#E0F840]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#5db9ba]">{stats.clients}</div>
+            <div className="text-2xl font-bold text-[#690DD4] dark:text-[#E0F840]">{stats.clients}</div>
           </CardContent>
         </Card>
         <Card>

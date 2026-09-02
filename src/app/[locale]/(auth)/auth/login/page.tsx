@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { signIn, getSession, useSession } from "next-auth/react";
-import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -21,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CONTINUE_NEW_REQUEST_PATH, parseContinuePath } from "@/lib/landing-request-draft";
 import { trpc } from "@/lib/trpc/client";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -134,20 +134,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mb-4">
             <Link href="/" className="flex items-center space-x-2">
               <motion.div whileHover={{ scale: 1.1 }}>
-                <Image
-                  src="/images/nabarawy-dark.svg"
-                  alt="Nabarawy Logo"
-                  width={200}
-                  height={40}
-                  className="h-10 w-auto dark:hidden"
-                />
-                <Image
-                  src="/images/nabarawy-light.svg"
-                  alt="Nabarawy Logo"
-                  width={200}
-                  height={40}
-                  className="hidden h-10 w-auto dark:block"
-                />
+                <BrandLogo className="h-10" priority />
               </motion.div>
             </Link>
           </div>

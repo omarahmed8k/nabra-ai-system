@@ -157,8 +157,8 @@ export default function ProviderRequestDetailPage() {
       void utils.request.getById.invalidate({ id: requestId });
     };
 
-    globalThis.addEventListener("nabra:request-thread-updated", handleThreadUpdate);
-    return () => globalThis.removeEventListener("nabra:request-thread-updated", handleThreadUpdate);
+    globalThis.addEventListener("wengz:request-thread-updated", handleThreadUpdate);
+    return () => globalThis.removeEventListener("wengz:request-thread-updated", handleThreadUpdate);
   }, [requestId, utils.request.getById]);
 
   useEffect(() => {

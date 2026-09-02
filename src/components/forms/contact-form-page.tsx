@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
@@ -12,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const fieldClass =
   "h-11 rounded-lg border-border/80 bg-background/60 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-primary/30";
@@ -148,43 +148,30 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
   const accent =
     variant === "client"
       ? {
-          pitchBorder: "border-[#5db9ba]/25",
-          pitchBg: "from-[#5db9ba]/[0.07] to-[#824d7c]/[0.05]",
-          pitchAccentBar: "bg-[#5db9ba]/50",
-          iconBg: "bg-[#5db9ba]/15 text-[#5db9ba]",
+          pitchBorder: "border-[#E0F840]/25",
+          pitchBg: "from-[#E0F840]/[0.07] to-[#690DD4]/[0.05]",
+          pitchAccentBar: "bg-[#E0F840]/50",
+          iconBg: "bg-[#E0F840]/15 text-[#E0F840]",
         }
       : {
-          pitchBorder: "border-[#824d7c]/25",
-          pitchBg: "from-[#824d7c]/[0.07] to-[#5db9ba]/[0.05]",
-          pitchAccentBar: "bg-[#824d7c]/50",
-          iconBg: "bg-[#824d7c]/15 text-[#824d7c]",
+          pitchBorder: "border-[#690DD4]/25",
+          pitchBg: "from-[#690DD4]/[0.07] to-[#E0F840]/[0.05]",
+          pitchAccentBar: "bg-[#690DD4]/50",
+          iconBg: "bg-[#690DD4]/15 text-[#690DD4]",
         };
 
   return (
     <div className="relative min-h-screen bg-background">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
-        <div className="absolute -top-40 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#824d7c]/12 blur-3xl" />
-        <div className="absolute top-1/3 right-[-120px] h-[380px] w-[380px] rounded-full bg-[#5db9ba]/10 blur-3xl" />
-        <div className="absolute bottom-0 left-[-100px] h-[320px] w-[320px] rounded-full bg-[#5db9ba]/6 blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[#690DD4]/12 blur-3xl" />
+        <div className="absolute top-1/3 right-[-120px] h-[380px] w-[380px] rounded-full bg-[#E0F840]/10 blur-3xl" />
+        <div className="absolute bottom-0 left-[-100px] h-[320px] w-[320px] rounded-full bg-[#E0F840]/6 blur-3xl" />
       </div>
 
       <div className="mx-auto w-full max-w-3xl px-4 py-8 pb-12 sm:px-6 sm:py-12 md:py-16">
         <div className="mb-8 flex items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/80 px-4 py-3.5 shadow-sm backdrop-blur-md sm:mb-10 sm:px-5">
           <Link href="/" className="flex min-w-0 items-center gap-2">
-            <Image
-              src="/images/nabarawy-dark.svg"
-              alt="Nabarawy Logo"
-              width={120}
-              height={24}
-              className="h-7 w-auto shrink-0 dark:hidden sm:h-8"
-            />
-            <Image
-              src="/images/nabarawy-light.svg"
-              alt="Nabarawy Logo"
-              width={120}
-              height={24}
-              className="hidden h-7 w-auto shrink-0 dark:block sm:h-8"
-            />
+            <BrandLogo className="h-7 shrink-0 sm:h-8" />
           </Link>
           <Link
             href="/"
@@ -198,16 +185,16 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
           className={cn(
             "overflow-hidden rounded-2xl border-border/70 bg-card/95 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:rounded-3xl",
             variant === "client" &&
-              "ring-1 ring-[#5db9ba]/15 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]",
+              "ring-1 ring-[#E0F840]/15 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]",
             variant === "provider" &&
-              "ring-1 ring-[#824d7c]/15 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
+              "ring-1 ring-[#690DD4]/15 dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
           )}
         >
           <div
             className={cn(
               "h-1 w-full bg-gradient-to-r from-transparent to-transparent",
-              variant === "client" && "via-[#5db9ba]/70",
-              variant === "provider" && "via-[#824d7c]/70"
+              variant === "client" && "via-[#E0F840]/70",
+              variant === "provider" && "via-[#690DD4]/70"
             )}
           />
           <CardHeader className="space-y-4 px-5 pb-2 pt-8 sm:px-8 sm:pt-10">
@@ -386,9 +373,9 @@ export function ContactFormPage({ variant }: ContactFormPageProps) {
                   className={cn(
                     "w-full rounded-xl text-base font-semibold shadow-lg transition-all",
                     variant === "client" &&
-                      "h-12 bg-gradient-to-r from-[#824d7c] to-[#5db9ba] text-white shadow-[0_8px_28px_rgba(130,77,124,0.28)] hover:opacity-95 hover:shadow-[0_12px_36px_rgba(93,185,186,0.22)] sm:h-11",
+                      "h-12 bg-[#690DD4] text-[#E0F840] shadow-[0_8px_28px_rgba(105,13,212,0.28)] hover:opacity-95 hover:shadow-[0_12px_36px_rgba(224,248,64,0.22)] sm:h-11",
                     variant === "provider" &&
-                      "h-12 border-2 border-border/80 bg-background/90 text-foreground backdrop-blur-sm hover:border-[#824d7c]/45 hover:bg-muted/60 sm:h-11"
+                      "h-12 border-2 border-border/80 bg-background/90 text-foreground backdrop-blur-sm hover:border-[#690DD4]/45 hover:bg-muted/60 sm:h-11"
                   )}
                 >
                   {loading ? t("forms.actions.sending") : t("forms.actions.send")}

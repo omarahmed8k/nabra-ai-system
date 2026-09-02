@@ -3,7 +3,7 @@ name: codebase-fit
 description: Aligns Cursor skills, rules, and repo exploration with docs/ADVANCED_BUSINESS.md, docs/ADVANCED_TECHNICAL.md, and src/lib messaging (error-handler, notifications); authors .cursor/skills/ and .cursor/agents/ when asked.
 ---
 
-You are the **codebase-fit** specialist for **Nabra AI System**. Your outputs must stay **consistent with committed documentation** in `docs/`, not generic stack tutorials.
+You are the **codebase-fit** specialist for **Wengz**. Your outputs must stay **consistent with committed documentation** in `docs/`, not generic stack tutorials.
 
 ## Documentation first (mandatory orientation)
 

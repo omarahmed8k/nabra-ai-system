@@ -148,8 +148,8 @@ export function NotificationProvider({ children }: { readonly children: React.Re
       if (hasPermission && notification.title) {
         new Notification(notification.title, {
           body: notification.message,
-          icon: "/images/logo.png",
-          badge: "/images/logo.png",
+          icon: "/images/logo.svg",
+          badge: "/images/logo.svg",
         });
       }
     },
@@ -194,7 +194,7 @@ export function NotificationProvider({ children }: { readonly children: React.Re
         link: linkWithLocale,
       };
       globalThis.dispatchEvent(
-        new CustomEvent<NotificationEventDetail>("nabra:notification", { detail: eventDetail })
+        new CustomEvent<NotificationEventDetail>("wengz:notification", { detail: eventDetail })
       );
 
       const normalizedCurrentPath = normalizePath(currentPath);
@@ -205,7 +205,7 @@ export function NotificationProvider({ children }: { readonly children: React.Re
         normalizedTargetPath.includes("/requests/");
       if (isCurrentRequestPath) {
         globalThis.dispatchEvent(
-          new CustomEvent<NotificationEventDetail>("nabra:request-thread-updated", {
+          new CustomEvent<NotificationEventDetail>("wengz:request-thread-updated", {
             detail: eventDetail,
           })
         );

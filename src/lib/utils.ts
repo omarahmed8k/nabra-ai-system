@@ -52,7 +52,7 @@ export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
     PENDING: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
     IN_PROGRESS: "bg-primary/15 text-primary",
-    DELIVERED: "bg-[#5db9ba]/15 text-[#5db9ba]",
+    DELIVERED: "bg-[#E0F840]/20 text-[#690DD4] dark:text-[#E0F840]",
     REVISION_REQUESTED: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
     COMPLETED: "bg-green-500/15 text-green-600 dark:text-green-400",
     CANCELLED: "bg-destructive/15 text-destructive",
