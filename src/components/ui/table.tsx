@@ -21,7 +21,6 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
 
     return (
       <div className="relative w-full overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-        {/* eslint-disable-next-line jsx-a11y/table-has-caption */}
         <table // NOSONAR: header is added by consumers via TableHeader component
           ref={ref}
           dir={direction}

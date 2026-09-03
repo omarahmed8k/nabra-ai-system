@@ -160,7 +160,6 @@ function getVideoMuteLabel(locale: string, isMuted: boolean) {
   return locale === "ar" ? "كتم الصوت" : "Mute";
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function LandingPage() {
   const locale = useLocale();
   const t = useTranslations();
