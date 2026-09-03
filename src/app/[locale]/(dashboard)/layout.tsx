@@ -44,7 +44,6 @@ const providerNavConfig = [
   { href: "/provider", labelKey: "provider.dashboard", icon: LayoutDashboard },
   { href: "/provider/available", labelKey: "provider.available", icon: Workflow },
   { href: "/provider/my-requests", labelKey: "provider.myRequests", icon: FileText },
-  { href: "/provider/wallet", labelKey: "provider.wallet", icon: Wallet },
   { href: "/provider/notifications", labelKey: "provider.notifications", icon: Bell },
   { href: "/provider/profile", labelKey: "provider.profile", icon: User },
 ];
@@ -54,7 +53,6 @@ const adminNavConfig = [
   { href: "/admin/users", labelKey: "admin.users", icon: Users },
   { href: "/admin/requests", labelKey: "admin.requests", icon: FileText },
   { href: "/admin/payments", labelKey: "admin.payments", icon: CheckCircle },
-  { href: "/admin/finance", labelKey: "admin.finance", icon: Wallet },
   { href: "/admin/notifications", labelKey: "admin.notifications", icon: Bell },
   { href: "/admin/packages", labelKey: "admin.packages", icon: CreditCard },
   { href: "/admin/services", labelKey: "admin.services", icon: Settings },
