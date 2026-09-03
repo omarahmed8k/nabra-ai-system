@@ -17,9 +17,9 @@ jobs:
     timeout-minutes: 15
     env:
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
-      NEXTAUTH_URL: https://www.nabarawy.tech
+      NEXTAUTH_URL: https://wengz.tech
       NEXTAUTH_SECRET: ci-build-placeholder-not-a-real-secret
-      NEXT_PUBLIC_APP_URL: https://www.nabarawy.tech
+      NEXT_PUBLIC_APP_URL: https://wengz.tech
       HUSKY: "0"
     steps:
       - name: Checkout

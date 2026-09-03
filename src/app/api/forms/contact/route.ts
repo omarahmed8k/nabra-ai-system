@@ -113,7 +113,7 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    const recipient = process.env.CONTACT_FORMS_RECIPIENT || "info@nabarawy.tech";
+    const recipient = process.env.CONTACT_FORMS_RECIPIENT || "info@wengz.tech";
     const web3formsResult = await sendViaWeb3Forms({
       subject,
       type: body.type,

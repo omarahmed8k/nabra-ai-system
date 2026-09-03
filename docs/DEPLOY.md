@@ -15,6 +15,48 @@ Automated deploys run on every push to `main` (and via **Actions → CI and Depl
 
 App secrets stay in `/var/www/nabra-ai-system/.env` on the VPS. GitHub only needs SSH access.
 
+## Domain: `wengz.tech`
+
+Canonical app URL: `https://wengz.tech` (also serve `www.wengz.tech`).
+
+### DNS (at your registrar)
+
+Point both to the VPS IP `72.62.181.253`:
+
+| Type | Name | Value |
+|------|------|--------|
+| A | `@` | `72.62.181.253` |
+| A | `www` | `72.62.181.253` |
+
+### VPS `.env` (then rebuild / PM2 restart)
+
+```bash
+cd /var/www/nabra-ai-system
+nano .env
+# set:
+# NEXTAUTH_URL=https://wengz.tech
+# NEXT_PUBLIC_APP_URL=https://wengz.tech
+# CONTACT_FORMS_RECIPIENT=info@wengz.tech   # if you have that mailbox
+# SMTP_* From address if needed
+
+pm2 restart nabra-ai-system --update-env
+# or full deploy: /usr/local/bin/deploy-nabra.sh
+```
+
+`NEXT_PUBLIC_*` is baked into the client at **build** time — you must run `npm run build` (or the deploy script) after changing it.
+
+### Nginx + SSL
+
+```bash
+# Issue cert (after DNS propagates)
+certbot --nginx -d wengz.tech -d www.wengz.tech
+
+# Optional: redirect old nabarawy hosts to wengz
+# (adjust server_name / return in the nabarawy site config)
+# return 301 https://wengz.tech$request_uri;
+nginx -t && systemctl reload nginx
+```
+
 ## One-time VPS setup
 
 ### 1. Install the deploy script

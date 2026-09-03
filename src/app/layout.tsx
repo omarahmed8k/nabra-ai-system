@@ -10,7 +10,7 @@ import "@/lib/notifications/init";
 
 const metadataBase = process.env.NEXT_PUBLIC_APP_URL?.startsWith("http")
   ? new URL(process.env.NEXT_PUBLIC_APP_URL)
-  : new URL("https://nabarawy.tech");
+  : new URL("https://wengz.tech");
 
 const lato = Lato({
   weight: ["300", "400", "700", "900"],
