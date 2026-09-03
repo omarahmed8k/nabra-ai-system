@@ -19,6 +19,12 @@ build
 .DS_Store
 *.pem
 
+# Local deploy SSH keys (never commit)
+nabra-gha-deploy
+nabra-gha-deploy.pub
+*-gha-deploy
+*-gha-deploy.pub
+
 # PWA - Auto-generated files
 public/sw.js
 public/sw.js.map
