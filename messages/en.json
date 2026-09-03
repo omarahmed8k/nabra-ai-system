@@ -745,6 +745,65 @@
         "AVAILABLE": "Available",
         "PAID": "Paid",
         "VOIDED": "Voided"
+      },
+      "pending": {
+        "title": "Pending withdrawals",
+        "description": "Requests waiting for a manual payout"
+      },
+      "withdrawals": {
+        "title": "Withdrawal requests",
+        "description": "Review provider withdrawal requests. Approve after you send the money, or reject with a reason.",
+        "empty": "No withdrawal requests yet.",
+        "provider": "Provider",
+        "amount": "Amount",
+        "method": "Method",
+        "destination": "Destination",
+        "status": "Status",
+        "source": "Source",
+        "providerNote": "Provider note",
+        "adminReason": "Reason",
+        "requestedAt": "Requested",
+        "actions": "Actions",
+        "review": "Review",
+        "filterAll": "All",
+        "filterPending": "Pending",
+        "sourceProvider": "Provider request",
+        "sourceAdmin": "Admin payout"
+      },
+      "review": {
+        "title": "Review withdrawal",
+        "description": "Mark as paid after you transfer the money, or reject and return the funds.",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. Transferred via Instapay, ref 123 — or why it was rejected",
+        "approve": "Mark as paid",
+        "reject": "Reject",
+        "submitting": "Saving..."
+      },
+      "payout": {
+        "title": "Send payout",
+        "description": "Record a manual transfer to this provider. Funds leave the available balance immediately.",
+        "send": "Send payout",
+        "amount": "Amount (EGP)",
+        "reason": "Reason / transfer reference",
+        "reasonPlaceholder": "e.g. Bank transfer ref 45821",
+        "noDetails": "This provider has not added a bank account or e-wallet number.",
+        "noBalance": "This provider has no available balance.",
+        "submitting": "Saving...",
+        "confirm": "Confirm payout"
+      },
+      "methods": {
+        "BANK": "Bank",
+        "E_WALLET": "E-wallet"
+      },
+      "withdrawStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Paid",
+        "REJECTED": "Rejected"
+      },
+      "toast": {
+        "approved": "Withdrawal marked as paid",
+        "rejected": "Withdrawal rejected and funds returned",
+        "sent": "Payout recorded"
       }
     },
     "attributesManager": {
@@ -1580,6 +1639,50 @@
         "AVAILABLE": "Available",
         "PAID": "Paid",
         "VOIDED": "Voided"
+      },
+      "payout": {
+        "title": "Payout details",
+        "description": "Add a bank account or e-wallet number so withdrawals can be paid manually.",
+        "method": "Payout method",
+        "bank": "Bank transfer",
+        "eWallet": "E-wallet",
+        "accountHolder": "Account holder name",
+        "bankName": "Bank name",
+        "bankAccount": "Account / IBAN",
+        "eWalletNumber": "E-wallet number",
+        "save": "Save payout details",
+        "saving": "Saving...",
+        "saved": "Payout details saved"
+      },
+      "withdraw": {
+        "title": "Request withdrawal",
+        "description": "Available balance is held while admin reviews your request and sends the money manually.",
+        "amount": "Amount (EGP)",
+        "amountHint": "Available: {amount}",
+        "note": "Note for admin (optional)",
+        "notePlaceholder": "e.g. Please send to Vodafone Cash",
+        "request": "Request withdrawal",
+        "requesting": "Submitting...",
+        "requested": "Withdrawal request submitted",
+        "needPayout": "Add payout details before requesting a withdrawal.",
+        "pendingExists": "You already have a pending withdrawal. Wait for admin review before requesting another.",
+        "noBalance": "No available balance to withdraw."
+      },
+      "withdrawals": {
+        "title": "Withdrawal requests",
+        "description": "Admin reviews each request, then updates the status with a reason.",
+        "empty": "No withdrawal requests yet.",
+        "amount": "Amount",
+        "method": "Method",
+        "destination": "Destination",
+        "status": "Status",
+        "reason": "Admin reason",
+        "requestedAt": "Requested"
+      },
+      "withdrawStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Paid",
+        "REJECTED": "Rejected"
       }
     },
     "notifications": {
@@ -1877,6 +1980,18 @@
     "paymentRejected": {
       "title": "Payment Verification Failed",
       "message": "Your payment could not be verified. Reason: {reason}. Please contact support or try again."
+    },
+    "withdrawalRequested": {
+      "title": "New withdrawal request",
+      "message": "{providerNameOrEmail} requested a withdrawal of {amount} EGP."
+    },
+    "withdrawalApproved": {
+      "title": "Withdrawal paid",
+      "message": "Your withdrawal of {amount} EGP was marked as paid. {reason}"
+    },
+    "withdrawalRejected": {
+      "title": "Withdrawal rejected",
+      "message": "Your withdrawal of {amount} EGP was rejected. Reason: {reason}"
     },
     "subscriptionCancelled": {
       "title": "Subscription Cancelled",

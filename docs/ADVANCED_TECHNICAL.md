@@ -76,6 +76,7 @@ flowchart TB
 | `src/components/providers/trpc-provider.tsx` | React Query + tRPC provider wiring                                                                                                                                             |
 | `src/lib/error-handler.ts`                   | Sonner toasts + tRPC/Zod message mapping; optional `next-intl` `t`                                                                                                             |
 | `src/lib/notifications/`                     | Email, WhatsApp, in-app, SSE helpers; **pass `locale`** from `ctx`                                                                                                             |
+| `src/lib/provider-wallet.ts`                 | Provider earnings settlement, withdrawal holds, and manual payout recording                                                                                                    |
 | `src/proxy.ts`                               | **Middleware implementation**: `next-intl` + `withAuth`, locale rewrite, **role-based redirects** for `client` / `provider` / `admin` segments (`export const config.matcher`) |
 
 > **Note:** Next.js convention expects middleware at `middleware.ts` (project root or `src/`). This repository implements the same behavior in `src/proxy.ts`; ensure your deployment pipeline renames or re-exports it if your toolchain requires `middleware.ts`.

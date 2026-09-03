@@ -260,6 +260,82 @@ export async function notifyAdminsNewPendingPayment(params: {
   return { notifiedAdmins: admins.length };
 }
 
+export async function notifyAdminsNewWithdrawal(params: {
+  providerNameOrEmail: string;
+  amountEgp: number;
+  locale?: string;
+}) {
+  const { providerNameOrEmail, amountEgp, locale = "en" } = params;
+
+  const admins = await db.user.findMany({
+    where: { role: "SUPER_ADMIN" },
+    select: { id: true },
+  });
+
+  const title = await getTranslation(locale, "notifications.withdrawalRequested.title");
+  const message = await getTranslation(locale, "notifications.withdrawalRequested.message", {
+    providerNameOrEmail,
+    amount: amountEgp.toFixed(2),
+  });
+
+  await Promise.all(
+    admins.map(async (admin) =>
+      createNotification({
+        userId: admin.id,
+        title,
+        message,
+        type: "general",
+        link: "/admin/finance",
+        sendEmail: false,
+        locale,
+        sseI18n: {
+          titleKey: "notifications.withdrawalRequested.title",
+          messageKey: "notifications.withdrawalRequested.message",
+          messageParams: {
+            providerNameOrEmail,
+            amount: amountEgp.toFixed(2),
+          },
+        },
+      })
+    )
+  );
+}
+
+export async function notifyProviderWithdrawalReviewed(params: {
+  providerId: string;
+  status: "APPROVED" | "REJECTED";
+  amountEgp: number;
+  reason: string;
+  locale?: string;
+}) {
+  const { providerId, status, amountEgp, reason, locale = "en" } = params;
+  const key = status === "APPROVED" ? "withdrawalApproved" : "withdrawalRejected";
+
+  const title = await getTranslation(locale, `notifications.${key}.title`);
+  const message = await getTranslation(locale, `notifications.${key}.message`, {
+    amount: amountEgp.toFixed(2),
+    reason,
+  });
+
+  return createNotification({
+    userId: providerId,
+    title,
+    message,
+    type: "general",
+    link: "/provider/wallet",
+    sendEmail: false,
+    locale,
+    sseI18n: {
+      titleKey: `notifications.${key}.title`,
+      messageKey: `notifications.${key}.message`,
+      messageParams: {
+        amount: amountEgp.toFixed(2),
+        reason,
+      },
+    },
+  });
+}
+
 function getLinkForNotificationRecipient(
   recipientRole: string | undefined | null,
   requestId: string,

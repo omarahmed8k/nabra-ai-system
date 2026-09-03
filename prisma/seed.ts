@@ -9,6 +9,7 @@ async function main() {
   // Clean existing data
   await prisma.notification.deleteMany();
   await prisma.rating.deleteMany();
+  await prisma.withdrawalRequest.deleteMany();
   await prisma.providerFinanceLedger.deleteMany();
   await prisma.providerWallet.deleteMany();
   await prisma.requestComment.deleteMany();

@@ -17,8 +17,8 @@ The application is **bilingual (English and Arabic)** end-to-end, including mark
 | Role            | Typical use                                                                 | Access (conceptual)                                                                          |
 | --------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | **Client**      | Buys packages, creates and tracks requests, messages, rates completed work  | Client dashboard: subscriptions, payment proof, requests, notifications, profile             |
-| **Provider**    | Sees assigned or available work, delivers outputs, collaborates on threads  | Provider dashboard: my requests, available jobs, notifications, profile                      |
-| **Super admin** | Manages users, services, packages, requests oversight, payment verification | Admin dashboard: users, services, packages, subscriptions, requests, payments, notifications |
+| **Provider**    | Sees assigned or available work, delivers outputs, collaborates on threads, requests withdrawals | Provider dashboard: my requests, available jobs, wallet, notifications, profile |
+| **Super admin** | Manages users, services, packages, requests oversight, payment verification, provider payouts | Admin dashboard: users, services, packages, subscriptions, requests, payments, finance, notifications |
 
 Registration and login are **credential-based** (email/password). Role is fixed per user account and enforced both in the **edge layer** (route protection) and in **tRPC** (procedure-level middleware).
 
@@ -31,6 +31,15 @@ Registration and login are **credential-based** (email/password). Role is fixed 
 - **Free-trial semantics** exist in the data model (`isFreeTrialUsed`, `isFreePackage`) so the business can distinguish promotional or trial packages from paid tiers.
 
 **Payment in the field**: clients submit **payment proofs** (e.g. bank transfer details and a receipt image) tied to a subscription; **admins** review and approve or reject. Until approved, downstream fulfillment rules should align with your operational policy (the schema supports `PaymentProof` with `PENDING` / `APPROVED` / `REJECTED`).
+
+## Provider earnings and withdrawals
+
+Completed request work is credited to a **provider wallet** (credits + EGP). Providers store **payout details** (bank account or e-wallet number) and can **request a withdrawal**. That request holds the amount as pending until a super admin reviews it **manually**:
+
+- **Approve / mark as paid** after sending the money off-platform, with a **reason** (for example a transfer reference).
+- **Reject** with a **reason**, which returns the held funds to the available balance.
+
+Admins can also **record a payout** against a provider’s available balance when they send money without a prior request. There is no automated payout gateway; operations handle the transfer, then record status and reason in the app.
 
 ---
 
@@ -89,6 +98,8 @@ For legal, finance, and DPA details, extend this document in your own wiki; the 
 | **Service type**  | Configurable line of work with pricing, attributes, and revision rules           |
 | **Request**       | A unit of client–provider work tracked through statuses, comments, and ratings   |
 | **Payment proof** | Client-submitted evidence for manual verification of off-platform payment        |
+| **Provider wallet** | Provider earnings from completed requests, tracked in credits and EGP          |
+| **Withdrawal**    | Provider request (or admin-recorded payout) reviewed manually with status + reason |
 
 ---
 

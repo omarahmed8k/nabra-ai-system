@@ -1,8 +1,20 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -12,9 +24,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { showError, showSuccess } from "@/lib/error-handler";
 import { resolveLocalizedText } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc/client";
-import { CreditCard, History, Wallet } from "lucide-react";
+import { Clock, CreditCard, History, Wallet } from "lucide-react";
+
+type PayoutMethod = "BANK" | "E_WALLET";
+type WithdrawalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 type WalletLedgerEntry = {
   id: string;
@@ -35,6 +52,21 @@ type WalletLedgerEntry = {
   };
 };
 
+type WithdrawalEntry = {
+  id: string;
+  amountEgp: number;
+  amountCredits: number;
+  payoutMethod: PayoutMethod;
+  accountHolder: string;
+  bankName: string | null;
+  bankAccount: string | null;
+  eWalletNumber: string | null;
+  providerNote: string | null;
+  status: WithdrawalStatus;
+  adminReason: string | null;
+  createdAt: string | Date;
+};
+
 function formatCredits(value: number) {
   return value.toLocaleString();
 }
@@ -43,35 +75,176 @@ function formatEgp(value: number) {
   return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} EGP`;
 }
 
+function formatDestination(entry: {
+  payoutMethod: PayoutMethod;
+  accountHolder: string;
+  bankName: string | null;
+  bankAccount: string | null;
+  eWalletNumber: string | null;
+}) {
+  if (entry.payoutMethod === "BANK") {
+    return [entry.accountHolder, entry.bankName, entry.bankAccount].filter(Boolean).join(" · ");
+  }
+
+  return [entry.accountHolder, entry.eWalletNumber].filter(Boolean).join(" · ");
+}
+
+function hasCompletePayout(payout: {
+  payoutMethod: PayoutMethod | null;
+  accountHolder: string | null;
+  bankName: string | null;
+  bankAccount: string | null;
+  eWalletNumber: string | null;
+} | null) {
+  if (!payout?.payoutMethod || !payout.accountHolder?.trim()) return false;
+  if (payout.payoutMethod === "BANK") {
+    return Boolean(payout.bankName?.trim() && payout.bankAccount?.trim());
+  }
+  return Boolean(payout.eWalletNumber?.trim());
+}
+
+function withdrawalBadgeVariant(status: WithdrawalStatus) {
+  if (status === "APPROVED") return "default" as const;
+  if (status === "REJECTED") return "destructive" as const;
+  return "secondary" as const;
+}
+
 export default function ProviderWalletPage() {
   const t = useTranslations("provider.walletPage");
   const locale = useLocale();
+  const utils = trpc.useUtils();
   const { data, isLoading } = trpc.provider.getEarnings.useQuery();
   const ledger = (data?.ledger ?? []) as WalletLedgerEntry[];
+  const withdrawals = (data?.withdrawals ?? []) as WithdrawalEntry[];
 
-  const summaryCards = [
-    {
-      title: t("summary.balance"),
-      value: formatEgp(data?.balanceEgp ?? 0),
-      description: t("summary.balanceDesc"),
-      detail: t("summary.creditDetail", { credits: data?.balanceCredits ?? 0 }),
-      icon: Wallet,
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>("BANK");
+  const [accountHolder, setAccountHolder] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [eWalletNumber, setEWalletNumber] = useState("");
+  const [amountEgp, setAmountEgp] = useState("");
+  const [providerNote, setProviderNote] = useState("");
+
+  useEffect(() => {
+    if (!data?.payout) return;
+    setPayoutMethod(data.payout.payoutMethod ?? "BANK");
+    setAccountHolder(data.payout.accountHolder ?? "");
+    setBankName(data.payout.bankName ?? "");
+    setBankAccount(data.payout.bankAccount ?? "");
+    setEWalletNumber(data.payout.eWalletNumber ?? "");
+  }, [data?.payout]);
+
+  const payoutReady = hasCompletePayout(data?.payout ?? null);
+  const availableBalance = data?.balanceEgp ?? 0;
+  const canRequest =
+    payoutReady && availableBalance >= 1 && !data?.hasPendingWithdrawal && !isLoading;
+
+  const updatePayout = trpc.provider.updatePayoutDetails.useMutation({
+    onSuccess: () => {
+      showSuccess(t("payout.saved"));
+      utils.provider.getEarnings.invalidate();
     },
-    {
-      title: t("summary.periodEarnings"),
-      value: formatEgp(data?.totalEarningsEgp ?? 0),
-      description: t("summary.periodEarningsDesc"),
-      detail: t("summary.creditDetail", { credits: data?.totalEarnings ?? 0 }),
-      icon: CreditCard,
+    onError: (error) => showError(error),
+  });
+
+  const requestWithdrawal = trpc.provider.requestWithdrawal.useMutation({
+    onSuccess: () => {
+      showSuccess(t("withdraw.requested"));
+      setAmountEgp("");
+      setProviderNote("");
+      utils.provider.getEarnings.invalidate();
     },
-    {
-      title: t("summary.completed"),
-      value: formatCredits(data?.completedCount ?? 0),
-      description: t("summary.completedDesc"),
-      detail: null,
-      icon: History,
-    },
-  ];
+    onError: (error) => showError(error),
+  });
+
+  const summaryCards = useMemo(
+    () => [
+      {
+        title: t("summary.balance"),
+        value: formatEgp(data?.balanceEgp ?? 0),
+        description: t("summary.balanceDesc"),
+        detail: t("summary.creditDetail", { credits: data?.balanceCredits ?? 0 }),
+        icon: Wallet,
+      },
+      {
+        title: t("withdrawStatus.PENDING"),
+        value: formatEgp(data?.pendingEgp ?? 0),
+        description: t("withdraw.description"),
+        detail: t("summary.creditDetail", { credits: data?.pendingCredits ?? 0 }),
+        icon: Clock,
+      },
+      {
+        title: t("summary.periodEarnings"),
+        value: formatEgp(data?.totalEarningsEgp ?? 0),
+        description: t("summary.periodEarningsDesc"),
+        detail: t("summary.creditDetail", { credits: data?.totalEarnings ?? 0 }),
+        icon: CreditCard,
+      },
+      {
+        title: t("summary.completed"),
+        value: formatCredits(data?.completedCount ?? 0),
+        description: t("summary.completedDesc"),
+        detail: null,
+        icon: History,
+      },
+    ],
+    [data, t]
+  );
+
+  const renderWithdrawalsContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-3">
+          {[1, 2, 3].map((item) => (
+            <Skeleton key={item} className="h-12 w-full" />
+          ))}
+        </div>
+      );
+    }
+
+    if (withdrawals.length === 0) {
+      return (
+        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+          {t("withdrawals.empty")}
+        </div>
+      );
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("withdrawals.amount")}</TableHead>
+            <TableHead>{t("withdrawals.method")}</TableHead>
+            <TableHead>{t("withdrawals.destination")}</TableHead>
+            <TableHead>{t("withdrawals.status")}</TableHead>
+            <TableHead>{t("withdrawals.reason")}</TableHead>
+            <TableHead>{t("withdrawals.requestedAt")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {withdrawals.map((entry) => (
+            <TableRow key={entry.id}>
+              <TableCell className="font-medium">{formatEgp(entry.amountEgp)}</TableCell>
+              <TableCell>
+                {entry.payoutMethod === "BANK" ? t("payout.bank") : t("payout.eWallet")}
+              </TableCell>
+              <TableCell>{formatDestination(entry)}</TableCell>
+              <TableCell>
+                <Badge variant={withdrawalBadgeVariant(entry.status)}>
+                  {t(`withdrawStatus.${entry.status}`)}
+                </Badge>
+              </TableCell>
+              <TableCell className="max-w-xs text-sm text-muted-foreground">
+                {entry.adminReason || entry.providerNote || "—"}
+              </TableCell>
+              <TableCell>{new Date(entry.createdAt).toLocaleDateString(locale)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
 
   const renderLedgerContent = () => {
     if (isLoading) {
@@ -136,7 +309,7 @@ export default function ProviderWalletPage() {
         <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -155,6 +328,158 @@ export default function ProviderWalletPage() {
           </Card>
         ))}
       </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("payout.title")}</CardTitle>
+            <CardDescription>{t("payout.description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                updatePayout.mutate({
+                  payoutMethod,
+                  accountHolder,
+                  bankName: payoutMethod === "BANK" ? bankName : null,
+                  bankAccount: payoutMethod === "BANK" ? bankAccount : null,
+                  eWalletNumber: payoutMethod === "E_WALLET" ? eWalletNumber : null,
+                });
+              }}
+            >
+              <div className="space-y-2">
+                <Label>{t("payout.method")}</Label>
+                <Select
+                  value={payoutMethod}
+                  onValueChange={(value) => setPayoutMethod(value as PayoutMethod)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BANK">{t("payout.bank")}</SelectItem>
+                    <SelectItem value="E_WALLET">{t("payout.eWallet")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="accountHolder">{t("payout.accountHolder")}</Label>
+                <Input
+                  id="accountHolder"
+                  value={accountHolder}
+                  onChange={(event) => setAccountHolder(event.target.value)}
+                  required
+                />
+              </div>
+              {payoutMethod === "BANK" ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="bankName">{t("payout.bankName")}</Label>
+                    <Input
+                      id="bankName"
+                      value={bankName}
+                      onChange={(event) => setBankName(event.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bankAccount">{t("payout.bankAccount")}</Label>
+                    <Input
+                      id="bankAccount"
+                      value={bankAccount}
+                      onChange={(event) => setBankAccount(event.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="eWalletNumber">{t("payout.eWalletNumber")}</Label>
+                  <Input
+                    id="eWalletNumber"
+                    value={eWalletNumber}
+                    onChange={(event) => setEWalletNumber(event.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              <Button type="submit" disabled={updatePayout.isPending}>
+                {updatePayout.isPending ? t("payout.saving") : t("payout.save")}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("withdraw.title")}</CardTitle>
+            <CardDescription>{t("withdraw.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!payoutReady && <Alert>{t("withdraw.needPayout")}</Alert>}
+            {data?.hasPendingWithdrawal && (
+              <Alert>
+                <AlertDescription>{t("withdraw.pendingExists")}</AlertDescription>
+              </Alert>
+            )}
+            {payoutReady && availableBalance < 1 && !data?.hasPendingWithdrawal && (
+              <Alert>{t("withdraw.noBalance")}</Alert>
+            )}
+            <form
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const parsed = Number(amountEgp);
+                requestWithdrawal.mutate({
+                  amountEgp: parsed,
+                  providerNote: providerNote.trim() || null,
+                });
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="amountEgp">{t("withdraw.amount")}</Label>
+                <Input
+                  id="amountEgp"
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  max={availableBalance}
+                  value={amountEgp}
+                  onChange={(event) => setAmountEgp(event.target.value)}
+                  required
+                  disabled={!canRequest}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("withdraw.amountHint", { amount: formatEgp(availableBalance) })}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="providerNote">{t("withdraw.note")}</Label>
+                <Textarea
+                  id="providerNote"
+                  value={providerNote}
+                  onChange={(event) => setProviderNote(event.target.value)}
+                  placeholder={t("withdraw.notePlaceholder")}
+                  disabled={!canRequest}
+                />
+              </div>
+              <Button type="submit" disabled={!canRequest || requestWithdrawal.isPending}>
+                {requestWithdrawal.isPending ? t("withdraw.requesting") : t("withdraw.request")}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("withdrawals.title")}</CardTitle>
+          <CardDescription>{t("withdrawals.description")}</CardDescription>
+        </CardHeader>
+        <CardContent>{renderWithdrawalsContent()}</CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

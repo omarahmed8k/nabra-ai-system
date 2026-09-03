@@ -1,8 +1,20 @@
 import { z } from "zod";
 import { router, providerProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
-import { notifyStatusChange } from "@/lib/notifications";
+import { notifyAdminsNewWithdrawal, notifyStatusChange } from "@/lib/notifications";
 import { formatEstimatedDeliveryDuration, getTranslation } from "@/lib/notifications/i18n-helper";
+import {
+  normalizePayoutDetails,
+  requestProviderWithdrawal,
+} from "@/lib/provider-wallet";
+
+const payoutDetailsInputSchema = z.object({
+  payoutMethod: z.enum(["BANK", "E_WALLET"]),
+  accountHolder: z.string().min(2).max(120),
+  bankName: z.string().max(120).optional().nullable(),
+  bankAccount: z.string().max(80).optional().nullable(),
+  eWalletNumber: z.string().max(40).optional().nullable(),
+});
 
 export const providerRouter = router({
   // Get provider profile
@@ -287,6 +299,17 @@ export const providerRouter = router({
         period: z.object({ start: z.date(), end: z.date() }),
         requests: z.array(z.any()),
         ledger: z.array(z.any()),
+        payout: z
+          .object({
+            payoutMethod: z.enum(["BANK", "E_WALLET"]).nullable(),
+            accountHolder: z.string().nullable(),
+            bankName: z.string().nullable(),
+            bankAccount: z.string().nullable(),
+            eWalletNumber: z.string().nullable(),
+          })
+          .nullable(),
+        withdrawals: z.array(z.any()),
+        hasPendingWithdrawal: z.boolean(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -294,7 +317,7 @@ export const providerRouter = router({
       const startDate = input?.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const endDate = input?.endDate || new Date();
 
-      const [wallet, ledger] = await Promise.all([
+      const [wallet, ledger, profile, withdrawals] = await Promise.all([
         ctx.db.providerWallet.findUnique({
           where: { providerId: userId },
         }),
@@ -326,6 +349,26 @@ export const providerRouter = router({
             },
           },
           orderBy: { settledAt: "desc" },
+        }),
+        ctx.db.providerProfile.findUnique({
+          where: { userId },
+          select: {
+            payoutMethod: true,
+            accountHolder: true,
+            bankName: true,
+            bankAccount: true,
+            eWalletNumber: true,
+          },
+        }),
+        ctx.db.withdrawalRequest.findMany({
+          where: { providerId: userId },
+          include: {
+            reviewedBy: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 50,
         }),
       ]);
 
@@ -373,6 +416,17 @@ export const providerRouter = router({
         },
         requests: completedRequests,
         ledger,
+        payout: profile
+          ? {
+              payoutMethod: profile.payoutMethod,
+              accountHolder: profile.accountHolder,
+              bankName: profile.bankName,
+              bankAccount: profile.bankAccount,
+              eWalletNumber: profile.eWalletNumber,
+            }
+          : null,
+        withdrawals,
+        hasPendingWithdrawal: withdrawals.some((item) => item.status === "PENDING"),
       };
     }),
 
@@ -659,5 +713,98 @@ export const providerRouter = router({
       });
 
       return { success: true, request: updatedRequest };
+    }),
+
+  updatePayoutDetails: providerProcedure
+    .meta({
+      openapi: {
+        method: "PUT",
+        path: "/provider/payout-details",
+        tags: ["provider"],
+        summary: "Save provider payout details",
+      },
+    })
+    .input(payoutDetailsInputSchema)
+    .output(
+      z.object({
+        success: z.boolean(),
+        payout: z.object({
+          payoutMethod: z.enum(["BANK", "E_WALLET"]),
+          accountHolder: z.string(),
+          bankName: z.string().nullable(),
+          bankAccount: z.string().nullable(),
+          eWalletNumber: z.string().nullable(),
+        }),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const payout = normalizePayoutDetails(input);
+      const userId = ctx.session.user.id;
+
+      const profile = await ctx.db.providerProfile.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+
+      if (!profile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Provider profile not found",
+        });
+      }
+
+      await ctx.db.providerProfile.update({
+        where: { userId },
+        data: {
+          payoutMethod: payout.payoutMethod,
+          accountHolder: payout.accountHolder,
+          bankName: payout.bankName,
+          bankAccount: payout.bankAccount,
+          eWalletNumber: payout.eWalletNumber,
+        },
+      });
+
+      return { success: true, payout };
+    }),
+
+  requestWithdrawal: providerProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/provider/withdrawals",
+        tags: ["provider"],
+        summary: "Request a wallet withdrawal",
+      },
+    })
+    .input(
+      z.object({
+        amountEgp: z.number().positive(),
+        providerNote: z.string().max(500).optional().nullable(),
+      })
+    )
+    .output(
+      z.object({
+        success: z.boolean(),
+        withdrawalId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const withdrawal = await ctx.db.$transaction((tx) =>
+        requestProviderWithdrawal(tx, {
+          providerId: userId,
+          amountEgp: input.amountEgp,
+          providerNote: input.providerNote,
+        })
+      );
+
+      const providerNameOrEmail = ctx.session.user.name || ctx.session.user.email || "Provider";
+      await notifyAdminsNewWithdrawal({
+        providerNameOrEmail,
+        amountEgp: withdrawal.amountEgp,
+        locale: ctx.locale,
+      });
+
+      return { success: true, withdrawalId: withdrawal.id };
     }),
 });

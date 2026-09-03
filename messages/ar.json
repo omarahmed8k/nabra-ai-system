@@ -745,6 +745,65 @@
         "AVAILABLE": "متاح",
         "PAID": "مدفوع",
         "VOIDED": "ملغي"
+      },
+      "pending": {
+        "title": "سحوبات قيد المراجعة",
+        "description": "طلبات تنتظر تحويلاً يدوياً"
+      },
+      "withdrawals": {
+        "title": "طلبات السحب",
+        "description": "راجع طلبات سحب المبدعين. اعتمد بعد تحويل المبلغ، أو ارفض مع ذكر السبب.",
+        "empty": "لا توجد طلبات سحب بعد.",
+        "provider": "المبدع",
+        "amount": "المبلغ",
+        "method": "الطريقة",
+        "destination": "الوجهة",
+        "status": "الحالة",
+        "source": "المصدر",
+        "providerNote": "ملاحظة المبدع",
+        "adminReason": "السبب",
+        "requestedAt": "تاريخ الطلب",
+        "actions": "الإجراءات",
+        "review": "مراجعة",
+        "filterAll": "الكل",
+        "filterPending": "قيد المراجعة",
+        "sourceProvider": "طلب المبدع",
+        "sourceAdmin": "صرف من الأدمن"
+      },
+      "review": {
+        "title": "مراجعة السحب",
+        "description": "علّم كمدفوع بعد التحويل، أو ارفض وأعد الرصيد.",
+        "reason": "السبب",
+        "reasonPlaceholder": "مثال: تم التحويل عبر إنستاباي رقم 123 — أو سبب الرفض",
+        "approve": "تعيين كمدفوع",
+        "reject": "رفض",
+        "submitting": "جاري الحفظ..."
+      },
+      "payout": {
+        "title": "إرسال صرف",
+        "description": "سجّل تحويلاً يدوياً لهذا المبدع. يُخصم المبلغ من الرصيد المتاح فوراً.",
+        "send": "إرسال صرف",
+        "amount": "المبلغ (جنيه)",
+        "reason": "السبب / مرجع التحويل",
+        "reasonPlaceholder": "مثال: تحويل بنكي رقم 45821",
+        "noDetails": "هذا المبدع لم يضف حساباً بنكياً أو رقم محفظة إلكترونية.",
+        "noBalance": "لا يوجد رصيد متاح لهذا المبدع.",
+        "submitting": "جاري الحفظ...",
+        "confirm": "تأكيد الصرف"
+      },
+      "methods": {
+        "BANK": "بنك",
+        "E_WALLET": "محفظة إلكترونية"
+      },
+      "withdrawStatus": {
+        "PENDING": "قيد المراجعة",
+        "APPROVED": "مدفوع",
+        "REJECTED": "مرفوض"
+      },
+      "toast": {
+        "approved": "تم تعليم السحب كمدفوع",
+        "rejected": "تم رفض السحب وإعادة الرصيد",
+        "sent": "تم تسجيل الصرف"
       }
     },
     "attributesManager": {
@@ -1580,6 +1639,50 @@
         "AVAILABLE": "متاح",
         "PAID": "مدفوع",
         "VOIDED": "ملغي"
+      },
+      "payout": {
+        "title": "بيانات الصرف",
+        "description": "أضف حساباً بنكياً أو رقم محفظة إلكترونية حتى يمكن تحويل المسحوبات يدوياً.",
+        "method": "طريقة الصرف",
+        "bank": "تحويل بنكي",
+        "eWallet": "محفظة إلكترونية",
+        "accountHolder": "اسم صاحب الحساب",
+        "bankName": "اسم البنك",
+        "bankAccount": "رقم الحساب / IBAN",
+        "eWalletNumber": "رقم المحفظة الإلكترونية",
+        "save": "حفظ بيانات الصرف",
+        "saving": "جاري الحفظ...",
+        "saved": "تم حفظ بيانات الصرف"
+      },
+      "withdraw": {
+        "title": "طلب سحب",
+        "description": "يتم حجز الرصيد المتاح أثناء مراجعة الأدمن للطلب وتحويل المبلغ يدوياً.",
+        "amount": "المبلغ (جنيه)",
+        "amountHint": "المتاح: {amount}",
+        "note": "ملاحظة للأدمن (اختياري)",
+        "notePlaceholder": "مثال: الرجاء التحويل إلى فودافون كاش",
+        "request": "طلب سحب",
+        "requesting": "جاري الإرسال...",
+        "requested": "تم إرسال طلب السحب",
+        "needPayout": "أضف بيانات الصرف قبل طلب السحب.",
+        "pendingExists": "لديك طلب سحب قيد المراجعة. انتظر قرار الأدمن قبل طلب سحب آخر.",
+        "noBalance": "لا يوجد رصيد متاح للسحب."
+      },
+      "withdrawals": {
+        "title": "طلبات السحب",
+        "description": "يراجع الأدمن كل طلب ثم يحدّث الحالة مع السبب.",
+        "empty": "لا توجد طلبات سحب بعد.",
+        "amount": "المبلغ",
+        "method": "الطريقة",
+        "destination": "الوجهة",
+        "status": "الحالة",
+        "reason": "سبب الأدمن",
+        "requestedAt": "تاريخ الطلب"
+      },
+      "withdrawStatus": {
+        "PENDING": "قيد المراجعة",
+        "APPROVED": "مدفوع",
+        "REJECTED": "مرفوض"
       }
     },
     "notifications": {
@@ -1877,6 +1980,18 @@
     "paymentRejected": {
       "title": "فشل التحقق من الدفع",
       "message": "تعذر التحقق من دفعتك. السبب: {reason}. يرجى التواصل مع الدعم أو المحاولة مرة أخرى."
+    },
+    "withdrawalRequested": {
+      "title": "طلب سحب جديد",
+      "message": "{providerNameOrEmail} طلب سحب {amount} جنيه."
+    },
+    "withdrawalApproved": {
+      "title": "تم دفع السحب",
+      "message": "تم تعليم سحبك بقيمة {amount} جنيه كمدفوع. {reason}"
+    },
+    "withdrawalRejected": {
+      "title": "تم رفض السحب",
+      "message": "تم رفض سحبك بقيمة {amount} جنيه. السبب: {reason}"
     },
     "subscriptionCancelled": {
       "title": "تم إلغاء الاشتراك",

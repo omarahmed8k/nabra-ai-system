@@ -30,6 +30,8 @@ model User {
   providerProfile     ProviderProfile?
   providerWallet      ProviderWallet?
   providerFinance     ProviderFinanceLedger[] @relation("ProviderFinanceLedger")
+  withdrawalRequests  WithdrawalRequest[]     @relation("ProviderWithdrawals")
+  reviewedWithdrawals WithdrawalRequest[]     @relation("WithdrawalReviewer")
   ratings             Rating[]                @relation("ClientRatings")
   receivedRatings     Rating[]                @relation("ProviderRatings")
   clientRequests      Request[]               @relation("ClientRequests")
@@ -94,6 +96,11 @@ model ProviderProfile {
   portfolio         String?
   skillsTags        String[]      @default([])
   isActive          Boolean       @default(true)
+  payoutMethod      PayoutMethod?
+  accountHolder     String?
+  bankName          String?
+  bankAccount       String?
+  eWalletNumber     String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -274,6 +281,31 @@ model ProviderWallet {
   @@index([providerId])
 }
 
+model WithdrawalRequest {
+  id            String           @id @default(cuid())
+  providerId    String
+  amountEgp     Float
+  amountCredits Int              @default(0)
+  payoutMethod  PayoutMethod
+  accountHolder String
+  bankName      String?
+  bankAccount   String?
+  eWalletNumber String?
+  providerNote  String?
+  status        WithdrawalStatus @default(PENDING)
+  source        WithdrawalSource @default(PROVIDER)
+  adminReason   String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  provider      User             @relation("ProviderWithdrawals", fields: [providerId], references: [id], onDelete: Cascade)
+  reviewedBy    User?            @relation("WithdrawalReviewer", fields: [reviewedById], references: [id])
+
+  @@index([providerId, status])
+  @@index([status, createdAt])
+}
+
 model ProviderFinanceLedger {
   id                String                @id @default(cuid())
   requestId         String                @unique
@@ -384,4 +416,20 @@ enum ProviderFinanceStatus {
   AVAILABLE
   PAID
   VOIDED
+}
+
+enum PayoutMethod {
+  BANK
+  E_WALLET
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WithdrawalSource {
+  PROVIDER
+  ADMIN
 }

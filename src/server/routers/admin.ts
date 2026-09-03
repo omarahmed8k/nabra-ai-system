@@ -3,9 +3,10 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { router, adminProcedure, publicProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
-import { notifyProviderAssignment } from "@/lib/notifications";
+import { notifyProviderAssignment, notifyProviderWithdrawalReviewed } from "@/lib/notifications";
 import { phoneWithCountryCodeSchema } from "@/lib/validations";
 import { assignFreeClientSubscription } from "@/lib/free-client-subscription";
+import { reviewProviderWithdrawal, sendProviderPayout } from "@/lib/provider-wallet";
 
 /** Only one package may be featured; clears `isFeatured` on all other rows. */
 async function clearFeaturedExcept(db: PrismaClient, keepId: string) {
@@ -565,8 +566,8 @@ export const adminRouter = router({
     })
     .output(z.any())
     .query(async ({ ctx }) => {
-      const [ledgerTotals, walletTotals, providers, unsettledCompletedRequests] = await Promise.all(
-        [
+      const [ledgerTotals, walletTotals, providers, unsettledCompletedRequests, pendingWithdrawals] =
+        await Promise.all([
           ctx.db.providerFinanceLedger.aggregate({
             _sum: {
               totalCredits: true,
@@ -597,6 +598,15 @@ export const adminRouter = router({
               email: true,
               image: true,
               providerWallet: true,
+              providerProfile: {
+                select: {
+                  payoutMethod: true,
+                  accountHolder: true,
+                  bankName: true,
+                  bankAccount: true,
+                  eWalletNumber: true,
+                },
+              },
               _count: {
                 select: {
                   providerRequests: true,
@@ -613,8 +623,10 @@ export const adminRouter = router({
               providerFinance: null,
             },
           }),
-        ]
-      );
+          ctx.db.withdrawalRequest.count({
+            where: { status: "PENDING" },
+          }),
+        ]);
 
       const providerWallets = providers.map((provider) => ({
         provider: {
@@ -631,6 +643,15 @@ export const adminRouter = router({
         paidEgp: provider.providerWallet?.paidEgp ?? 0,
         requestCount: provider._count.providerRequests,
         ledgerCount: provider._count.providerFinance,
+        payout: provider.providerProfile
+          ? {
+              payoutMethod: provider.providerProfile.payoutMethod,
+              accountHolder: provider.providerProfile.accountHolder,
+              bankName: provider.providerProfile.bankName,
+              bankAccount: provider.providerProfile.bankAccount,
+              eWalletNumber: provider.providerProfile.eWalletNumber,
+            }
+          : null,
       }));
 
       return {
@@ -647,6 +668,7 @@ export const adminRouter = router({
           totalPendingEgp: walletTotals._sum.pendingEgp ?? 0,
           totalPaidEgp: walletTotals._sum.paidEgp ?? 0,
           unsettledCompletedRequests,
+          pendingWithdrawals,
         },
         providerWallets,
       };
@@ -714,6 +736,131 @@ export const adminRouter = router({
       });
 
       return { ledger };
+    }),
+
+  getWithdrawals: adminProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/admin/finance/withdrawals",
+        tags: ["admin"],
+        summary: "List provider withdrawal requests",
+      },
+    })
+    .input(
+      z
+        .object({
+          status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+          providerId: z.string().optional(),
+          limit: z.number().min(1).max(100).default(50),
+        })
+        .optional()
+    )
+    .output(z.any())
+    .query(async ({ ctx, input }) => {
+      const withdrawals = await ctx.db.withdrawalRequest.findMany({
+        where: {
+          ...(input?.status ? { status: input.status } : {}),
+          ...(input?.providerId ? { providerId: input.providerId } : {}),
+        },
+        include: {
+          provider: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          reviewedBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+        take: input?.limit ?? 50,
+      });
+
+      return { withdrawals };
+    }),
+
+  reviewWithdrawal: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/admin/finance/withdrawals/review",
+        tags: ["admin"],
+        summary: "Approve or reject a provider withdrawal",
+      },
+    })
+    .input(
+      z.object({
+        withdrawalId: z.string(),
+        status: z.enum(["APPROVED", "REJECTED"]),
+        reason: z.string().min(5).max(500),
+      })
+    )
+    .output(z.object({ success: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const withdrawal = await ctx.db.$transaction((tx) =>
+        reviewProviderWithdrawal(tx, {
+          withdrawalId: input.withdrawalId,
+          adminId: ctx.session.user.id,
+          status: input.status,
+          reason: input.reason,
+        })
+      );
+
+      await notifyProviderWithdrawalReviewed({
+        providerId: withdrawal.providerId,
+        status: input.status,
+        amountEgp: withdrawal.amountEgp,
+        reason: input.reason.trim(),
+        locale: ctx.locale,
+      });
+
+      return { success: true };
+    }),
+
+  sendProviderPayout: adminProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/admin/finance/payouts",
+        tags: ["admin"],
+        summary: "Send a manual payout to a provider",
+      },
+    })
+    .input(
+      z.object({
+        providerId: z.string(),
+        amountEgp: z.number().positive(),
+        reason: z.string().min(5).max(500),
+      })
+    )
+    .output(z.object({ success: z.boolean(), withdrawalId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const withdrawal = await ctx.db.$transaction((tx) =>
+        sendProviderPayout(tx, {
+          providerId: input.providerId,
+          adminId: ctx.session.user.id,
+          amountEgp: input.amountEgp,
+          reason: input.reason,
+        })
+      );
+
+      await notifyProviderWithdrawalReviewed({
+        providerId: withdrawal.providerId,
+        status: "APPROVED",
+        amountEgp: withdrawal.amountEgp,
+        reason: input.reason.trim(),
+        locale: ctx.locale,
+      });
+
+      return { success: true, withdrawalId: withdrawal.id };
     }),
 
   // Get all users
