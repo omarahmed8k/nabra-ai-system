@@ -10,16 +10,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Fast gate only — production build runs once on the VPS.
   ci:
-    name: Lint, type-check, build
+    name: Lint and type-check
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     env:
-      # Build-time placeholders only — real secrets stay on the VPS.
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
       NEXTAUTH_URL: https://www.nabarawy.tech
       NEXTAUTH_SECRET: ci-build-placeholder-not-a-real-secret
       NEXT_PUBLIC_APP_URL: https://www.nabarawy.tech
+      HUSKY: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,8 +32,6 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        env:
-          HUSKY: "0"
         run: npm ci --include=dev
 
       - name: Type check
@@ -40,11 +39,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-
-      - name: Build
-        env:
-          NODE_ENV: production
-        run: npm run build
 
   deploy:
     name: Deploy to Hostinger VPS
@@ -60,6 +54,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          protocol: tcp
+          timeout: 60s
           script_stop: true
           command_timeout: 35m
           script: |
